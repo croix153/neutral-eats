@@ -28,6 +28,12 @@ before we did. Drift like that is what this checklist prevents.
 | Venue name labels on the map at street zoom | ✓ (zoom ≥ 17, nearest 120) | ✓ (build 9: span ≤ 0.0085, nearest 80) | Labels are tappable, selected venue's label wears the accent |
 | Result count at the server cap reads "500+", never a bare "500" | ✓ | ✓ (build 9) | Both key off the same cap signal (serverCount ≥ limit) |
 
+## Deliberate surface differences (not gaps)
+
+| Behavior | Web | iOS | Why |
+|---|---|---|---|
+| Venue detail presentation | Bottom sheet | In place (build 10): map card morphs into the detail card; list rows expand inline | Croix, 2026-10-26: the slide-up sheet "doesn't feel like it interacts organically with the list" — detail now opens where the selection already lives. Content is the same on both surfaces. |
+
 ## Known gaps (not yet at parity — Croix's call on priority)
 
 None open as of build 9 (2026-10-26). The street-zoom label gap —

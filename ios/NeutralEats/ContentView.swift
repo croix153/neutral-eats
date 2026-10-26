@@ -13,7 +13,11 @@ import CoreLocation
 ///     nearest venue + Near-me) anchored to the region's bottom.
 ///     List state: the distance-ranked list fills the entire region,
 ///     edge to edge, down to the physical screen bottom.
-///   - Venue detail is a modal .sheet from both states.
+///   - Venue detail lives IN PLACE (build 10, replacing the modal
+///     sheet Croix found jarring): on the map, the bottom card
+///     morphs into the selected venue's detail card; in the list,
+///     the tapped row expands inline. One selection, both surfaces,
+///     nothing slides up over anything.
 ///
 /// The map layer stays in the hierarchy underneath the list layer,
 /// so switching states preserves the camera, the loaded venues, and
@@ -26,7 +30,6 @@ struct ContentView: View {
     @State private var filter: VenueFilter = .all
     @State private var searchText: String = ""
     @State private var selectedID: String? = nil
-    @State private var detailVenue: Venue? = nil
     @State private var mode: ContentMode = .map
     @State private var centerRequest: CenterRequest? = nil
     @State private var centerNonce: Int = 0
@@ -69,11 +72,6 @@ struct ContentView: View {
                     .padding(.bottom, 14)
                     .transition(.opacity)
             }
-        }
-        .sheet(item: $detailVenue) { venue in
-            detailSheet(venue)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
         }
         .onAppear {
             store.regionSettled(kHomeRegion, filter: filter, search: searchText)
@@ -282,7 +280,7 @@ struct ContentView: View {
                     store.regionSettled(region, filter: filter, search: searchText)
                 },
                 onSelectVenue: { id in
-                    presentDetail(id: id)
+                    toggleSelection(id: id)
                 }
             )
             // Full-bleed to the physical screen bottom, under the
@@ -304,12 +302,33 @@ struct ContentView: View {
             mapCard
                 .padding(.horizontal, 12)
                 .padding(.bottom, 38)
+                .animation(.spring(response: 0.38, dampingFraction: 0.86), value: selectedID)
         }
     }
 
-    /// Compact card anchored to the region's bottom edge: result
-    /// count + nearest venue (tap → List state), and Near-me.
+    /// The current selection, resolved against the loaded results.
+    /// Drives the map's detail card, the list's inline expansion,
+    /// the dot highlight, and the label accent — one selection,
+    /// every surface.
+    private var selectedVenue: Venue? {
+        guard let selectedID = selectedID else { return nil }
+        return store.venues.first { $0.id == selectedID }
+    }
+
+    /// The bottom card has two forms, morphed by selection: the
+    /// summary (result count + nearest venue, tap → List state, and
+    /// Near-me) and the selected venue's DETAIL card, grown in place
+    /// from the same anchor — no sheet, no slide-up (build 10).
+    @ViewBuilder
     private var mapCard: some View {
+        if let venue = selectedVenue {
+            detailCard(venue)
+        } else {
+            summaryCard
+        }
+    }
+
+    private var summaryCard: some View {
         HStack(spacing: 10) {
             Button {
                 if store.loadFailed {
@@ -496,12 +515,22 @@ struct ContentView: View {
     private var venueList: some View {
         List {
             ForEach(store.venues) { venue in
-                Button {
-                    presentFromList(id: venue.id)
-                } label: {
-                    venueRow(venue)
+                // Rows expand IN PLACE (build 10): the detail grows
+                // out of the row you tapped, in the list you're
+                // already reading — no sheet over the top, no jump
+                // to the map. Tapping the row again collapses it.
+                VStack(alignment: .leading, spacing: 0) {
+                    Button {
+                        toggleSelection(id: venue.id)
+                    } label: {
+                        venueRow(venue)
+                    }
+                    .buttonStyle(.plain)
+                    if venue.id == selectedID {
+                        detailBody(venue)
+                            .padding(.top, 10)
+                    }
                 }
-                .buttonStyle(.plain)
                 .listRowBackground(venue.id == selectedID ? NEColor.panel2 : NEColor.panel)
                 .listRowSeparatorTint(NEColor.line)
                 .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
@@ -510,6 +539,7 @@ struct ContentView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.clear)
+        .animation(.spring(response: 0.38, dampingFraction: 0.86), value: selectedID)
     }
 
     private func venueRow(_ venue: Venue) -> some View {
@@ -580,78 +610,86 @@ struct ContentView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Detail (modal sheet, from both states)
+    // MARK: - Detail (in place: map card morph + list inline expansion)
 
-    private func detailSheet(_ venue: Venue) -> some View {
-        VStack(spacing: 0) {
-            HStack {
-                Spacer()
+    /// The map's detail form: the bottom card itself becomes the
+    /// venue — name + close in the header row, the shared detail
+    /// body underneath. Same panel chrome as the summary card, so
+    /// the morph reads as one object changing, not a new layer.
+    private func detailCard(_ venue: Venue) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(alignment: .top, spacing: 8) {
+                Text(venue.name ?? "Unnamed")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(NEColor.ink)
+                    .lineLimit(2)
+                Spacer(minLength: 4)
                 Button {
-                    detailVenue = nil
+                    dismissDetail()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(NEColor.inkDim)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 28, height: 28)
                         .background(NEColor.panel2)
                         .clipShape(Circle())
                 }
             }
-            .padding(.horizontal, 18)
-            .padding(.top, 14)
-            .padding(.bottom, 4)
+            detailBody(venue)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(NEColor.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(NEColor.line, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 4)
+    }
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 7) {
-                    Text(venue.name ?? "Unnamed")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(NEColor.ink)
-                    detailMeta(venue)
-                    if venue.tableService == true {
-                        Text("Full service")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(NEColor.good)
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 4)
-                            .background(NEColor.panel2)
-                            .clipShape(Capsule())
-                            .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
-                    }
-                    if let cuisine = venue.cuisine {
-                        Text(cuisine)
-                            .font(.system(size: 14))
-                            .foregroundColor(NEColor.inkDim)
-                    }
-                    if let address = venue.address {
-                        Text(address)
-                            .font(.system(size: 14))
-                            .foregroundColor(NEColor.inkDim)
-                    }
-                    Text("\(Venue.formatDistance(venue.distanceMiles(from: store.center))) from map center")
-                        .font(.system(size: 13))
-                        .foregroundColor(NEColor.inkFaint)
+    /// Everything below the name, shared by the map's detail card
+    /// and the list's inline expansion: meta, pills, address,
+    /// actions, provenance.
+    private func detailBody(_ venue: Venue) -> some View {
+        VStack(alignment: .leading, spacing: 7) {
+            detailMeta(venue)
+            if venue.tableService == true {
+                Text("Full service")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(NEColor.good)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .background(NEColor.panel2)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
+            }
+            if let cuisine = venue.cuisine {
+                Text(cuisine)
+                    .font(.system(size: 14))
+                    .foregroundColor(NEColor.inkDim)
+            }
+            if let address = venue.address {
+                Text(address)
+                    .font(.system(size: 14))
+                    .foregroundColor(NEColor.inkDim)
+            }
+            Text("\(Venue.formatDistance(venue.distanceMiles(from: store.center))) from map center")
+                .font(.system(size: 13))
+                .foregroundColor(NEColor.inkFaint)
 
-                    HStack(spacing: 10) {
-                        callButton(venue)
-                        websiteButton(venue)
-                        directionsButton(venue)
-                    }
+            HStack(spacing: 10) {
+                callButton(venue)
+                websiteButton(venue)
+                directionsButton(venue)
+            }
+            .padding(.top, 8)
+
+            if let sourceLine = venue.sourceLine {
+                Text(sourceLine)
+                    .font(.system(size: 12))
+                    .foregroundColor(NEColor.inkFaint)
                     .padding(.top, 8)
-
-                    if let sourceLine = venue.sourceLine {
-                        Text(sourceLine)
-                            .font(.system(size: 12))
-                            .foregroundColor(NEColor.inkFaint)
-                            .padding(.top, 8)
-                    }
-                }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 26)
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(NEColor.panel)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func detailMeta(_ venue: Venue) -> some View {
@@ -712,26 +750,15 @@ struct ContentView: View {
 
     // MARK: - Actions
 
-    private func presentDetail(id: String) {
-        selectedID = id
-        detailVenue = store.venues.first { $0.id == id }
-    }
-
-    /// List-row tap (Croix, 2026-10-26): collapse back to the map
-    /// and snap it to the tapped venue at street zoom — where its
-    /// name label shows — then open the detail sheet over the
-    /// correctly-centered map, same as tapping its dot would.
-    private func presentFromList(id: String) {
-        if let venue = store.venues.first(where: { $0.id == id }),
-           let coordinate = venue.coordinate {
-            mode = .map
-            requestCenter(coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-        }
-        presentDetail(id: id)
+    /// One selection gesture everywhere (build 10): tap a dot, a
+    /// label, or a list row to select; tap the same one again to
+    /// let it go. The detail renders in place on whichever surface
+    /// you're looking at.
+    private func toggleSelection(id: String) {
+        selectedID = (selectedID == id) ? nil : id
     }
 
     private func dismissDetail() {
-        detailVenue = nil
         selectedID = nil
     }
 
@@ -754,8 +781,8 @@ struct ContentView: View {
     /// permission prompt as part of this attempt (iOS asks once, then
     /// remembers the decision); denied/restricted falls back to the
     /// home region quietly — Near-me is where that case gets explained.
-    /// Runs once per process: a later .onAppear (e.g. after a sheet
-    /// dismisses) must never yank the map back.
+    /// Runs once per process: a later .onAppear must never yank
+    /// the map back to the user unasked.
     private func launchLocate() {
         guard !didLaunchLocate else { return }
         didLaunchLocate = true

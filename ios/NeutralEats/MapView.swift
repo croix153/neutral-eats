@@ -65,20 +65,12 @@ struct VenueMapView: UIViewRepresentable {
         var venueID: String = ""
     }
 
-    /// Name label shown above a venue's dot at street zoom (web
-    /// parity: the preview labels venues at zoom ≥ 17). A separate
-    /// annotation so it can appear/disappear with zoom without
-    /// touching the dot layer.
-    final class LabelAnnotation: MKPointAnnotation {
-        var venueID: String = ""
-    }
-
     final class Coordinator: NSObject, MKMapViewDelegate {
         var parent: VenueMapView?
         var lastCenterNonce: Int = 0
         private var annotationsByID: [String: VenueAnnotation] = [:]
-        private var labelAnnotationsByID: [String: LabelAnnotation] = [:]
-        private var labelMode: NEThemeMode?
+        private var venuesByID: [String: Venue] = [:]
+        private var labeledIDs: Set<String> = []
 
         /// Street-zoom threshold for name labels, matched to the
         /// web's zoom ≥ 17 (a latitude span of ~0.0085 at this
@@ -93,6 +85,12 @@ struct VenueMapView: UIViewRepresentable {
             for venue in venues where venue.isMappable {
                 if incoming[venue.id] == nil { incoming[venue.id] = venue }
             }
+            venuesByID = incoming
+            // Labels are decided BEFORE any view work: viewFor (fired
+            // by addAnnotation below) reads labeledIDs to dress new
+            // annotations correctly on their first appearance.
+            labeledIDs = Coordinator.computeLabeledIDs(
+                region: mapView.region, venues: Array(incoming.values))
             // Remove annotations whose venues left the result set.
             for (id, annotation) in annotationsByID where incoming[id] == nil {
                 mapView.removeAnnotation(annotation)
@@ -111,126 +109,83 @@ struct VenueMapView: UIViewRepresentable {
                     mapView.addAnnotation(annotation)
                 }
             }
-            // Selection is drawn by swapping the dot image.
+            // Existing views get the current dress: selection swaps
+            // the dot image; the label set swaps in/out the combined
+            // dot+name image.
             for (id, annotation) in annotationsByID {
                 if let view = mapView.view(for: annotation) {
-                    view.image = DotImages.image(selected: id == selectedID)
-                }
-            }
-            reconcileLabels(on: mapView, venues: venues, selectedID: selectedID)
-        }
-
-        /// Labels exist only at street zoom, for the nearest venues
-        /// to the map center. Reconciled on every sync and every
-        /// region settle; a theme flip rebuilds them (their colors
-        /// are baked into the views).
-        func reconcileLabels(on mapView: MKMapView, venues: [Venue], selectedID: String?) {
-            if labelMode != NEColor.mode {
-                labelMode = NEColor.mode
-                for (_, annotation) in labelAnnotationsByID {
-                    mapView.removeAnnotation(annotation)
-                }
-                labelAnnotationsByID = [:]
-            }
-            var targetIDs = Set<String>()
-            if mapView.region.span.latitudeDelta <= Coordinator.labelMaxSpan {
-                let center = CLLocation(latitude: mapView.region.center.latitude,
-                                         longitude: mapView.region.center.longitude)
-                let named = venues.filter { $0.isMappable && !($0.name ?? "").isEmpty }
-                let nearest = named.sorted { a, b in
-                    let da = CLLocation(latitude: a.lat!, longitude: a.lng!).distance(from: center)
-                    let db = CLLocation(latitude: b.lat!, longitude: b.lng!).distance(from: center)
-                    return da < db
-                }.prefix(Coordinator.labelCap)
-                for venue in nearest { targetIDs.insert(venue.id) }
-            }
-            for (id, annotation) in labelAnnotationsByID where !targetIDs.contains(id) {
-                mapView.removeAnnotation(annotation)
-                labelAnnotationsByID[id] = nil
-            }
-            for venue in venues where targetIDs.contains(venue.id) && labelAnnotationsByID[venue.id] == nil {
-                let annotation = LabelAnnotation()
-                annotation.venueID = venue.id
-                annotation.coordinate = venue.coordinate!
-                annotation.title = venue.name
-                labelAnnotationsByID[venue.id] = annotation
-                mapView.addAnnotation(annotation)
-            }
-            // The selected venue's label wears the accent color.
-            for (id, annotation) in labelAnnotationsByID {
-                if let view = mapView.view(for: annotation),
-                   let label = view.subviews.first as? UILabel {
-                    label.textColor = Coordinator.labelTextColor(selected: id == selectedID)
+                    applyAppearance(view, venueID: id, selectedID: selectedID)
                 }
             }
         }
 
-        static func labelTextColor(selected: Bool) -> UIColor {
-            if NEColor.mode == .day {
-                return selected
-                    ? UIColor(red: 0xD9 / 255.0, green: 0x2C / 255.0, blue: 0x57 / 255.0, alpha: 1.0)
-                    : UIColor(red: 0x16 / 255.0, green: 0x1C / 255.0, blue: 0x33 / 255.0, alpha: 1.0)
+        /// Street-zoom labels: the nearest venues to the map center,
+        /// capped, named only. Empty set whenever the span is wider
+        /// than street level — labels simply don't exist there.
+        static func computeLabeledIDs(region: MKCoordinateRegion, venues: [Venue]) -> Set<String> {
+            guard region.span.latitudeDelta <= labelMaxSpan else { return [] }
+            let center = CLLocation(latitude: region.center.latitude,
+                                    longitude: region.center.longitude)
+            let named = venues.filter { !($0.name ?? "").isEmpty }
+            let nearest = named.sorted { a, b in
+                let da = CLLocation(latitude: a.lat!, longitude: a.lng!).distance(from: center)
+                let db = CLLocation(latitude: b.lat!, longitude: b.lng!).distance(from: center)
+                return da < db
+            }.prefix(labelCap)
+            return Set(nearest.map { $0.id })
+        }
+
+        /// One annotation, one image — labels are RENDERED INTO the
+        /// annotation image (build 10). Build 9 shipped labels as a
+        /// second annotation carrying a UILabel subview, and on
+        /// device they never appeared: a view with no image of its
+        /// own is at the mercy of MapKit's collision and layout
+        /// handling for annotation views. A single combined image
+        /// has no second view to lose — if the dot renders, the
+        /// label renders, because they're the same pixels. Labeled
+        /// views get .required display priority so the collision
+        /// system never hides one (the web lets labels overlap too);
+        /// plain dots keep the default.
+        func applyAppearance(_ view: MKAnnotationView, venueID: String, selectedID: String?) {
+            let selected = venueID == selectedID
+            if labeledIDs.contains(venueID), let venue = venuesByID[venueID] {
+                let rendered = LabelImages.image(venue: venue, selected: selected)
+                view.image = rendered.image
+                view.centerOffset = CGPoint(x: 0, y: rendered.centerOffsetY)
+                view.displayPriority = .required
+            } else {
+                view.image = DotImages.image(selected: selected)
+                view.centerOffset = .zero
+                view.displayPriority = .defaultHigh
             }
-            return selected
-                ? UIColor(red: 1.0, green: 0x4D / 255.0, blue: 0x7E / 255.0, alpha: 1.0)
-                : UIColor(red: 0xEE / 255.0, green: 0xF1 / 255.0, blue: 1.0, alpha: 1.0)
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation { return nil }
-            if let labelAnnotation = annotation as? LabelAnnotation {
-                let reuseID = "venue-label"
-                let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
-                    ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
-                view.annotation = annotation
-                view.canShowCallout = false
-                view.displayPriority = .defaultLow
-                for sub in view.subviews { sub.removeFromSuperview() }
-                let label = UILabel()
-                label.text = labelAnnotation.title
-                label.font = .systemFont(ofSize: 11, weight: .semibold)
-                label.textColor = Coordinator.labelTextColor(
-                    selected: labelAnnotation.venueID == parent?.selectedID)
-                label.shadowColor = NEColor.mode == .day ? UIColor.white : UIColor.black
-                label.shadowOffset = CGSize(width: 0, height: 1)
-                label.sizeToFit()
-                view.addSubview(label)
-                view.frame = CGRect(origin: .zero,
-                                    size: CGSize(width: label.frame.width + 4,
-                                                 height: label.frame.height + 2))
-                label.center = CGPoint(x: view.frame.width / 2, y: view.frame.height / 2)
-                view.centerOffset = CGPoint(x: 0, y: -16)
-                return view
-            }
             guard let venueAnnotation = annotation as? VenueAnnotation else { return nil }
             let reuseID = "venue-dot"
             let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
                 ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
             view.annotation = annotation
-            view.image = DotImages.image(selected: venueAnnotation.venueID == parent?.selectedID)
-            view.centerOffset = .zero
             view.canShowCallout = false
+            applyAppearance(view, venueID: venueAnnotation.venueID, selectedID: parent?.selectedID)
             return view
         }
 
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-            let venueID: String?
-            if let venueAnnotation = view.annotation as? VenueAnnotation {
-                venueID = venueAnnotation.venueID
-            } else if let labelAnnotation = view.annotation as? LabelAnnotation {
-                venueID = labelAnnotation.venueID
-            } else {
-                venueID = nil
-            }
-            guard let venueID = venueID, let annotation = view.annotation else { return }
-            mapView.deselectAnnotation(annotation, animated: false)
-            parent?.onSelectVenue(venueID)
+            guard let venueAnnotation = view.annotation as? VenueAnnotation else { return }
+            mapView.deselectAnnotation(venueAnnotation, animated: false)
+            parent?.onSelectVenue(venueAnnotation.venueID)
         }
 
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             parent?.onRegionSettled(mapView.region)
+            // Zoom settles change the label set even when SwiftUI
+            // doesn't re-render (the venue fetch is debounced and
+            // may keep the same results) — re-sync against the
+            // parent's current inputs so labels track the span.
             if let parent = parent {
-                reconcileLabels(on: mapView, venues: parent.venues, selectedID: parent.selectedID)
+                syncAnnotations(on: mapView, venues: parent.venues, selectedID: parent.selectedID)
             }
         }
     }
@@ -286,5 +241,77 @@ enum DotImages {
             path.fill()
             path.stroke()
         }
+    }
+}
+
+/// Combined dot + name images for street-zoom labels (build 10 —
+/// see the Coordinator's applyAppearance note for why labels are
+/// pixels now, not views). Text wears a halo in the opposite theme
+/// color, mirroring the web's label styling; the selected venue's
+/// name is accent-colored. Cached per venue/selection/theme; the
+/// cache clears on a theme flip and self-caps.
+enum LabelImages {
+    private struct Key: Hashable {
+        var id: String
+        var selected: Bool
+        var mode: NEThemeMode
+    }
+
+    private static var cache: [Key: (image: UIImage, centerOffsetY: CGFloat)] = [:]
+    private static var cachedMode: NEThemeMode?
+
+    static func image(venue: Venue, selected: Bool) -> (image: UIImage, centerOffsetY: CGFloat) {
+        if cachedMode != NEColor.mode {
+            cachedMode = NEColor.mode
+            cache = [:]
+        }
+        let key = Key(id: venue.id, selected: selected, mode: NEColor.mode)
+        if let hit = cache[key] { return hit }
+        let rendered = render(venue: venue, selected: selected)
+        if cache.count > 240 { cache = [:] }
+        cache[key] = rendered
+        return rendered
+    }
+
+    private static func hex(_ value: UInt32) -> UIColor {
+        UIColor(red: CGFloat((value >> 16) & 0xFF) / 255.0,
+                green: CGFloat((value >> 8) & 0xFF) / 255.0,
+                blue: CGFloat(value & 0xFF) / 255.0,
+                alpha: 1.0)
+    }
+
+    private static func render(venue: Venue, selected: Bool) -> (image: UIImage, centerOffsetY: CGFloat) {
+        let name = venue.name ?? "Unnamed"
+        let day = NEColor.mode == .day
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 11, weight: .semibold),
+            .foregroundColor: selected
+                ? hex(day ? 0xD92C57 : 0xFF4D7E)
+                : hex(day ? 0x161C33 : 0xEEF1FF),
+            .strokeColor: day ? UIColor.white : hex(0x070912),
+            .strokeWidth: -3.5,
+        ]
+        let textSize = (name as NSString).size(withAttributes: attributes)
+        let dot = DotImages.image(selected: selected)
+        let gap: CGFloat = 3
+        let width = max(ceil(textSize.width) + 6, dot.size.width)
+        let textHeight = ceil(textSize.height)
+        let height = textHeight + gap + dot.size.height
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 3
+        format.opaque = false
+        let image = UIGraphicsImageRenderer(size: CGSize(width: width, height: height),
+                                            format: format).image { _ in
+            (name as NSString).draw(
+                at: CGPoint(x: (width - textSize.width) / 2, y: 0),
+                withAttributes: attributes)
+            dot.draw(at: CGPoint(x: (width - dot.size.width) / 2, y: textHeight + gap))
+        }
+        // The view's center lands on the coordinate; the dot sits
+        // below the image's middle, so shift the view up by the
+        // difference to put the DOT — not the label block — on the
+        // venue's exact spot.
+        let dotCenterY = textHeight + gap + dot.size.height / 2
+        return (image, height / 2 - dotCenterY)
     }
 }
