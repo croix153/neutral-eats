@@ -158,6 +158,17 @@
   .capnote{margin-top:4px;font-size:12px;color:var(--accent);display:none}
   .capnote.show{display:block}
   #list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto}
+  /* Dark scrollbars for the dark UI (Croix, 2026-10-26): the default
+     light OS scrollbar read as a bright stripe down the panel.
+     color-scheme covers native rendering; the explicit rules cover
+     the list and detail scrollers in WebKit/Blink and Firefox. */
+  :root{color-scheme:dark}
+  #list,#detail{scrollbar-width:thin;scrollbar-color:#2b3560 transparent}
+  #list::-webkit-scrollbar,#detail::-webkit-scrollbar{width:10px}
+  #list::-webkit-scrollbar-track,#detail::-webkit-scrollbar-track{background:transparent}
+  #list::-webkit-scrollbar-thumb,#detail::-webkit-scrollbar-thumb{
+    background:#2b3560;border-radius:6px;border:2px solid var(--panel)}
+  #list::-webkit-scrollbar-thumb:hover,#detail::-webkit-scrollbar-thumb:hover{background:#3d4a82}
   .venue{
     display:flex;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);
     cursor:pointer;align-items:flex-start;
