@@ -72,6 +72,23 @@ via the ASC API:
 - **App record**: "neutral eats", app `6827198241`, bundle
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (6)** — Map-state bottom-fill fix (commit `13211cb`):
+  Croix's build-5 verdict was "much better", but in Map state the
+  map stopped at the bottom safe-area boundary, leaving a dead
+  black band under the "places near this spot" card (the list
+  layer had `.ignoresSafeArea(edges: .bottom)`; the map layer
+  never did). `VenueMapView` now ignores the bottom safe area so
+  the map runs full-bleed to the physical screen bottom, and the
+  card — still in the safe-area-aware layout — sits at safe-area
+  inset + 12pt, just above the home indicator. Uploaded by
+  workflow run
+  [40365103128](https://github.com/croix153/neutral-eats/actions/runs/40365103128),
+  all steps green; upload log *"UPLOAD SUCCEEDED with no errors"*,
+  delivery UUID `c05286fa-9907-461d-a41d-2c926e2c2636` (the build's
+  ASC id), arriving already VALID; `usesNonExemptEncryption=false`
+  declared via API; attached to Internal Testers;
+  `internalBuildState = IN_BETA_TESTING` (API-verified). On-device
+  confirmation of the fill is Croix's test.
 - **Build 1.0 (5)** — the two-state Map/List redesign (commit
   `bbdb700`): uploaded by workflow run
   [40361504905](https://github.com/croix153/neutral-eats/actions/runs/40361504905),
