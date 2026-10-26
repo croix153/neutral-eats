@@ -25,6 +25,56 @@
     --good:#38e1ff;
     --radius:16px;
     --safe-b:env(safe-area-inset-bottom,0px);
+    /* Theme-derived values (night). The day block below overrides the
+       whole set; every hard-coded color in this stylesheet routes
+       through one of these so a theme swap leaves nothing behind. */
+    --good-rgb:56,225,255;
+    --headerfade:13,10,8;
+    --attr-bg:rgba(20,16,13,.75);
+    --attr-ink:#6f6455;
+    --attr-link:#6d78a0;
+    --focus:rgba(255,160,40,.55);
+    --sheet-shadow:rgba(0,0,0,.5);
+    --handle:rgba(163,174,214,.35);
+    --scroll:#2b3560;
+    --scroll-hover:#3d4a82;
+    --label-ink:#eef1ff;
+    --label-halo:13,10,8;
+    --toast-bg:#000;
+    --toast-ink:#eef1ff;
+  }
+  /* Daytime Tokyo (Croix, 2026-10-26): same brand, daylight. Accent is
+     deepened past the target #e0335f to #d92c57 — #e0335f measures
+     4.37:1 on white, under the 4.5:1 small-text floor for the pink
+     distance labels and creed; #d92c57 measures 4.72:1. --good #0b7ea4
+     measures 4.66:1 on white. */
+  html[data-theme="day"]{
+    --bg:#e8ecf7;
+    --panel:#ffffff;
+    --panel-solid:#ffffff;
+    --panel-2:#eef1fa;
+    --line:rgba(30,40,90,.14);
+    --ink:#161c33;
+    --ink-dim:#4c5878;
+    --ink-faint:#8590b0;
+    --accent:#d92c57;
+    --accent-ink:#ffffff;
+    --good:#0b7ea4;
+    --good-rgb:11,126,164;
+    --headerfade:232,236,247;
+    --attr-bg:rgba(255,255,255,.78);
+    --attr-ink:#8590b0;
+    --attr-link:#4c5878;
+    --focus:rgba(217,44,87,.45);
+    --sheet-shadow:rgba(22,28,51,.18);
+    --handle:rgba(76,88,120,.35);
+    --scroll:#c3cde6;
+    --scroll-hover:#a9b8dc;
+    --label-ink:#161c33;
+    --label-halo:255,255,255;
+    --toast-bg:#161c33;
+    --toast-ink:#f4f6ff;
+    color-scheme:light;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
@@ -34,13 +84,13 @@
     overflow:hidden;
     -webkit-font-smoothing:antialiased;
   }
-  #map{position:absolute;inset:0;background:#0d0b09;z-index:0}
+  #map{position:absolute;inset:0;background:var(--bg);z-index:0}
   .leaflet-container{font:inherit}
   .leaflet-control-attribution{
-    background:rgba(20,16,13,.75)!important;color:#6f6455!important;
+    background:var(--attr-bg)!important;color:var(--attr-ink)!important;
     font-size:9px!important;padding:1px 5px;
   }
-  .leaflet-control-attribution a{color:#6d78a0!important}
+  .leaflet-control-attribution a{color:var(--attr-link)!important}
   .leaflet-bar a{
     background:var(--panel-solid);color:var(--ink);border-color:var(--line);
     width:34px;height:34px;line-height:34px;
@@ -51,7 +101,7 @@
   header{
     position:absolute;top:0;left:0;right:0;z-index:600;
     padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px;
-    background:linear-gradient(180deg,rgba(13,10,8,.92) 0%,rgba(13,10,8,.78) 70%,rgba(13,10,8,0) 100%);
+    background:linear-gradient(180deg,rgba(var(--headerfade),.92) 0%,rgba(var(--headerfade),.78) 70%,rgba(var(--headerfade),0) 100%);
     pointer-events:none;
   }
   .brandrow{display:flex;align-items:flex-start;gap:10px;pointer-events:none}
@@ -76,6 +126,20 @@
   }
   .locatebtn:active{transform:scale(.97)}
   .locatebtn svg{width:15px;height:15px;fill:var(--accent)}
+  /* Day/night toggle: icon-only, panel-styled like Near-me. The icon
+     shown is the mode a tap switches TO (sun at night, moon by day). */
+  .themebtn{
+    pointer-events:auto;flex:0 0 auto;
+    width:38px;height:38px;border-radius:999px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    backdrop-filter:blur(8px);cursor:pointer;
+  }
+  .themebtn:active{transform:scale(.95)}
+  .themebtn svg{width:17px;height:17px;fill:var(--accent)}
+  .themebtn .ic-moon{display:none}
+  html[data-theme="day"] .themebtn .ic-sun{display:none}
+  html[data-theme="day"] .themebtn .ic-moon{display:block}
   .searchrow{margin-top:10px;pointer-events:auto;position:relative}
   .searchrow input{
     width:100%;appearance:none;border:1px solid var(--line);
@@ -85,7 +149,7 @@
     outline:none;
   }
   .searchrow input::placeholder{color:var(--ink-faint)}
-  .searchrow input:focus{border-color:rgba(255,160,40,.55)}
+  .searchrow input:focus{border-color:var(--focus)}
   .searchrow .mag{
     position:absolute;left:14px;top:50%;transform:translateY(-50%);
     width:16px;height:16px;fill:var(--ink-faint);pointer-events:none;
@@ -136,13 +200,13 @@
     display:flex;flex-direction:column;
     padding-bottom:var(--safe-b);
     transition:transform .28s ease;
-    box-shadow:0 -12px 40px rgba(0,0,0,.5);
+    box-shadow:0 -12px 40px var(--sheet-shadow);
   }
   #sheet.dragging{transition:none}
   #sheet .handle{
     padding:9px 0 4px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:0 0 auto;
   }
-  #sheet .handle i{width:44px;height:5px;border-radius:3px;background:rgba(163,174,214,.35)}
+  #sheet .handle i{width:44px;height:5px;border-radius:3px;background:var(--handle)}
   #sheet .handle{position:relative}
   #sheetChevron{
     position:absolute;right:18px;top:50%;transform:translateY(-50%);
@@ -161,17 +225,18 @@
   .capnote{margin-top:4px;font-size:12px;color:var(--accent);display:none}
   .capnote.show{display:block}
   #list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto}
-  /* Dark scrollbars for the dark UI (Croix, 2026-10-26): the default
-     light OS scrollbar read as a bright stripe down the panel.
-     color-scheme covers native rendering; the explicit rules cover
-     the list and detail scrollers in WebKit/Blink and Firefox. */
+  /* Themed scrollbars (Croix, 2026-10-26): the default light OS
+     scrollbar read as a bright stripe down the night panel, so the
+     thumb colors ride the theme variables and color-scheme flips
+     with the theme. The explicit rules cover the list and detail
+     scrollers in WebKit/Blink and Firefox. */
   :root{color-scheme:dark}
-  #list,#detail{scrollbar-width:thin;scrollbar-color:#2b3560 transparent}
+  #list,#detail{scrollbar-width:thin;scrollbar-color:var(--scroll) transparent}
   #list::-webkit-scrollbar,#detail::-webkit-scrollbar{width:10px}
   #list::-webkit-scrollbar-track,#detail::-webkit-scrollbar-track{background:transparent}
   #list::-webkit-scrollbar-thumb,#detail::-webkit-scrollbar-thumb{
-    background:#2b3560;border-radius:6px;border:2px solid var(--panel)}
-  #list::-webkit-scrollbar-thumb:hover,#detail::-webkit-scrollbar-thumb:hover{background:#3d4a82}
+    background:var(--scroll);border-radius:6px;border:2px solid var(--panel)}
+  #list::-webkit-scrollbar-thumb:hover,#detail::-webkit-scrollbar-thumb:hover{background:var(--scroll-hover)}
   .venue{
     display:flex;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);
     cursor:pointer;align-items:flex-start;
@@ -193,9 +258,9 @@
   }
 
   /* ---------- venue name labels (zoom >= 17; mirrors production) ----------
-     Production neutraleats2.html shows bare-text labels over its bright
-     tiles in slate with a dark halo. Here the text flips to warm cream with
-     the same dark halo so names read over the dark Esri basemap. */
+     Bare-text labels over the basemap; ink and halo ride the theme
+     (cream on a dark halo at night, dark slate on a white halo by day)
+     so names read over either basemap. */
   .venue-label-container{
     display:flex !important;
     align-items:flex-end;
@@ -203,17 +268,17 @@
     padding-bottom:8px;
   }
   .venue-label{
-    color:#eef1ff;
+    color:var(--label-ink);
     font-size:10.5px;
     font-weight:600;
     white-space:nowrap;
     pointer-events:none;
     text-shadow:
-      -1px -1px 0 rgba(13,10,8,.95),
-       1px -1px 0 rgba(13,10,8,.95),
-      -1px  1px 0 rgba(13,10,8,.95),
-       1px  1px 0 rgba(13,10,8,.95),
-       0 1px 4px rgba(0,0,0,.9);
+      -1px -1px 0 rgba(var(--label-halo),.95),
+       1px -1px 0 rgba(var(--label-halo),.95),
+      -1px  1px 0 rgba(var(--label-halo),.95),
+       1px  1px 0 rgba(var(--label-halo),.95),
+       0 1px 4px rgba(var(--label-halo),.9);
     letter-spacing:.2px;
     transition:opacity .2s ease;
     text-align:center;
@@ -254,7 +319,7 @@
 
   #toast{
     position:absolute;left:50%;bottom:calc(46vh + 14px);transform:translateX(-50%) translateY(8px);
-    z-index:800;background:#000;color:var(--ink);border:1px solid var(--line);
+    z-index:800;background:var(--toast-bg);color:var(--toast-ink);border:1px solid var(--line);
     padding:10px 16px;border-radius:999px;font-size:13.5px;opacity:0;pointer-events:none;
     transition:opacity .25s,transform .25s;max-width:88vw;text-align:center;
   }
@@ -265,19 +330,19 @@
   .userloc-halo{
     position:absolute;left:50%;top:50%;width:24px;height:24px;border-radius:50%;
     transform:translate(-50%,-50%);
-    background:rgba(56,225,255,.30);
+    background:rgba(var(--good-rgb),.30);
     animation:userloc-pulse 2.2s ease-out infinite;
   }
   .userloc-dot{
     position:absolute;left:50%;top:50%;width:13px;height:13px;border-radius:50%;
     transform:translate(-50%,-50%);
-    background:#38e1ff;border:2.5px solid #fff;
+    background:var(--good);border:2.5px solid #fff;
     box-shadow:0 0 0 1px rgba(7,9,18,.45),0 1px 6px rgba(0,0,0,.5);
   }
   @keyframes userloc-pulse{
-    0%{box-shadow:0 0 0 0 rgba(56,225,255,.45)}
-    70%{box-shadow:0 0 0 17px rgba(56,225,255,0)}
-    100%{box-shadow:0 0 0 0 rgba(56,225,255,0)}
+    0%{box-shadow:0 0 0 0 rgba(var(--good-rgb),.45)}
+    70%{box-shadow:0 0 0 17px rgba(var(--good-rgb),0)}
+    100%{box-shadow:0 0 0 0 rgba(var(--good-rgb),0)}
   }
 
   /* ---------- desktop: side panel ---------- */
@@ -293,6 +358,19 @@
     #toast{bottom:26px}
   }
 </style>
+<script>
+  // Theme boot, before first paint: stored choice ("ne-theme") wins,
+  // then the OS preference, then night — the signature look. The main
+  // script reads the attribute back; the toggle rewrites both.
+  (function(){
+    var t = null;
+    try { t = localStorage.getItem('ne-theme'); } catch(e) {}
+    if(t !== 'day' && t !== 'night'){
+      t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'day' : 'night';
+    }
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 </head>
 <body>
 
@@ -308,6 +386,10 @@
     <button class="locatebtn" id="locateBtn" type="button" aria-label="Center on my location">
       <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>
       Near me
+    </button>
+    <button class="themebtn" id="themeBtn" type="button" aria-label="Switch day / night theme">
+      <svg class="ic-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(45 12 12)"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(90 12 12)"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(135 12 12)"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(180 12 12)"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(225 12 12)"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(270 12 12)"/><rect x="11.2" y="1.4" width="1.6" height="3.4" rx="0.8" transform="rotate(315 12 12)"/></svg>
+      <svg class="ic-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
     </button>
   </div>
   <div class="searchrow">
@@ -443,6 +525,41 @@
     toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
   }
 
+  /* ================= theme (day / night) =================
+     The boot script in <head> already set <html data-theme> from
+     localStorage ("ne-theme") -> OS preference -> night (the signature
+     look). THEME is the live value; setTheme() (controls, below) swaps
+     it everywhere at once: the CSS variables follow the attribute, the
+     basemap restyles to STYLE_URL (or the theme's Esri pair when GL is
+     down), and the canvas dots — raw hex, no CSS — restyle in place. */
+  var THEME = document.documentElement.getAttribute('data-theme') === 'day' ? 'day' : 'night';
+  var STYLE_URL = { night: './tokyo-style.json', day: './tokyo-style-day.json' };
+  var GL_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openfreemap.org/">OpenFreeMap</a>';
+  var ESRI_ATTR = 'Tiles &copy; Esri &mdash; Source: Esri, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community';
+  var ESRI_PAIRS = {
+    night: ['Canvas/World_Dark_Gray_Base', 'Canvas/World_Dark_Gray_Reference'],
+    day:   ['Canvas/World_Light_Gray_Base', 'Canvas/World_Light_Gray_Reference']
+  };
+  // Canvas dot styles per theme. Night: sakura fill with a near-black
+  // edge on the dark map, cyan when selected. Day: the fill deepens to
+  // the day accent with a white pin edge on the bright map, and the
+  // selected dot takes the deepened day cyan.
+  var DOTS = {
+    night: {
+      dot:    { radius:6, weight:1.5, color:'#070912', fillColor:'#ff4d7e', fillOpacity:.95 },
+      active: { radius:9, weight:2,   color:'#ffffff', fillColor:'#38e1ff', fillOpacity:1 }
+    },
+    day: {
+      dot:    { radius:6, weight:1.5, color:'#ffffff', fillColor:'#d92c57', fillOpacity:.95 },
+      active: { radius:9, weight:2,   color:'#ffffff', fillColor:'#0b7ea4', fillOpacity:1 }
+    }
+  };
+  var GOOD_HEX = { night: '#38e1ff', day: '#0b7ea4' };
+  function dotStyle(){ return DOTS[THEME].dot; }
+  function styleFor(id){
+    return String(id) === String(selectedId) ? DOTS[THEME].active : DOTS[THEME].dot;
+  }
+
   /* ================= map ================= */
   // Canvas renderer + circle markers keep 500 results smooth (no DOM img per point).
   var canvasRenderer = L.canvas({ padding: 0.5 });
@@ -458,21 +575,34 @@
   // pair so the page is never mapless. (CARTO's CDN stamps its raster tiles
   // with an "API KEY REQUIRED" watermark — verified 2026-10-25 — and
   // production still uses the standard OSM raster style.)
+  // The fallback pair follows the theme too (dark gray canvas at
+  // night, light gray canvas by day) and is tracked so a theme toggle
+  // can swap it live.
+  var esriLayers = null;
   function addEsriFallback(){
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      maxNativeZoom: 16, maxZoom: 20,
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community'
-    }).addTo(map);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-      maxNativeZoom: 16, maxZoom: 20
-    }).addTo(map);
+    if(esriLayers) return;
+    var pair = ESRI_PAIRS[THEME];
+    var base = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+    esriLayers = [
+      L.tileLayer(base + pair[0] + '/MapServer/tile/{z}/{y}/{x}', {
+        maxNativeZoom: 16, maxZoom: 20, attribution: ESRI_ATTR
+      }).addTo(map),
+      L.tileLayer(base + pair[1] + '/MapServer/tile/{z}/{y}/{x}', {
+        maxNativeZoom: 16, maxZoom: 20
+      }).addTo(map)
+    ];
+  }
+  function removeEsriFallback(){
+    if(!esriLayers) return;
+    esriLayers.forEach(function(l){ map.removeLayer(l); });
+    esriLayers = null;
   }
   var glLayer = null;
   try {
     if(window.maplibregl && L.maplibreGL){
       glLayer = L.maplibreGL({
-        style: './tokyo-style.json',
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openfreemap.org/">OpenFreeMap</a>'
+        style: STYLE_URL[THEME],
+        attribution: GL_ATTR
       }).addTo(map);
     } else {
       addEsriFallback();
@@ -492,8 +622,7 @@
   var LABEL_ZOOM = 17;     // production's LABEL_ZOOM_THRESHOLD
   var LABEL_CAP = 120;
 
-  var DOT = { radius:6, weight:1.5, color:'#070912', fillColor:'#ff4d7e', fillOpacity:.95 };
-  var DOT_ACTIVE = { radius:9, weight:2, color:'#ffffff', fillColor:'#38e1ff', fillOpacity:1 };
+  // (Dot styles live in the theme block above: DOTS / styleFor.)
 
   /* ================= state + fetching ================= */
   var state = { filter:'all', search:'', venues:[], serverCount:0, loading:false };
@@ -624,7 +753,7 @@
     markers = {};
     state.venues.forEach(function(v){
       var m = L.circleMarker([parseFloat(v.lat), parseFloat(v.lng)],
-        String(v.id) === String(selectedId) ? DOT_ACTIVE : DOT, { renderer: canvasRenderer });
+        styleFor(v.id), { renderer: canvasRenderer });
       m.on('click', function(){ openDetail(v.id, false); });
       markers[v.id] = m;
       markerLayer.addLayer(m);
@@ -723,7 +852,7 @@
     selectedId = v.id;
     // restyle markers
     Object.keys(markers).forEach(function(k){
-      markers[k].setStyle(String(k) === String(selectedId) ? DOT_ACTIVE : DOT);
+      markers[k].setStyle(styleFor(k));
     });
     markSelectedLabel();
     var r = ratingOf(v), p = priceOf(v);
@@ -759,7 +888,7 @@
 
   function closeDetail(){
     selectedId = null;
-    Object.keys(markers).forEach(function(k){ markers[k].setStyle(DOT); });
+    Object.keys(markers).forEach(function(k){ markers[k].setStyle(dotStyle()); });
     markSelectedLabel();
     $('detail').classList.remove('open');
     $('listView').style.display = 'flex';
@@ -829,6 +958,40 @@
     }, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
   });
 
+  /* ================= theme toggle =================
+     One swap, everywhere: the attribute drives the CSS variables; the
+     GL basemap restyles in place (the venue dots/labels are Leaflet
+     overlays in another pane, so they ride through untouched — only
+     their colors, set in JS as raw hex, are reapplied after a swap);
+     the Esri fallback, when active, trades its pair. The choice
+     persists in localStorage as "ne-theme". */
+  function setTheme(t){
+    if(t === THEME) return;
+    THEME = t;
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('ne-theme', t); } catch(e) {}
+    if(glLayer){
+      var gl = null;
+      try { gl = glLayer.getMaplibreMap && glLayer.getMaplibreMap(); } catch(e) {}
+      if(gl){
+        gl.setStyle(STYLE_URL[t]);
+      } else {
+        // GL map not initialized yet: rebuild the layer on the new
+        // style rather than stranding the old one under the new UI.
+        map.removeLayer(glLayer);
+        glLayer = L.maplibreGL({ style: STYLE_URL[t], attribution: GL_ATTR }).addTo(map);
+      }
+    } else if(esriLayers){
+      removeEsriFallback();
+      addEsriFallback();
+    }
+    Object.keys(markers).forEach(function(k){ markers[k].setStyle(styleFor(k)); });
+    if(userAccuracy) userAccuracy.setStyle({ fillColor: GOOD_HEX[t] });
+  }
+  $('themeBtn').addEventListener('click', function(){
+    setTheme(THEME === 'day' ? 'night' : 'day');
+  });
+
   /* ================= your location =================
      Cyan dot + pulsing halo + accuracy ring. The dot is a divIcon in the
      marker pane (above the canvas venue dots), glued to its lat/lng by
@@ -854,7 +1017,7 @@
     if(accuracy && accuracy > 0){
       if(!userAccuracy){
         userAccuracy = L.circle(ll, {
-          interactive: false, stroke: false, fillColor: '#38e1ff', fillOpacity: 0.10
+          interactive: false, stroke: false, fillColor: GOOD_HEX[THEME], fillOpacity: 0.10
         }).addTo(map);
       } else {
         userAccuracy.setLatLng(ll);
