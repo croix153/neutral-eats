@@ -73,7 +73,11 @@ final class VenueStore: ObservableObject {
                     region: region, serverType: filter.serverType,
                     search: search.isEmpty ? nil : search)
                 guard !Task.isCancelled, seq == self.fetchSeq else { return }
-                var list = result.venues.filter { $0.isMappable }
+                // Rows without a real identity are dropped
+                // (adversarial review, build 10): flexible decoding
+                // turns a missing id into "", and several such rows
+                // would collide as one SwiftUI/annotation identity.
+                var list = result.venues.filter { $0.isMappable && !$0.id.isEmpty }
                 if let clientType = clientType {
                     list = list.filter { $0.type == clientType }
                 }
@@ -89,9 +93,15 @@ final class VenueStore: ObservableObject {
                     return
                 }
                 guard !Task.isCancelled, seq == self.fetchSeq else { return }
-                self.venues = []
-                self.serverCount = 0
-                self.loadFailed = true
+                // A transient failure must not destroy the last
+                // good result set (adversarial review, build 10):
+                // keep showing it — the next settle retries — and
+                // only surface the failure state when there's
+                // nothing on screen to lose.
+                if self.venues.isEmpty {
+                    self.serverCount = 0
+                    self.loadFailed = true
+                }
                 self.isLoading = false
             }
         }

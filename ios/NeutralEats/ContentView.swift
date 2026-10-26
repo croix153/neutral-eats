@@ -91,6 +91,24 @@ struct ContentView: View {
                 requestCenter(point.coordinate, span: nil)
             }
         }
+        .onChange(of: location.fixFailed) { failed in
+            // A failed one-shot disarms the pending centering
+            // (adversarial review, build 10) — otherwise a much
+            // later, unrelated fix could yank the map unexpectedly.
+            if failed { wantsCenter = false }
+        }
+        .onChange(of: theme.preference) { _ in
+            // Keep the NEColor global in step from an event handler,
+            // not only from body (adversarial review, build 10):
+            // MapKit callbacks read the global outside SwiftUI's
+            // render pass, and body evaluation order is not a
+            // contract. The body assignment stays as a belt to
+            // this suspenders.
+            NEColor.mode = theme.effective(system: systemScheme)
+        }
+        .onChange(of: systemScheme) { newScheme in
+            NEColor.mode = theme.effective(system: newScheme)
+        }
         .onChange(of: location.authorization) { status in
             if wantsCenter && (status == .authorizedWhenInUse || status == .authorizedAlways) {
                 location.requestOneShotLocation()
@@ -804,7 +822,11 @@ struct ContentView: View {
     private func nearMe() {
         switch location.authorization {
         case .authorizedWhenInUse, .authorizedAlways:
-            if let point = location.point {
+            // Only a FRESH fix counts as "me" (adversarial review,
+            // build 10): the launch fix from an hour and a suburb
+            // ago is not where the user is now.
+            if let point = location.point, let fixedAt = location.pointDate,
+               Date().timeIntervalSince(fixedAt) < 90 {
                 requestCenter(point.coordinate, span: nil)
             } else {
                 wantsCenter = true

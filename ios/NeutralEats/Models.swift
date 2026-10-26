@@ -32,8 +32,16 @@ struct Venue: Decodable, Identifiable {
     let website: String?
     let source: String?
 
+    /// Coordinates are validated, not just present (adversarial
+    /// review, build 10): a non-finite or out-of-range lat/lng is
+    /// poison — it yields NaN distances, which corrupt the sort
+    /// comparator and MapKit's behavior. Such rows are simply not
+    /// mappable and never reach the map or the distance sort.
     var coordinate: CLLocationCoordinate2D? {
-        guard let lat = lat, let lng = lng else { return nil }
+        guard let lat = lat, let lng = lng,
+              lat.isFinite, lng.isFinite,
+              (-90.0...90.0).contains(lat), (-180.0...180.0).contains(lng)
+        else { return nil }
         return CLLocationCoordinate2D(latitude: lat, longitude: lng)
     }
     var isMappable: Bool { return coordinate != nil }
@@ -184,10 +192,18 @@ struct Venue: Decodable, Identifiable {
 
     var directionsURL: URL? {
         guard let coord = coordinate else { return nil }
-        let place = ((name ?? "") + " " + (address ?? ""))
-            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        return URL(string: "https://www.google.com/maps/dir/?api=1&destination=" +
-            "\(coord.latitude),\(coord.longitude)&destination_place_name=\(place)")
+        // Built with URLComponents (adversarial review, build 10):
+        // the old hand-encoding used .urlQueryAllowed, which lets
+        // &, = and + through — a venue name containing them would
+        // corrupt the query. Query items encode delimiters properly.
+        var components = URLComponents(string: "https://www.google.com/maps/dir/")
+        components?.queryItems = [
+            URLQueryItem(name: "api", value: "1"),
+            URLQueryItem(name: "destination", value: "\(coord.latitude),\(coord.longitude)"),
+            URLQueryItem(name: "destination_place_name",
+                         value: ((name ?? "") + " " + (address ?? ""))),
+        ]
+        return components?.url
     }
 
     // MARK: Distance
