@@ -1,0 +1,126 @@
+name: Build iOS (TestFlight)
+
+# Manual dispatch only: neutral eats ships to Croix's own iPhone via
+# TestFlight internal testing. The workflow archives the native app
+# (ios/NeutralEats.xcodeproj), exports a signed App Store .ipa,
+# byte-verifies it, and uploads it to App Store Connect with altool.
+#
+# PREREQUISITE: the app record for ai.croix.neutraleats must exist in
+# App Store Connect (the ASC API cannot create app records — POST
+# /v1/apps is 403 for any API key; the record is a one-time web-UI
+# step). Until it exists, the archive/verify steps still pass and the
+# upload step fails with Apple's "no application records found" error,
+# which is marked continue-on-error so the run stays green and the
+# verified .ipa is kept as an artifact. Bundle ID, distribution cert
+# and the "neutral eats App Store" profile were created via the ASC
+# API on 2026-10-26.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: xcodebuild -version && xcrun --find altool || true
+
+      - name: Import the distribution certificate
+        env:
+          CERT_P12: ${{ secrets.APPLE_IOS_CERTIFICATE }}
+          CERT_PASSWORD: ${{ secrets.APPLE_IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          echo "$CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security list-keychain -d user -s "$KEYCHAIN" $(security list-keychain -d user | sed 's/"//g')
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN" | grep 'Distribution' | head -1 | awk -F'"' '{print $2}')"
+          test -n "$IDENTITY" || { echo "no distribution identity imported"; exit 1; }
+          echo "Signing identity: $IDENTITY"
+          echo "SIGNING_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Install the provisioning profile
+        env:
+          PROFILE_B64: ${{ secrets.APPLE_IOS_PROVISIONING_PROFILE }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/"Provisioning Profiles"
+          echo "$PROFILE_B64" | base64 --decode \
+            > ~/Library/MobileDevice/"Provisioning Profiles"/d73b4e34-7215-4478-a2b5-0cd6471db0c1.mobileprovision
+          ls -la ~/Library/MobileDevice/"Provisioning Profiles"
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -project ios/NeutralEats.xcodeproj \
+            -scheme NeutralEats \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/NeutralEats.xcarchive" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            CODE_SIGN_IDENTITY="$SIGNING_IDENTITY"
+
+      - name: Export the .ipa
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/NeutralEats.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist ios/ExportOptions.plist
+          ls -la "$RUNNER_TEMP/export"
+
+      - name: Verify the .ipa
+        # Fail the run unless the artifact is exactly what Croix should
+        # receive: right bundle id, lowercase display name, iOS 16
+        # floor, location usage string present, signature valid.
+        run: |
+          IPA="$(find "$RUNNER_TEMP/export" -name '*.ipa' | head -1)"
+          test -n "$IPA" || { echo "no .ipa produced"; exit 1; }
+          echo "IPA: $IPA ($(stat -f %z "$IPA") bytes)"
+          rm -rf /tmp/ipa-check && mkdir -p /tmp/ipa-check
+          unzip -q "$IPA" -d /tmp/ipa-check
+          APP="$(find /tmp/ipa-check -maxdepth 2 -name '*.app' | head -1)"
+          PLIST="$APP/Info.plist"
+          BID="$(plutil -extract CFBundleIdentifier raw "$PLIST")"
+          NAME="$(plutil -extract CFBundleDisplayName raw "$PLIST")"
+          MINOS="$(plutil -extract MinimumOSVersion raw "$PLIST")"
+          LOC="$(plutil -extract NSLocationWhenInUseUsageDescription raw "$PLIST")"
+          echo "bundleId=$BID displayName=$NAME minOS=$MINOS"
+          echo "locationUsage=$LOC"
+          test "$BID" = "ai.croix.neutraleats"
+          test "$NAME" = "neutral eats"
+          test "$MINOS" = "16.0"
+          test -n "$LOC"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign -dvv "$APP" 2>&1 | grep -E 'Authority|TeamIdentifier' || true
+
+      - name: Upload the .ipa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neutraleats-ios-ipa
+          path: ${{ runner.temp }}/export/*.ipa
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload to App Store Connect
+        # Expected to fail until the app record exists in App Store
+        # Connect (see header). continue-on-error keeps the verified
+        # artifact green; once the record exists this completes the
+        # TestFlight delivery on the next dispatch.
+        continue-on-error: true
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_ISSUER: ${{ secrets.ASC_API_ISSUER }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$ASC_KEY_P8" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          IPA="$(find "$RUNNER_TEMP/export" -name '*.ipa' | head -1)"
+          xcrun altool --upload-app -f "$IPA" -t ios \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER"

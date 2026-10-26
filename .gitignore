@@ -9,3 +9,7 @@ server/minerva/config/database.php
 *.pid
 sessions/
 __pycache__/
+# ios build artifacts
+ios/DerivedData/
+*.xcarchive
+xcuserdata/
