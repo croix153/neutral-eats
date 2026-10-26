@@ -2,10 +2,22 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-/// Main screen: dark map with venue dots, brand header + search +
-/// filter chips on top, and a three-stop bottom sheet (collapsed /
-/// peek / full) holding the distance-ranked list or the venue detail —
-/// the native mirror of web/preview.html.
+/// Main screen — two-state layout (redesigned 2026-10-26, replacing
+/// the three-stop bottom sheet that collided with the top UI and
+/// left a dead band at the bottom):
+///
+///   - A fixed, solid header stack: wordmark, search, filter chips,
+///     and the Map/List switch. Content never slides under it.
+///   - Below it, ONE content region with two states. Map state: the
+///     map fills the region, with one compact card (result count +
+///     nearest venue + Near-me) anchored to the region's bottom.
+///     List state: the distance-ranked list fills the entire region,
+///     edge to edge, down to the physical screen bottom.
+///   - Venue detail is a modal .sheet from both states.
+///
+/// The map layer stays in the hierarchy underneath the list layer,
+/// so switching states preserves the camera, the loaded venues, and
+/// every other piece of state — no refetch, no geometry negotiation.
 struct ContentView: View {
     @StateObject private var store = VenueStore()
     @StateObject private var location = LocationManager()
@@ -13,8 +25,8 @@ struct ContentView: View {
     @State private var filter: VenueFilter = .all
     @State private var searchText: String = ""
     @State private var selectedID: String? = nil
-    @State private var detent: SheetDetent = .peek
-    @State private var dragDelta: CGFloat = 0
+    @State private var detailVenue: Venue? = nil
+    @State private var mode: ContentMode = .map
     @State private var centerRequest: CenterRequest? = nil
     @State private var centerNonce: Int = 0
     @State private var wantsCenter: Bool = false
@@ -23,73 +35,46 @@ struct ContentView: View {
 
     @Environment(\.openURL) private var openURL
 
-    private var selectedVenue: Venue? {
-        guard let selectedID = selectedID else { return nil }
-        return store.venues.first { $0.id == selectedID }
+    private enum ContentMode {
+        case map, list
     }
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .bottom) {
-                VenueMapView(
-                    venues: store.venues,
-                    selectedID: selectedID,
-                    showsUserLocation: location.isAuthorized,
-                    centerRequest: centerRequest,
-                    onRegionSettled: { region in
-                        store.regionSettled(region, filter: filter, search: searchText)
-                    },
-                    onSelectVenue: { id in
-                        selectVenue(id: id, pan: false)
-                    }
-                )
-                .ignoresSafeArea()
-
-                // Thin loading bar across the very top (web parity).
-                if store.isLoading {
-                    VStack {
-                        Rectangle()
-                            .fill(NEColor.accent)
-                            .frame(height: 2)
-                        Spacer()
-                    }
-                    .ignoresSafeArea()
-                }
-
-                VStack {
-                    header
-                        .padding(.horizontal, 16)
-                        .padding(.top, geo.safeAreaInsets.top + 6)
-                    Spacer()
-                }
-
-                sheet(geo: geo)
-
-                if let toastMessage = toastMessage {
-                    Text(toastMessage)
-                        .font(.system(size: 13.5, weight: .medium))
-                        .foregroundColor(NEColor.ink)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 9)
-                        .background(NEColor.panel2)
-                        .clipShape(Capsule())
-                        .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
-                        .padding(.bottom, sheetHeight(geo: geo) + 14)
-                        .transition(.opacity)
-                }
-            }
-            .background(NEColor.bg)
+        VStack(spacing: 0) {
+            header
+            contentRegion
         }
+        .background(NEColor.bg)
         .preferredColorScheme(.dark)
+        .overlay(alignment: .bottom) {
+            if let toastMessage = toastMessage {
+                Text(toastMessage)
+                    .font(.system(size: 13.5, weight: .medium))
+                    .foregroundColor(NEColor.ink)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .background(NEColor.panel2)
+                    .clipShape(Capsule())
+                    .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 14)
+                    .transition(.opacity)
+            }
+        }
+        .sheet(item: $detailVenue) { venue in
+            detailSheet(venue)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
         .onAppear {
             store.regionSettled(kHomeRegion, filter: filter, search: searchText)
         }
         .onChange(of: filter) { newFilter in
-            closeDetail()
+            dismissDetail()
             store.reload(filter: newFilter, search: searchText, debounced: false)
         }
         .onChange(of: searchText) { newSearch in
-            closeDetail()
+            dismissDetail()
             store.reload(filter: filter, search: newSearch, debounced: true)
         }
         .onChange(of: location.point) { point in
@@ -105,46 +90,26 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Header
+    // MARK: - Header (fixed, solid — content never goes under it)
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 0) {
-                        Text("neutral eats")
-                            .font(.system(size: 29, weight: .bold, design: .serif))
-                            .foregroundColor(NEColor.ink)
-                        Text(".")
-                            .font(.system(size: 29, weight: .bold, design: .serif))
-                            .foregroundColor(NEColor.accent)
-                    }
-                    HStack(spacing: 0) {
-                        Text("No ads. ")
-                        Text("No bias.").foregroundColor(NEColor.inkDim)
-                        Text(" Just food.")
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(NEColor.ink)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 0) {
+                    Text("neutral eats")
+                        .font(.system(size: 29, weight: .bold, design: .serif))
+                        .foregroundColor(NEColor.ink)
+                    Text(".")
+                        .font(.system(size: 29, weight: .bold, design: .serif))
+                        .foregroundColor(NEColor.accent)
                 }
-                .shadow(color: Color.black.opacity(0.65), radius: 4, x: 0, y: 1)
-
-                Spacer()
-
-                Button(action: nearMe) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "location.fill")
-                            .font(.system(size: 13))
-                        Text("Near me")
-                            .font(.system(size: 14, weight: .semibold))
-                    }
-                    .foregroundColor(location.isAuthorized ? NEColor.accent : NEColor.ink)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(NEColor.panel)
-                    .clipShape(Capsule())
-                    .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
+                HStack(spacing: 0) {
+                    Text("No ads. ")
+                    Text("No bias.").foregroundColor(NEColor.inkDim)
+                    Text(" Just food.")
                 }
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(NEColor.ink)
             }
 
             HStack(spacing: 8) {
@@ -168,7 +133,7 @@ struct ContentView: View {
             }
             .padding(.horizontal, 11)
             .padding(.vertical, 10)
-            .background(NEColor.panel)
+            .background(NEColor.panel2)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(NEColor.line, lineWidth: 1))
 
@@ -177,6 +142,24 @@ struct ContentView: View {
                     ForEach(VenueFilter.allCases) { chipFilter in
                         chip(for: chipFilter)
                     }
+                }
+            }
+
+            modePicker
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(NEColor.panel)
+        .overlay(alignment: .bottom) {
+            ZStack(alignment: .leading) {
+                Rectangle().fill(NEColor.line).frame(height: 1)
+                // Thin loading bar along the header's bottom edge.
+                if store.isLoading {
+                    Rectangle()
+                        .fill(NEColor.accent)
+                        .frame(height: 2)
                 }
             }
         }
@@ -192,91 +175,209 @@ struct ContentView: View {
                 .foregroundColor(active ? NEColor.accentInk : NEColor.inkDim)
                 .padding(.horizontal, 13)
                 .padding(.vertical, 7)
-                .background(active ? NEColor.accent : NEColor.panel)
+                .background(active ? NEColor.accent : NEColor.panel2)
                 .clipShape(Capsule())
                 .overlay(Capsule().stroke(active ? NEColor.accent : NEColor.line, lineWidth: 1))
         }
     }
 
-    // MARK: - Bottom sheet
-
-    private enum SheetDetent {
-        case collapsed, peek, full
-    }
-
-    private func detentHeight(_ detent: SheetDetent, geo: GeometryProxy) -> CGFloat {
-        switch detent {
-        case .collapsed: return 116
-        case .peek: return geo.size.height * 0.46
-        case .full: return geo.size.height * 0.82
+    /// Map/List switch — custom segmented control in the Tokyo
+    /// palette (the native control can't take the brand colors).
+    private var modePicker: some View {
+        HStack(spacing: 4) {
+            modeButton(.map, title: "Map", icon: "map")
+            modeButton(.list, title: "List", icon: "list.bullet")
         }
+        .padding(4)
+        .background(NEColor.panel2)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(NEColor.line, lineWidth: 1))
     }
 
-    private func sheetHeight(geo: GeometryProxy) -> CGFloat {
-        let base = detentHeight(detent, geo: geo)
-        let proposed = base - dragDelta
-        return min(max(proposed, 84), geo.size.height * 0.9)
-    }
-
-    private func makeSheetDrag(geo: GeometryProxy) -> some Gesture {
-        DragGesture(minimumDistance: 4)
-            .onChanged { value in
-                dragDelta = value.translation.height
+    private func modeButton(_ target: ContentMode, title: String, icon: String) -> some View {
+        let active = mode == target
+        return Button {
+            mode = target
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: .semibold))
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
             }
-            .onEnded { value in
-                // Snap to the nearest stop using the flick's end point.
-                let proposed = detentHeight(detent, geo: geo) - value.predictedEndTranslation.height
-                let stops: [SheetDetent] = [.collapsed, .peek, .full]
-                let nearest = stops.min {
-                    abs(detentHeight($0, geo: geo) - proposed) < abs(detentHeight($1, geo: geo) - proposed)
-                } ?? .peek
-                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                    detent = nearest
-                    dragDelta = 0
-                }
-            }
-    }
-
-    private func sheet(geo: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
-            // Handle — drag to move between stops, tap to toggle.
-            VStack(spacing: 3) {
-                Capsule()
-                    .fill(NEColor.inkFaint.opacity(0.55))
-                    .frame(width: 38, height: 4.5)
-                Image(systemName: detent == .collapsed ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(NEColor.inkFaint)
-            }
+            .foregroundColor(active ? NEColor.accentInk : NEColor.inkDim)
             .frame(maxWidth: .infinity)
-            .padding(.top, 8)
-            .padding(.bottom, 5)
-            .contentShape(Rectangle())
-            .gesture(makeSheetDrag(geo: geo))
-            .onTapGesture {
-                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-                    detent = detent == .collapsed ? .peek : .collapsed
-                }
-            }
-
-            if let venue = selectedVenue {
-                detailView(venue)
-            } else {
-                sheetHead
-                    .contentShape(Rectangle())
-                    .gesture(makeSheetDrag(geo: geo))
-                listContent
-            }
-            Spacer(minLength: 0)
+            .padding(.vertical, 7)
+            .background(active ? NEColor.accent : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 9))
         }
-        .frame(height: sheetHeight(geo: geo))
-        .frame(maxWidth: .infinity)
-        .background(NEColor.panel)
-        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20))
-        .shadow(color: Color.black.opacity(0.45), radius: 16, x: 0, y: -4)
     }
 
-    private var sheetHead: some View {
+    // MARK: - Content region (one region, two states)
+
+    private var contentRegion: some View {
+        ZStack {
+            mapLayer
+            if mode == .list {
+                listLayer
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: Map state
+
+    private var mapLayer: some View {
+        ZStack(alignment: .bottom) {
+            VenueMapView(
+                venues: store.venues,
+                selectedID: selectedID,
+                showsUserLocation: location.isAuthorized,
+                centerRequest: centerRequest,
+                onRegionSettled: { region in
+                    store.regionSettled(region, filter: filter, search: searchText)
+                },
+                onSelectVenue: { id in
+                    presentDetail(id: id)
+                }
+            )
+
+            mapCard
+                .padding(.horizontal, 12)
+                .padding(.bottom, 10)
+        }
+    }
+
+    /// Compact card anchored to the region's bottom edge: result
+    /// count + nearest venue (tap → List state), and Near-me.
+    private var mapCard: some View {
+        HStack(spacing: 10) {
+            Button {
+                if store.loadFailed {
+                    store.retry(filter: filter, search: searchText)
+                } else {
+                    mode = .list
+                }
+            } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    cardHeadline
+                    cardSubline
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button(action: nearMe) {
+                HStack(spacing: 6) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 13))
+                    Text("Near me")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(location.isAuthorized ? NEColor.accent : NEColor.ink)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(NEColor.panel2)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
+        .background(NEColor.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(NEColor.line, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 4)
+    }
+
+    @ViewBuilder
+    private var cardHeadline: some View {
+        if store.loadFailed {
+            Text("Couldn't load places")
+                .font(.system(size: 15.5, weight: .bold))
+                .foregroundColor(NEColor.ink)
+        } else if store.isLoading && store.venues.isEmpty {
+            Text("Finding food near you…")
+                .font(.system(size: 15.5, weight: .bold))
+                .foregroundColor(NEColor.ink)
+        } else {
+            let n = store.venues.count
+            (Text("\(n)")
+                .font(.system(size: 15.5, weight: .bold))
+                .foregroundColor(NEColor.accent)
+                + Text(" \(n == 1 ? "place" : "places") near this spot")
+                .font(.system(size: 15.5, weight: .bold))
+                .foregroundColor(NEColor.ink))
+        }
+    }
+
+    @ViewBuilder
+    private var cardSubline: some View {
+        if store.loadFailed {
+            Text("Tap to try again")
+                .font(.system(size: 12.5))
+                .foregroundColor(NEColor.accent)
+        } else if let nearest = store.venues.first {
+            let distance = Venue.formatDistance(nearest.distanceMiles(from: store.center))
+            (Text("Nearest: ")
+                .foregroundColor(NEColor.inkFaint)
+                + Text(nearest.name ?? "Unnamed")
+                .foregroundColor(NEColor.inkDim)
+                + Text(distance.isEmpty ? "" : " · \(distance)")
+                .foregroundColor(NEColor.inkDim))
+                .font(.system(size: 12.5))
+                .lineLimit(1)
+        } else if !store.isLoading {
+            Text("No places in this view")
+                .font(.system(size: 12.5))
+                .foregroundColor(NEColor.inkFaint)
+        }
+    }
+
+    // MARK: List state
+
+    private var listLayer: some View {
+        Group {
+            if store.loadFailed {
+                stateBox(
+                    title: "The kitchen hit a snag",
+                    message: "We couldn't load places just now. Check your connection and try again.",
+                    buttonTitle: "Try again",
+                    action: { store.retry(filter: filter, search: searchText) }
+                )
+            } else if store.venues.isEmpty {
+                if store.isLoading {
+                    VStack {
+                        Spacer()
+                        ProgressView().tint(NEColor.accent)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                } else {
+                    stateBox(
+                        title: "Nothing on the table here",
+                        message: "No places found in this view. Try zooming out, clearing the search, or picking a different filter.",
+                        buttonTitle: "Reset view",
+                        action: resetAll
+                    )
+                }
+            } else {
+                VStack(spacing: 0) {
+                    listHead
+                    venueList
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(NEColor.panel)
+        // The list reaches the physical screen bottom (standard
+        // list insets keep the last row clear of the home
+        // indicator) — no dead band under the content.
+        .ignoresSafeArea(edges: .bottom)
+    }
+
+    private var listHead: some View {
         VStack(alignment: .leading, spacing: 3) {
             countText
             HStack(spacing: 6) {
@@ -296,6 +397,7 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 18)
+        .padding(.top, 12)
         .padding(.bottom, 10)
         .overlay(alignment: .bottom) {
             Rectangle().fill(NEColor.line).frame(height: 1)
@@ -325,51 +427,23 @@ struct ContentView: View {
             .foregroundColor(NEColor.ink))
     }
 
-    // MARK: - List
-
-    @ViewBuilder
-    private var listContent: some View {
-        if store.loadFailed {
-            stateBox(
-                title: "The kitchen hit a snag",
-                message: "We couldn't load places just now. Check your connection and try again.",
-                buttonTitle: "Try again",
-                action: { store.retry(filter: filter, search: searchText) }
-            )
-        } else if store.venues.isEmpty {
-            if store.isLoading {
-                VStack {
-                    ProgressView().tint(NEColor.accent)
-                    Spacer()
+    private var venueList: some View {
+        List {
+            ForEach(store.venues) { venue in
+                Button {
+                    presentDetail(id: venue.id)
+                } label: {
+                    venueRow(venue)
                 }
-                .padding(.top, 26)
-            } else {
-                stateBox(
-                    title: "Nothing on the table here",
-                    message: "No places found in this view. Try zooming out, clearing the search, or picking a different filter.",
-                    buttonTitle: "Reset view",
-                    action: resetAll
-                )
+                .buttonStyle(.plain)
+                .listRowBackground(venue.id == selectedID ? NEColor.panel2 : NEColor.panel)
+                .listRowSeparatorTint(NEColor.line)
+                .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
             }
-        } else {
-            List {
-                ForEach(store.venues) { venue in
-                    Button {
-                        selectVenue(id: venue.id, pan: true)
-                    } label: {
-                        venueRow(venue)
-                    }
-                    .buttonStyle(.plain)
-                    .listRowBackground(venue.id == selectedID ? NEColor.panel2 : NEColor.panel)
-                    .listRowSeparatorTint(NEColor.line)
-                    .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
-                }
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .background(Color.clear)
-            .allowsHitTesting(detent != .collapsed)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
     }
 
     private func venueRow(_ venue: Venue) -> some View {
@@ -440,22 +514,15 @@ struct ContentView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Detail
+    // MARK: - Detail (modal sheet, from both states)
 
-    private func detailView(_ venue: Venue) -> some View {
+    private func detailSheet(_ venue: Venue) -> some View {
         VStack(spacing: 0) {
             HStack {
-                Button(action: closeDetail) {
-                    HStack(spacing: 2) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 13, weight: .semibold))
-                        Text("All results")
-                            .font(.system(size: 15, weight: .semibold))
-                    }
-                    .foregroundColor(NEColor.accent)
-                }
                 Spacer()
-                Button(action: closeDetail) {
+                Button {
+                    detailVenue = nil
+                } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(NEColor.inkDim)
@@ -465,6 +532,7 @@ struct ContentView: View {
                 }
             }
             .padding(.horizontal, 18)
+            .padding(.top, 14)
             .padding(.bottom, 4)
 
             ScrollView {
@@ -506,6 +574,8 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(NEColor.panel)
     }
 
     private func detailMeta(_ venue: Venue) -> some View {
@@ -566,25 +636,21 @@ struct ContentView: View {
 
     // MARK: - Actions
 
-    private func selectVenue(id: String, pan: Bool) {
+    private func presentDetail(id: String) {
         selectedID = id
-        withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
-            detent = .full
-        }
-        if pan, let venue = store.venues.first(where: { $0.id == id }),
-           let coordinate = venue.coordinate {
-            requestCenter(coordinate, span: nil)
-        }
+        detailVenue = store.venues.first { $0.id == id }
     }
 
-    private func closeDetail() {
+    private func dismissDetail() {
+        detailVenue = nil
         selectedID = nil
     }
 
     private func resetAll() {
         searchText = ""
         filter = .all
-        closeDetail()
+        dismissDetail()
+        mode = .map
         requestCenter(kHomeRegion.center, span: kHomeRegion.span)
     }
 
