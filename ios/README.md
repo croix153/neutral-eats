@@ -37,6 +37,21 @@ Apple-side state (created via the ASC API, 2026-10-26):
   `APPLE_IOS_CERTIFICATE_PASSWORD`, `APPLE_IOS_PROVISIONING_PROFILE`,
   `ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER`
 
+## Status (2026-10-26)
+
+First CI build **succeeded** — run
+[40346265387](https://github.com/croix153/neutral-eats/actions/runs/40346265387)
+(48 s): archived, exported, and verified (bundleId
+`ai.croix.neutraleats`, displayName `neutral eats`, minOS 16.0,
+location string present, signature `iPhone Distribution: Roger
+Newson (A4NAM9AA6M)`). The `.ipa` (314,340 bytes) is the run's
+`neutraleats-ios-ipa` artifact and is also stashed at
+`~/workspace/croixbrains-signing/NeutralEats-1.0-run2.ipa`. The
+upload step failed with exactly the expected error — *"No suitable
+application records were found"* — i.e. only the app record below is
+missing. (First attempt, run 40346053117, failed on a missing
+`SDKROOT = iphoneos`; fixed in commit b687167.)
+
 ## The one manual step
 
 The ASC API cannot create the **app record** (POST /v1/apps returns
