@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Neutral Eats — No ads. No bias. Just food.</title>
+<title>neutral eats — No ads. No bias. Just food.</title>
 <meta name="description" content="Restaurants near you, instead of restaurants promoted near you. Ranked by distance. Nothing is sponsored — ever.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
@@ -288,7 +288,7 @@
 <header>
   <div class="brandrow">
     <div class="brand">
-      <h1>Neutral Eats<span class="dot">.</span></h1>
+      <h1>neutral eats<span class="dot">.</span></h1>
       <div class="creed">No ads. <span>No bias.</span> Just food.</div>
     </div>
     <button class="locatebtn" id="locateBtn" type="button" aria-label="Center on my location">
@@ -420,7 +420,7 @@
       s = s.trim().toLowerCase();
       return SOURCE_LABELS[s] || (s.charAt(0).toUpperCase() + s.slice(1));
     });
-    return 'Listed via ' + names.join(' + ') + ' data. Neutral Eats takes no placement fees — this order is pure distance.';
+    return 'Listed via ' + names.join(' + ') + ' data. neutral eats takes no placement fees — this order is pure distance.';
   }
   var toastTimer = null;
   function toast(msg){
@@ -527,7 +527,7 @@
         venues = applyClientFilter(venues);
         // Neutrality promise: the API orders by source priority, then rating.
         // We deliberately re-sort by distance from the map center — proximity
-        // is the only ranking Neutral Eats sells, and it isn't for sale.
+        // is the only ranking neutral eats sells, and it isn't for sale.
         var c = map.getCenter();
         venues.forEach(function(v){ v._d = haversineMi(c.lat, c.lng, parseFloat(v.lat), parseFloat(v.lng)); });
         venues.sort(function(a,b){ return a._d - b._d; });
