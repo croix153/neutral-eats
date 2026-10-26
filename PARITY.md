@@ -24,10 +24,13 @@ before we did. Drift like that is what this checklist prevents.
 | Enrichment render: `★ 4.5 (123) · $$` + "Full service" pill | ✓ | ✓ (build 7+) | Fields are null until the Yelp key lands; both surfaces light up together |
 | Closed venues excluded | ✓ server-side (`venues.php` + enrichment `is_closed`) | ✓ server-side | Inherited by both; no client work |
 | User location marker | Custom pulsing halo | Native MapKit blue dot | Deliberate platform idiom — visual only |
-| Day/night themes, toggle in the header, choice persisted (`ne-theme`), default = system then night | ✓ | ✓ (build 8+) | Same hex values both sides; basemap + dots restyle with the chrome |
+| Day/night themes with a header switcher; default follows the device, switcher can pin day or night | ✓ (persisted `ne-theme`) | ✓ (build 9: 3-state auto → day → night cycle) | Same hex values both sides; basemap + dots restyle with the chrome |
+| Venue name labels on the map at street zoom | ✓ (zoom ≥ 17, nearest 120) | ✓ (build 9: span ≤ 0.0085, nearest 80) | Labels are tappable, selected venue's label wears the accent |
+| Result count at the server cap reads "500+", never a bare "500" | ✓ | ✓ (build 9) | Both key off the same cap signal (serverCount ≥ limit) |
 
 ## Known gaps (not yet at parity — Croix's call on priority)
 
-| Gap | Web | iOS | Notes |
-|---|---|---|---|
-| Venue name labels on the map at street zoom | ✓ (zoom ≥ 17) | ✗ dots only | v1 gap, noted since build 4 |
+None open as of build 9 (2026-10-26). The street-zoom label gap —
+the last one — closed when Croix asked after it; it had been a
+deliberate v1 deferral, never a removal: the app simply shipped
+without labels while the web had them.

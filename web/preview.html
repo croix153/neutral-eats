@@ -776,18 +776,26 @@
     });
   }
 
+  // At the server cap the honest count is "500+", not "500"
+  // (Croix, 2026-10-26; the iOS app renders it the same way).
+  function displayCount(){
+    var n = state.venues.length;
+    return (state.serverCount >= LIMIT && n >= LIMIT) ? (LIMIT + '+') : String(n);
+  }
+
   function headerText(){
     if(state.loading && !state.venues.length) return 'Finding food near you…';
     var n = state.venues.length;
-    if(state.search) return n + (n === 1 ? ' match' : ' matches') + ' for “' + state.search + '” nearby';
-    return n + (n === 1 ? ' place' : ' places') + ' near this spot';
+    var dc = displayCount();
+    if(state.search) return dc + (n === 1 ? ' match' : ' matches') + ' for “' + state.search + '” nearby';
+    return dc + (n === 1 ? ' place' : ' places') + ' near this spot';
   }
 
   var lastListIds = null;       // venue-id sequence of the last list render
   var listResetPending = true;  // filter/search/reset: next render starts at the top
   function renderList(){
     var list = $('list');
-    $('resultCount').innerHTML = esc(headerText()).replace(state.venues.length, '<em>' + state.venues.length + '</em>');
+    $('resultCount').innerHTML = esc(headerText()).replace(displayCount(), '<em>' + displayCount() + '</em>');
     $('capNote').classList.toggle('show', state.serverCount >= LIMIT);
     if(!state.venues.length){
       list.innerHTML =

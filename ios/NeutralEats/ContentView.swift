@@ -36,18 +36,25 @@ struct ContentView: View {
     @State private var toastToken: Int = 0
 
     @Environment(\.openURL) private var openURL
+    @Environment(\.colorScheme) private var systemScheme
 
     private enum ContentMode {
         case map, list
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        // Resolve the theme first: the preference (auto = follow the
+        // device) + the live system scheme decide the effective mode,
+        // and NEColor.mode must be flipped before anything below
+        // reads a color in this render pass.
+        let eff = theme.effective(system: systemScheme)
+        NEColor.mode = eff
+        return VStack(spacing: 0) {
             header
             contentRegion
         }
         .background(NEColor.bg)
-        .preferredColorScheme(theme.mode == .day ? .light : .dark)
+        .preferredColorScheme(theme.preference == .auto ? nil : (eff == .day ? .light : .dark))
         .overlay(alignment: .bottom) {
             if let toastMessage = toastMessage {
                 Text(toastMessage)
@@ -172,14 +179,17 @@ struct ContentView: View {
         }
     }
 
-    /// Day/night switcher, top-right of the header in the spot Croix
-    /// marked (2026-10-26). Like the web's toggle, the icon shows the
-    /// theme you'll switch TO: sun at night, moon by day.
+    /// Theme switcher, top-right of the header in the spot Croix
+    /// marked (2026-10-26). Three states, cycled by tapping: auto
+    /// (follow the device — the default, shown as a half-filled
+    /// circle), day (sun), night (moon). The icon shows the CURRENT
+    /// state; with three stops, "what you'll get next" icons would
+    /// be guesswork.
     private var themeToggleButton: some View {
         Button {
-            theme.toggle()
+            theme.cycle()
         } label: {
-            Image(systemName: theme.mode == .day ? "moon.fill" : "sun.max.fill")
+            Image(systemName: themeIcon)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(NEColor.ink)
                 .frame(width: 38, height: 38)
@@ -187,7 +197,15 @@ struct ContentView: View {
                 .clipShape(Circle())
                 .overlay(Circle().stroke(NEColor.line, lineWidth: 1))
         }
-        .accessibilityLabel(theme.mode == .day ? "Switch to night theme" : "Switch to day theme")
+        .accessibilityLabel("Theme: \(theme.preference.rawValue). Tap to change.")
+    }
+
+    private var themeIcon: String {
+        switch theme.preference {
+        case .auto: return "circle.lefthalf.filled"
+        case .day: return "sun.max.fill"
+        case .night: return "moon.fill"
+        }
     }
 
     private func chip(for chipFilter: VenueFilter) -> some View {
@@ -258,7 +276,7 @@ struct ContentView: View {
                 venues: store.venues,
                 selectedID: selectedID,
                 showsUserLocation: location.isAuthorized,
-                isDay: theme.mode == .day,
+                isDay: theme.effective(system: systemScheme) == .day,
                 centerRequest: centerRequest,
                 onRegionSettled: { region in
                     store.regionSettled(region, filter: filter, search: searchText)
@@ -274,19 +292,18 @@ struct ContentView: View {
             // through under the card as a dead black band.
             .ignoresSafeArea(edges: .bottom)
 
-            // The card stays in the safe-area-aware layout, so its
-            // bottom edge lands at (safe-area inset + 12pt) above
-            // the physical screen bottom — just above the home
-            // indicator, sitting on the map. MapKit's legal
-            // attribution would collide with it at this perch, so
-            // the MAP lifts the attribution clear instead (see
-            // VenueMapView's layoutMargins note) — the attribution
-            // stays fully visible, per Apple's Maps terms, and the
-            // card keeps its natural spot. (Build 7 tried lifting
-            // the card to 38pt; Croix preferred moving the label.)
+            // The card stays in the safe-area-aware layout, floating
+            // above the home indicator, with a 38pt bottom padding:
+            // MapKit draws its legal attribution at the map's
+            // bottom-left corner, Apple's Maps terms require it to
+            // stay fully visible, and at 12pt the card half-covered
+            // it. Build 8 tried lifting the attribution instead via
+            // the map's layout margins; Croix's verdict (2026-10-26)
+            // was that he liked this build-7 arrangement better —
+            // card high, label in its natural spot — so it stays.
             mapCard
                 .padding(.horizontal, 12)
-                .padding(.bottom, 12)
+                .padding(.bottom, 38)
         }
     }
 
@@ -345,13 +362,20 @@ struct ContentView: View {
                 .foregroundColor(NEColor.ink)
         } else {
             let n = store.venues.count
-            (Text("\(n)")
+            (Text(displayCount)
                 .font(.system(size: 15.5, weight: .bold))
                 .foregroundColor(NEColor.accent)
                 + Text(" \(n == 1 ? "place" : "places") near this spot")
                 .font(.system(size: 15.5, weight: .bold))
                 .foregroundColor(NEColor.ink))
         }
+    }
+
+    /// At the server cap the honest count is "500+", not "500"
+    /// (Croix, 2026-10-26; the web preview renders it the same way).
+    private var displayCount: String {
+        let n = store.venues.count
+        return n >= APIClient.limit ? "\(APIClient.limit)+" : "\(n)"
     }
 
     @ViewBuilder
@@ -454,14 +478,14 @@ struct ContentView: View {
         }
         let n = store.venues.count
         if !searchText.isEmpty {
-            return (Text("\(n)")
+            return (Text(displayCount)
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(NEColor.accent)
                 + Text(" \(n == 1 ? "match" : "matches") for “\(searchText)” nearby")
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(NEColor.ink))
         }
-        return (Text("\(n)")
+        return (Text(displayCount)
             .font(.system(size: 17, weight: .bold))
             .foregroundColor(NEColor.accent)
             + Text(" \(n == 1 ? "place" : "places") near this spot")
@@ -473,7 +497,7 @@ struct ContentView: View {
         List {
             ForEach(store.venues) { venue in
                 Button {
-                    presentDetail(id: venue.id)
+                    presentFromList(id: venue.id)
                 } label: {
                     venueRow(venue)
                 }
@@ -691,6 +715,19 @@ struct ContentView: View {
     private func presentDetail(id: String) {
         selectedID = id
         detailVenue = store.venues.first { $0.id == id }
+    }
+
+    /// List-row tap (Croix, 2026-10-26): collapse back to the map
+    /// and snap it to the tapped venue at street zoom — where its
+    /// name label shows — then open the detail sheet over the
+    /// correctly-centered map, same as tapping its dot would.
+    private func presentFromList(id: String) {
+        if let venue = store.venues.first(where: { $0.id == id }),
+           let coordinate = venue.coordinate {
+            mode = .map
+            requestCenter(coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+        }
+        presentDetail(id: id)
     }
 
     private func dismissDetail() {

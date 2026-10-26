@@ -39,33 +39,56 @@ enum NEColor {
     }
 }
 
-/// Owns the day/night choice (Croix, 2026-10-26: a switcher in the
-/// header, top-right — the spot he marked). Default resolution mirrors
-/// the web: the persisted choice ("ne-theme", same key as the web's
-/// localStorage) wins; otherwise the system appearance; otherwise
-/// night. ContentView observes this store, so a toggle re-renders the
-/// tree against the flipped NEColor.mode.
+/// The switcher's three states: follow the device (the default
+/// Croix asked for, 2026-10-26), or an explicit day / night override.
+enum NEThemePreference: String {
+    case auto, day, night
+}
+
+/// Owns the theme preference (Croix, 2026-10-26: a switcher in the
+/// header, top-right — the spot he marked). The default is AUTO:
+/// the app matches the device's own light/dark setting, live. The
+/// switcher cycles auto → day → night → auto, so a manual choice is
+/// never a trap — one more stop on the cycle hands control back to
+/// the device. ContentView computes the effective mode from the
+/// preference + the environment color scheme and sets NEColor.mode
+/// at the top of its body, so every render reads fresh colors.
 @MainActor
 final class ThemeStore: ObservableObject {
-    @Published private(set) var mode: NEThemeMode
+    @Published private(set) var preference: NEThemePreference
+
+    private static let prefKey = "ne-theme-preference"
+    private static let migrationKey = "ne-theme-v2-migrated"
 
     init() {
-        let stored = UserDefaults.standard.string(forKey: "ne-theme")
-        let initial: NEThemeMode
-        if stored == NEThemeMode.day.rawValue {
-            initial = .day
-        } else if stored == NEThemeMode.night.rawValue {
-            initial = .night
-        } else {
-            initial = UITraitCollection.current.userInterfaceStyle == .light ? .day : .night
+        let defaults = UserDefaults.standard
+        if !defaults.bool(forKey: ThemeStore.migrationKey) {
+            // Build 8 persisted an explicit day/night choice under
+            // "ne-theme"; Croix's verdict was that a test tap
+            // shouldn't stick forever — v2 starts from auto (device)
+            // and only the new 3-state preference is honored.
+            defaults.removeObject(forKey: "ne-theme")
+            defaults.set(true, forKey: ThemeStore.migrationKey)
+            defaults.set(NEThemePreference.auto.rawValue, forKey: ThemeStore.prefKey)
         }
-        mode = initial
-        NEColor.mode = initial
+        let raw = defaults.string(forKey: ThemeStore.prefKey)
+        preference = NEThemePreference(rawValue: raw ?? "") ?? .auto
     }
 
-    func toggle() {
-        mode = (mode == .day) ? .night : .day
-        NEColor.mode = mode
-        UserDefaults.standard.set(mode.rawValue, forKey: "ne-theme")
+    func cycle() {
+        switch preference {
+        case .auto: preference = .day
+        case .day: preference = .night
+        case .night: preference = .auto
+        }
+        UserDefaults.standard.set(preference.rawValue, forKey: ThemeStore.prefKey)
+    }
+
+    func effective(system: ColorScheme) -> NEThemeMode {
+        switch preference {
+        case .day: return .day
+        case .night: return .night
+        case .auto: return system == .light ? .day : .night
+        }
     }
 }
