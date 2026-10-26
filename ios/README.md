@@ -73,8 +73,12 @@ via the ASC API:
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
 - **Build 1.0 (8)** — day/night theme switcher + attribution lift
-  (commits `9b5af9b`, `f846558`): workflow run 40392133724, in
-  flight at time of writing; ASC finish via `asc_build.py 8`.
+  (commits `9b5af9b`, `f846558`): uploaded by workflow run
+  [40392133724](https://github.com/croix153/neutral-eats/actions/runs/40392133724),
+  all steps green; ASC id `b79294eb-b364-4a15-9934-364f4c6b0011`,
+  VALID; compliance declared and attached to Internal Testers via
+  `asc_build.py`; `internalBuildState = IN_BETA_TESTING`
+  (API-verified 2026-10-26).
   The switcher sits top-right of the header (the spot Croix marked);
   palettes are the web's exact hexes in both themes, persisted as
   `ne-theme`, default system → night. The MapKit attribution is
