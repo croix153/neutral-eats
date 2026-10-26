@@ -274,16 +274,19 @@ struct ContentView: View {
             // through under the card as a dead black band.
             .ignoresSafeArea(edges: .bottom)
 
-            // The card stays in the safe-area-aware layout, floating
-            // above the home indicator. Its bottom padding is 38, not
-            // 12: MapKit draws its legal attribution at the map's
-            // bottom-left corner, and Apple's Maps terms require that
-            // attribution to stay fully visible — the 12pt card half-
-            // covered it (Croix's screenshot, 2026-10-26). We move
-            // OUR card up; the attribution is never hidden or moved.
+            // The card stays in the safe-area-aware layout, so its
+            // bottom edge lands at (safe-area inset + 12pt) above
+            // the physical screen bottom — just above the home
+            // indicator, sitting on the map. MapKit's legal
+            // attribution would collide with it at this perch, so
+            // the MAP lifts the attribution clear instead (see
+            // VenueMapView's layoutMargins note) — the attribution
+            // stays fully visible, per Apple's Maps terms, and the
+            // card keeps its natural spot. (Build 7 tried lifting
+            // the card to 38pt; Croix preferred moving the label.)
             mapCard
                 .padding(.horizontal, 12)
-                .padding(.bottom, 38)
+                .padding(.bottom, 12)
         }
     }
 

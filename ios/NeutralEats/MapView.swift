@@ -34,10 +34,22 @@ struct VenueMapView: UIViewRepresentable {
         return Coordinator()
     }
 
+    /// Bottom layout-margin lift for MapKit's legal attribution.
+    /// There is no public API to move the attribution label, but it
+    /// anchors to the map view's layout margins: a ~150pt bottom
+    /// margin parks it just above the floating card (card top edge ≈
+    /// 34pt safe-area + 12pt padding + ~86pt card ≈ 132pt) instead of
+    /// half-under it. Undocumented behavior — if a future iOS ignores
+    /// it, the fallback is build 7's approach (lift the card itself).
+    static let legalLabelBottomMargin: CGFloat = 150
+
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         context.coordinator.parent = self
+        var margins = mapView.layoutMargins
+        margins.bottom = VenueMapView.legalLabelBottomMargin
+        mapView.layoutMargins = margins
         mapView.overrideUserInterfaceStyle = isDay ? .light : .dark
         mapView.mapType = .mutedStandard
         mapView.pointOfInterestFilter = .excludingAll
@@ -49,6 +61,11 @@ struct VenueMapView: UIViewRepresentable {
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         context.coordinator.parent = self
+        if mapView.layoutMargins.bottom != VenueMapView.legalLabelBottomMargin {
+            var margins = mapView.layoutMargins
+            margins.bottom = VenueMapView.legalLabelBottomMargin
+            mapView.layoutMargins = margins
+        }
         mapView.overrideUserInterfaceStyle = isDay ? .light : .dark
         mapView.showsUserLocation = showsUserLocation
         context.coordinator.syncAnnotations(on: mapView, venues: venues, selectedID: selectedID)
