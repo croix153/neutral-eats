@@ -946,17 +946,26 @@
     load();
   });
 
-  $('locateBtn').addEventListener('click', function(){
-    if(!navigator.geolocation){ toast('Location is not available on this device.'); return; }
-    toast('Finding you…');
+  /* One locate flow, two callers: the Near-me button (manual re-center,
+     with toasts) and the cold-load default in the go-section below
+     (quiet). showUserLocation / startUserWatch are function
+     declarations in the your-location section — hoisted, so calling
+     them from here is safe. */
+  function locateAndCenter(quiet){
+    if(!navigator.geolocation){
+      if(!quiet) toast('Location is not available on this device.');
+      return;
+    }
+    if(!quiet) toast('Finding you…');
     navigator.geolocation.getCurrentPosition(function(pos){
       showUserLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
       startUserWatch();
       map.setView([pos.coords.latitude, pos.coords.longitude], 15);
     }, function(){
-      toast('Couldn\'t get your location — check location permissions.');
-    }, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
-  });
+      if(!quiet) toast('Couldn\'t get your location — check location permissions.');
+    }, { enableHighAccuracy:true, timeout: quiet ? 5000 : 9000, maximumAge:60000 });
+  }
+  $('locateBtn').addEventListener('click', function(){ locateAndCenter(false); });
 
   /* ================= theme toggle =================
      One swap, everywhere: the attribute drives the CSS variables; the
@@ -1170,18 +1179,15 @@
       if(window.innerWidth < 900) setSheet(sheetState);
     });
   }
-  // Location dot on load ONLY when permission is already granted — never a
-  // surprise prompt. Near-me remains the way to grant it from a tap.
-  if(navigator.geolocation && navigator.permissions && navigator.permissions.query){
-    navigator.permissions.query({ name: 'geolocation' }).then(function(st){
-      if(st.state === 'granted'){
-        navigator.geolocation.getCurrentPosition(function(pos){
-          showUserLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
-        }, function(){}, { maximumAge: 300000 });
-        startUserWatch();
-      }
-    }).catch(function(){});
-  }
+  // Center on the user on cold load by default (Croix, 2026-10-26 —
+  // explicitly reversing the round-4 never-prompt choice): the Near-me
+  // locate flow runs once at startup. Already-granted permission
+  // centers immediately; an undecided browser gets its permission
+  // request as part of this attempt (the browser remembers the
+  // decision per site, so it asks at most once); denied, unavailable,
+  // or a ~5s timeout falls back to the default view quietly — no error
+  // nagging. Near-me remains the manual re-center.
+  locateAndCenter(true);
   load();
 })();
 </script>
