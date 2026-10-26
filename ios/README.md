@@ -72,6 +72,23 @@ via the ASC API:
 - **App record**: "neutral eats", app `6827198241`, bundle
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (9)** — Croix's five calls from testing builds 7/8:
+  uploaded by workflow run
+  [40399060420](https://github.com/croix153/neutral-eats/actions/runs/40399060420),
+  all steps green; ASC id `7dcf1acc-7cd6-4263-bb3b-70a0d19e3605`,
+  VALID; compliance declared and attached to Internal Testers via
+  `asc_build.py`; `internalBuildState = IN_BETA_TESTING`
+  (API-verified 2026-10-26).
+  (1) Build 8's attribution margin-lift REVERSED — card back to
+  38pt, label in its natural spot (his preference). (2) Theme
+  default = follow the device: the switcher is now a 3-state cycle
+  (auto → day → night), build 8's persisted choice migrated away.
+  (3) Street-zoom venue name labels (span ≤ 0.0085, nearest 80,
+  tappable) — the last PARITY.md gap, a deliberate v1 deferral
+  rather than a removal. (4) List-row tap collapses to the map,
+  snaps to the venue at street span, detail opens over it.
+  (5) Counts at the server cap read "500+" — app card, list head,
+  and web preview alike (the preview change shipped the same day).
 - **Build 1.0 (8)** — day/night theme switcher + attribution lift
   (commits `9b5af9b`, `f846558`): uploaded by workflow run
   [40392133724](https://github.com/croix153/neutral-eats/actions/runs/40392133724),
