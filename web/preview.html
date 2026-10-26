@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Neutral Eats — No ads. No bias. Just food.</title>
+<meta name="description" content="Restaurants near you, instead of restaurants promoted near you. Ranked by distance. Nothing is sponsored — ever.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --bg:#14100d;
+    --panel:rgba(26,20,16,.92);
+    --panel-solid:#1a1512;
+    --panel-2:#241c16;
+    --line:rgba(245,234,217,.10);
+    --ink:#f5ead9;
+    --ink-dim:#b8ab97;
+    --ink-faint:#8a7d6b;
+    --accent:#ffa028;
+    --accent-ink:#1c130a;
+    --good:#7fc76a;
+    --radius:16px;
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #map{position:absolute;inset:0;background:#0d0b09;z-index:0}
+  .leaflet-container{font:inherit}
+  .leaflet-control-attribution{
+    background:rgba(20,16,13,.75)!important;color:#6f6455!important;
+    font-size:9px!important;padding:1px 5px;
+  }
+  .leaflet-control-attribution a{color:#8a7d6b!important}
+  .leaflet-bar a{
+    background:var(--panel-solid);color:var(--ink);border-color:var(--line);
+    width:34px;height:34px;line-height:34px;
+  }
+  .leaflet-bar a:hover{background:var(--panel-2)}
+
+  /* ---------- top bar ---------- */
+  header{
+    position:absolute;top:0;left:0;right:0;z-index:600;
+    padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px;
+    background:linear-gradient(180deg,rgba(13,10,8,.92) 0%,rgba(13,10,8,.78) 70%,rgba(13,10,8,0) 100%);
+    pointer-events:none;
+  }
+  .brandrow{display:flex;align-items:flex-start;gap:10px;pointer-events:none}
+  .brand{pointer-events:auto}
+  .brand h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:26px;font-weight:700;letter-spacing:.2px;line-height:1;
+    color:var(--ink);
+  }
+  .brand h1 .dot{color:var(--accent)}
+  .brand .creed{
+    margin-top:3px;font-size:12px;font-weight:600;letter-spacing:.4px;
+    color:var(--accent);text-transform:uppercase;
+  }
+  .brand .creed span{color:var(--ink-dim)}
+  .locatebtn{
+    margin-left:auto;pointer-events:auto;flex:0 0 auto;
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    border-radius:999px;padding:9px 13px;font-size:13px;font-weight:600;
+    backdrop-filter:blur(8px);cursor:pointer;
+  }
+  .locatebtn:active{transform:scale(.97)}
+  .locatebtn svg{width:15px;height:15px;fill:var(--accent)}
+  .searchrow{margin-top:10px;pointer-events:auto;position:relative}
+  .searchrow input{
+    width:100%;appearance:none;border:1px solid var(--line);
+    background:var(--panel);backdrop-filter:blur(8px);
+    color:var(--ink);border-radius:999px;
+    padding:11px 40px 11px 40px;font-size:16px; /* 16px stops iOS zoom-on-focus */
+    outline:none;
+  }
+  .searchrow input::placeholder{color:var(--ink-faint)}
+  .searchrow input:focus{border-color:rgba(255,160,40,.55)}
+  .searchrow .mag{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    width:16px;height:16px;fill:var(--ink-faint);pointer-events:none;
+  }
+  .searchrow .clear{
+    position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    width:30px;height:30px;border:none;border-radius:50%;
+    background:var(--panel-2);color:var(--ink-dim);font-size:15px;cursor:pointer;
+    display:none;align-items:center;justify-content:center;
+  }
+  .searchrow .clear.show{display:flex}
+  .chips{
+    margin-top:9px;display:flex;gap:7px;overflow-x:auto;pointer-events:auto;
+    padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;border:1px solid var(--line);background:var(--panel);
+    backdrop-filter:blur(8px);color:var(--ink-dim);
+    font-size:13px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer;
+  }
+  .chip.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  #progressbar{
+    position:absolute;left:0;right:0;top:0;height:2px;z-index:700;
+    background:transparent;overflow:hidden;opacity:0;transition:opacity .2s;
+  }
+  #progressbar.on{opacity:1}
+  #progressbar i{
+    display:block;height:100%;width:40%;background:var(--accent);
+    animation:slide 1s ease-in-out infinite alternate;
+  }
+  @keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+
+  /* ---------- results sheet / panel ---------- */
+  #sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:500;
+    height:46vh;
+    background:var(--panel);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    border-radius:20px 20px 0 0;
+    display:flex;flex-direction:column;
+    padding-bottom:var(--safe-b);
+    transition:height .25s ease;
+    box-shadow:0 -12px 40px rgba(0,0,0,.5);
+  }
+  #sheet .handle{
+    padding:9px 0 4px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:0 0 auto;
+  }
+  #sheet .handle i{width:44px;height:5px;border-radius:3px;background:rgba(245,234,217,.28)}
+  .sheethead{padding:2px 18px 10px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .sheethead .count{font-size:17px;font-weight:700}
+  .sheethead .count em{font-style:normal;color:var(--accent)}
+  .honesty{
+    margin-top:3px;font-size:12.5px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;
+  }
+  .honesty svg{width:13px;height:13px;fill:var(--good);flex:0 0 auto}
+  .capnote{margin-top:4px;font-size:12px;color:var(--accent);display:none}
+  .capnote.show{display:block}
+  #list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto}
+  .venue{
+    display:flex;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);
+    cursor:pointer;align-items:flex-start;
+  }
+  .venue:active,.venue.selected{background:var(--panel-2)}
+  .venue .main{flex:1 1 auto;min-width:0}
+  .venue .name{font-size:15.5px;font-weight:650;line-height:1.25}
+  .venue .meta{margin-top:2px;font-size:13px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .venue .addr{margin-top:2px;font-size:12.5px;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .venue .side{flex:0 0 auto;text-align:right}
+  .venue .dist{font-size:13px;font-weight:700;color:var(--accent)}
+  .venue .rp{margin-top:3px;font-size:12.5px;color:var(--ink-dim)}
+  .venue .rp .star{color:var(--accent)}
+  .statebox{padding:34px 24px;text-align:center;color:var(--ink-dim);font-size:14px;line-height:1.55}
+  .statebox .big{font-size:17px;color:var(--ink);font-weight:650;margin-bottom:6px}
+  .statebox button{
+    margin-top:12px;background:var(--accent);color:var(--accent-ink);border:none;
+    font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;cursor:pointer;
+  }
+
+  /* ---------- detail view ---------- */
+  #detail{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;display:none}
+  #detail.open{display:block}
+  .backbtn{
+    display:inline-flex;align-items:center;gap:5px;background:none;border:none;
+    color:var(--accent);font-size:14px;font-weight:650;padding:12px 18px 0;cursor:pointer;
+  }
+  .detailbody{padding:8px 18px 22px}
+  .detailbody h2{font-size:23px;line-height:1.2;font-family:Georgia,serif;font-weight:700}
+  .detailbody .dmeta{margin-top:5px;font-size:14px;color:var(--ink-dim)}
+  .detailbody .dmeta .star{color:var(--accent)}
+  .detailbody .daddr{margin-top:10px;font-size:14.5px;line-height:1.5;color:var(--ink)}
+  .detailbody .ddist{margin-top:2px;font-size:13px;color:var(--ink-faint)}
+  .actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+  .actions a{
+    flex:1 1 0;min-width:96px;text-align:center;text-decoration:none;
+    padding:12px 8px;border-radius:12px;font-size:14px;font-weight:700;
+    background:var(--panel-2);color:var(--ink);border:1px solid var(--line);
+  }
+  .actions a.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .actions a.disabled{opacity:.38;pointer-events:none}
+  .sourceline{
+    margin-top:18px;padding-top:12px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--ink-faint);line-height:1.5;
+  }
+
+  #toast{
+    position:absolute;left:50%;bottom:calc(46vh + 14px);transform:translateX(-50%) translateY(8px);
+    z-index:800;background:#000;color:var(--ink);border:1px solid var(--line);
+    padding:10px 16px;border-radius:999px;font-size:13.5px;opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;max-width:88vw;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ---------- desktop: side panel ---------- */
+  @media (min-width:900px){
+    header{max-width:560px;padding-left:20px}
+    .brand h1{font-size:32px}
+    #sheet{
+      left:auto;right:18px;top:18px;bottom:18px;width:392px;height:auto;
+      border:1px solid var(--line);border-radius:20px;padding-bottom:0;
+    }
+    #sheet .handle{display:none}
+    #toast{bottom:26px}
+  }
+</style>
+</head>
+<body>
+
+<div id="progressbar"><i></i></div>
+<div id="map"></div>
+
+<header>
+  <div class="brandrow">
+    <div class="brand">
+      <h1>Neutral Eats<span class="dot">.</span></h1>
+      <div class="creed">No ads. <span>No bias.</span> Just food.</div>
+    </div>
+    <button class="locatebtn" id="locateBtn" type="button" aria-label="Center on my location">
+      <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>
+      Near me
+    </button>
+  </div>
+  <div class="searchrow">
+    <svg class="mag" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+    <input id="search" type="search" placeholder="Search tacos, sushi, a place name…" autocomplete="off" enterkeyhint="search">
+    <button class="clear" id="searchClear" type="button" aria-label="Clear search">✕</button>
+  </div>
+  <nav class="chips" id="chips" aria-label="Food type filters">
+    <button class="chip active" data-filter="all" type="button">All</button>
+    <button class="chip" data-filter="restaurant" type="button">Restaurants</button>
+    <button class="chip" data-filter="cafe" type="button">Cafés</button>
+    <button class="chip" data-filter="bar" type="button">Bars</button>
+    <button class="chip" data-filter="fast_food" type="button">Fast Food</button>
+    <button class="chip" data-filter="bakery" type="button">Bakeries</button>
+  </nav>
+</header>
+
+<section id="sheet" aria-label="Results">
+  <div class="handle" id="sheetHandle"><i></i></div>
+
+  <div id="listView" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">
+    <div class="sheethead">
+      <div class="count" id="resultCount">Finding food near you…</div>
+      <div class="honesty">
+        <svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9z"/></svg>
+        Ranked by distance. Nothing is sponsored — ever.
+      </div>
+      <div class="capnote" id="capNote">Showing 500 results — zoom in for more.</div>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div id="detail">
+    <button class="backbtn" id="detailBack" type="button">‹ All results</button>
+    <div class="detailbody" id="detailBody"></div>
+  </div>
+</section>
+
+<div id="toast" role="status"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  /* ================= config ================= */
+  var API = './api/venues.php';
+  var LIMIT = 500;                       // server hard cap
+  var HOME = [28.713, -81.326];          // Lake Mary, FL — default view
+  // Filter strategy: the venues.php `type` param only accepts
+  // restaurant|cafe|bar|pub server-side, so those chips filter on the
+  // server. fast_food and bakery are NOT accepted by the API, so those
+  // chips fetch the unfiltered set and filter client-side on the raw
+  // venue.type field (see applyClientFilter).
+  var SERVER_TYPES = { restaurant:'restaurant', cafe:'cafe', bar:'bar' };
+  var CLIENT_TYPES = { fast_food:'fast_food', bakery:'bakery' };
+  var TYPE_LABELS = {
+    restaurant:'Restaurant', cafe:'Café', bar:'Bar', pub:'Pub',
+    fast_food:'Fast Food', bakery:'Bakery'
+  };
+  var SOURCE_LABELS = { yelp:'Yelp', overture:'Overture', osm:'OpenStreetMap', foursquare:'Foursquare' };
+
+  /* ================= helpers ================= */
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function safeUrl(u){
+    if(!u) return '';
+    u = String(u).trim();
+    if(!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    try { var p = new URL(u); return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : ''; }
+    catch(e){ return ''; }
+  }
+  function haversineMi(lat1, lng1, lat2, lng2){
+    var R = 3958.8, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+    var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+  function fmtDist(mi){
+    if(mi == null || !isFinite(mi)) return '';
+    if(mi < 0.1) return Math.max(10, Math.round(mi*5280/10)*10) + ' ft';
+    return mi.toFixed(1) + ' mi';
+  }
+  function priceOf(v){
+    var p = (v.priceLevel != null ? v.priceLevel : v.price_level);
+    if(p == null || p === '') return '';
+    if(typeof p === 'number') return p > 0 ? new Array(Math.min(p,4)+1).join('$') : '';
+    p = String(p);
+    return /^\$+$/.test(p) ? p : '';
+  }
+  function ratingOf(v){
+    var r = parseFloat(v.rating);
+    return (isFinite(r) && r > 0) ? r : null;
+  }
+  function typeLabel(v){
+    if(TYPE_LABELS[v.type]) return TYPE_LABELS[v.type];
+    // Legacy rows can carry type "0"/unknown — fall back to the first
+    // cuisine term so the row still says something true.
+    if(v.cuisine) return String(v.cuisine).split(',')[0].trim();
+    return 'Food & Drink';
+  }
+  function metaLine(v){
+    var parts = [];
+    var t = typeLabel(v);
+    if(t) parts.push(t);
+    if(v.cuisine && v.cuisine !== t){
+      // Cuisine strings repeat the type a lot; show a trimmed version.
+      var c = String(v.cuisine);
+      if(c.length > 44) c = c.slice(0, 44).trim() + '…';
+      if(parts.indexOf(c) === -1) parts.push(c);
+    }
+    return parts.join(' · ');
+  }
+  function sourceLine(v){
+    if(!v.source) return '';
+    var names = String(v.source).split('+').map(function(s){
+      s = s.trim().toLowerCase();
+      return SOURCE_LABELS[s] || (s.charAt(0).toUpperCase() + s.slice(1));
+    });
+    return 'Listed via ' + names.join(' + ') + ' data. Neutral Eats takes no placement fees — this order is pure distance.';
+  }
+  var toastTimer = null;
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
+  }
+
+  /* ================= map ================= */
+  // Canvas renderer + circle markers keep 500 results smooth (no DOM img per point).
+  var canvasRenderer = L.canvas({ padding: 0.5 });
+  var map = L.map('map', { preferCanvas:true, zoomControl:true, attributionControl:true })
+    .setView(HOME, 14);
+  map.zoomControl.setPosition('bottomright');
+  // Dark basemap (OpenStreetMap data, CARTO rendering) to match the dark UI;
+  // production uses the standard OSM raster style.
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 20, subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+  }).addTo(map);
+  var markerLayer = L.layerGroup().addTo(map);
+  var markers = {};   // venue id -> circleMarker
+  var selectedId = null;
+
+  var DOT = { radius:6, weight:1.5, color:'#14100d', fillColor:'#ffa028', fillOpacity:.92 };
+  var DOT_ACTIVE = { radius:9, weight:2, color:'#f5ead9', fillColor:'#ff7847', fillOpacity:1 };
+
+  /* ================= state + fetching ================= */
+  var state = { filter:'all', search:'', venues:[], serverCount:0, loading:false };
+  var aborter = null;
+  var fetchSeq = 0;
+
+  function buildUrl(){
+    var b = map.getBounds();
+    var p = new URLSearchParams({
+      south: b.getSouth().toFixed(6), west: b.getWest().toFixed(6),
+      north: b.getNorth().toFixed(6), east: b.getEast().toFixed(6),
+      limit: LIMIT
+    });
+    if(SERVER_TYPES[state.filter]) p.set('type', SERVER_TYPES[state.filter]);
+    if(state.search) p.set('search', state.search);
+    return API + '?' + p.toString();
+  }
+
+  function applyClientFilter(venues){
+    if(CLIENT_TYPES[state.filter]){
+      var want = CLIENT_TYPES[state.filter];
+      return venues.filter(function(v){ return v.type === want; });
+    }
+    return venues;
+  }
+
+  function load(){
+    var seq = ++fetchSeq;
+    if(aborter) aborter.abort();
+    aborter = ('AbortController' in window) ? new AbortController() : null;
+    state.loading = true;
+    $('progressbar').classList.add('on');
+    var opts = aborter ? { signal: aborter.signal } : {};
+    fetch(buildUrl(), opts)
+      .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(data){
+        if(seq !== fetchSeq) return;   // a newer fetch superseded this one
+        state.loading = false;
+        $('progressbar').classList.remove('on');
+        if(!data || data.success === false || !Array.isArray(data.venues)) throw new Error('Bad response');
+        var venues = data.venues.filter(function(v){
+          return isFinite(parseFloat(v.lat)) && isFinite(parseFloat(v.lng));
+        });
+        state.serverCount = (typeof data.count === 'number') ? data.count : venues.length;
+        venues = applyClientFilter(venues);
+        // Neutrality promise: the API orders by source priority, then rating.
+        // We deliberately re-sort by distance from the map center — proximity
+        // is the only ranking Neutral Eats sells, and it isn't for sale.
+        var c = map.getCenter();
+        venues.forEach(function(v){ v._d = haversineMi(c.lat, c.lng, parseFloat(v.lat), parseFloat(v.lng)); });
+        venues.sort(function(a,b){ return a._d - b._d; });
+        state.venues = venues;
+        render();
+      })
+      .catch(function(err){
+        if(seq !== fetchSeq) return;
+        if(err && err.name === 'AbortError') return;
+        state.loading = false;
+        $('progressbar').classList.remove('on');
+        state.venues = [];
+        renderError();
+      });
+  }
+
+  var debounce = null;
+  function scheduleLoad(){
+    clearTimeout(debounce);
+    debounce = setTimeout(load, 350);
+  }
+  map.on('moveend', scheduleLoad);
+  // Live re-sort as the center moves (cheap, no fetch) so distances stay honest.
+  map.on('move', function(){
+    if(!state.venues.length) return;
+    var c = map.getCenter();
+    state.venues.forEach(function(v){ v._d = haversineMi(c.lat, c.lng, parseFloat(v.lat), parseFloat(v.lng)); });
+    state.venues.sort(function(a,b){ return a._d - b._d; });
+    renderList();
+    markSelectedRow();
+  });
+
+  /* ================= rendering ================= */
+  function render(){
+    renderMarkers();
+    renderList();
+  }
+
+  function renderMarkers(){
+    markerLayer.clearLayers();
+    markers = {};
+    state.venues.forEach(function(v){
+      var m = L.circleMarker([parseFloat(v.lat), parseFloat(v.lng)],
+        String(v.id) === String(selectedId) ? DOT_ACTIVE : DOT, { renderer: canvasRenderer });
+      m.on('click', function(){ openDetail(v.id, false); });
+      markers[v.id] = m;
+      markerLayer.addLayer(m);
+    });
+  }
+
+  function headerText(){
+    if(state.loading && !state.venues.length) return 'Finding food near you…';
+    var n = state.venues.length;
+    if(state.search) return n + (n === 1 ? ' match' : ' matches') + ' for “' + state.search + '” nearby';
+    return n + (n === 1 ? ' place' : ' places') + ' near this spot';
+  }
+
+  function renderList(){
+    var list = $('list');
+    $('resultCount').innerHTML = esc(headerText()).replace(state.venues.length, '<em>' + state.venues.length + '</em>');
+    $('capNote').classList.toggle('show', state.serverCount >= LIMIT);
+    if(!state.venues.length){
+      list.innerHTML =
+        '<div class="statebox"><div class="big">Nothing on the table here</div>' +
+        'No places found in this view. Try zooming out, clearing the search, or picking a different filter.' +
+        '<br><button type="button" id="resetView">Reset view</button></div>';
+      var rb = $('resetView');
+      if(rb) rb.addEventListener('click', resetAll);
+      return;
+    }
+    var html = '';
+    state.venues.forEach(function(v){
+      var r = ratingOf(v), p = priceOf(v);
+      var rp = '';
+      if(r !== null) rp += '<span class="star">★</span> ' + esc(r.toFixed(1));
+      if(p) rp += (rp ? ' · ' : '') + esc(p);
+      html +=
+        '<div class="venue' + (String(v.id) === String(selectedId) ? ' selected' : '') + '" data-id="' + esc(v.id) + '">' +
+          '<div class="main">' +
+            '<div class="name">' + esc(v.name || 'Unnamed') + '</div>' +
+            '<div class="meta">' + esc(metaLine(v)) + '</div>' +
+            (v.address ? '<div class="addr">' + esc(v.address) + '</div>' : '') +
+          '</div>' +
+          '<div class="side">' +
+            '<div class="dist">' + esc(fmtDist(v._d)) + '</div>' +
+            (rp ? '<div class="rp">' + rp + '</div>' : '') +
+          '</div>' +
+        '</div>';
+    });
+    list.innerHTML = html;
+  }
+
+  function renderError(){
+    $('resultCount').textContent = 'Something went wrong';
+    $('capNote').classList.remove('show');
+    markerLayer.clearLayers(); markers = {};
+    $('list').innerHTML =
+      '<div class="statebox"><div class="big">The kitchen hit a snag</div>' +
+      'We couldn\'t load places just now. Check your connection and try again.' +
+      '<br><button type="button" id="retryBtn">Try again</button></div>';
+    var rb = $('retryBtn');
+    if(rb) rb.addEventListener('click', load);
+  }
+
+  function markSelectedRow(){
+    var rows = $('list').querySelectorAll('.venue');
+    for(var i = 0; i < rows.length; i++){
+      rows[i].classList.toggle('selected', rows[i].getAttribute('data-id') === String(selectedId));
+    }
+  }
+
+  /* ================= detail ================= */
+  function findVenue(id){
+    for(var i = 0; i < state.venues.length; i++)
+      if(String(state.venues[i].id) === String(id)) return state.venues[i];
+    return null;
+  }
+
+  function openDetail(id, pan){
+    var v = findVenue(id);
+    if(!v) return;
+    selectedId = v.id;
+    // restyle markers
+    Object.keys(markers).forEach(function(k){
+      markers[k].setStyle(String(k) === String(selectedId) ? DOT_ACTIVE : DOT);
+    });
+    var r = ratingOf(v), p = priceOf(v);
+    var meta = [];
+    if(r !== null) meta.push('<span class="star">★</span> ' + esc(r.toFixed(1)));
+    if(p) meta.push(esc(p));
+    meta.push(esc(typeLabel(v)));
+    var site = safeUrl(v.website);
+    var tel = v.phone ? String(v.phone).replace(/[^+0-9]/g, '') : '';
+    var dest = encodeURIComponent((v.name || '') + ' ' + (v.address || ''));
+    var dirUrl = 'https://www.google.com/maps/dir/?api=1&destination=' +
+      parseFloat(v.lat) + ',' + parseFloat(v.lng) + '&destination_place_name=' + dest;
+    $('detailBody').innerHTML =
+      '<h2>' + esc(v.name || 'Unnamed') + '</h2>' +
+      '<div class="dmeta">' + meta.join(' · ') + '</div>' +
+      (v.cuisine ? '<div class="dmeta">' + esc(v.cuisine) + '</div>' : '') +
+      (v.address ? '<div class="daddr">' + esc(v.address) + '</div>' : '') +
+      '<div class="ddist">' + esc(fmtDist(v._d)) + ' from map center</div>' +
+      '<div class="actions">' +
+        (tel ? '<a class="primary" href="tel:' + esc(tel) + '">Call</a>'
+             : '<a class="disabled">No phone</a>') +
+        (site ? '<a href="' + esc(site) + '" target="_blank" rel="noopener">Website</a>'
+              : '<a class="disabled">No website</a>') +
+        '<a href="' + esc(dirUrl) + '" target="_blank" rel="noopener">Directions</a>' +
+      '</div>' +
+      '<div class="sourceline">' + esc(sourceLine(v)) + '</div>';
+    $('listView').style.display = 'none';
+    $('detail').classList.add('open');
+    expandSheet();
+    if(pan) map.panTo([parseFloat(v.lat), parseFloat(v.lng)]);
+    markSelectedRow();
+  }
+
+  function closeDetail(){
+    selectedId = null;
+    Object.keys(markers).forEach(function(k){ markers[k].setStyle(DOT); });
+    $('detail').classList.remove('open');
+    $('listView').style.display = 'flex';
+    markSelectedRow();
+  }
+  $('detailBack').addEventListener('click', closeDetail);
+
+  // List taps (event delegation)
+  $('list').addEventListener('click', function(e){
+    var row = e.target.closest ? e.target.closest('.venue') : null;
+    if(row) openDetail(row.getAttribute('data-id'), true);
+  });
+
+  /* ================= controls ================= */
+  function resetAll(){
+    state.search = ''; $('search').value = ''; $('searchClear').classList.remove('show');
+    setFilter('all');
+    map.setView(HOME, 14);
+    scheduleLoad();
+  }
+
+  function setFilter(f){
+    state.filter = f;
+    var chips = $('chips').querySelectorAll('.chip');
+    for(var i = 0; i < chips.length; i++)
+      chips[i].classList.toggle('active', chips[i].getAttribute('data-filter') === f);
+    closeDetail();
+  }
+  $('chips').addEventListener('click', function(e){
+    var chip = e.target.closest ? e.target.closest('.chip') : null;
+    if(!chip) return;
+    setFilter(chip.getAttribute('data-filter'));
+    load();
+  });
+
+  var searchDebounce = null;
+  $('search').addEventListener('input', function(e){
+    var val = e.target.value.trim();
+    $('searchClear').classList.toggle('show', !!val);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(function(){
+      state.search = val;
+      closeDetail();
+      load();
+    }, 450);
+  });
+  $('searchClear').addEventListener('click', function(){
+    $('search').value = '';
+    $('searchClear').classList.remove('show');
+    state.search = '';
+    load();
+  });
+
+  $('locateBtn').addEventListener('click', function(){
+    if(!navigator.geolocation){ toast('Location is not available on this device.'); return; }
+    toast('Finding you…');
+    navigator.geolocation.getCurrentPosition(function(pos){
+      map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+    }, function(){
+      toast('Couldn\'t get your location — check location permissions.');
+    }, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
+  });
+
+  /* ================= bottom sheet drag (mobile) ================= */
+  var sheet = $('sheet'), handle = $('sheetHandle');
+  function expandSheet(){
+    if(window.innerWidth < 900) sheet.style.height = '82vh';
+  }
+  (function(){
+    var startY = 0, startH = 0, dragging = false;
+    function onDown(e){
+      if(window.innerWidth >= 900) return;
+      dragging = true; startY = e.touches ? e.touches[0].clientY : e.clientY;
+      startH = sheet.getBoundingClientRect().height;
+      e.preventDefault();
+    }
+    function onMove(e){
+      if(!dragging) return;
+      var y = e.touches ? e.touches[0].clientY : e.clientY;
+      var h = startH + (startY - y);
+      var min = window.innerHeight * 0.22, max = window.innerHeight * 0.88;
+      h = Math.max(min, Math.min(max, h));
+      sheet.style.height = h + 'px';
+    }
+    function onUp(){
+      if(!dragging) return;
+      dragging = false;
+      // snap: under 55% viewport -> peek height, else near-full
+      var h = sheet.getBoundingClientRect().height;
+      sheet.style.height = (h > window.innerHeight * 0.55) ? '82vh' : '46vh';
+    }
+    handle.addEventListener('touchstart', onDown, { passive:false });
+    handle.addEventListener('mousedown', onDown);
+    window.addEventListener('touchmove', onMove, { passive:false });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchend', onUp);
+    window.addEventListener('mouseup', onUp);
+    handle.addEventListener('click', function(){
+      if(window.innerWidth >= 900) return;
+      sheet.style.height = (sheet.getBoundingClientRect().height > window.innerHeight * 0.55) ? '46vh' : '82vh';
+    });
+  })();
+
+  /* ================= go ================= */
+  load();
+})();
+</script>
+</body>
+</html>
