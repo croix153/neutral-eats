@@ -37,34 +37,54 @@ Apple-side state (created via the ASC API, 2026-10-26):
   `APPLE_IOS_CERTIFICATE_PASSWORD`, `APPLE_IOS_PROVISIONING_PROFILE`,
   `ASC_API_KEY_P8`, `ASC_API_KEY_ID`, `ASC_API_ISSUER`
 
-## Status (2026-10-26)
+## Status (2026-10-26) — IN BETA TESTING ✅
 
-First CI build **succeeded** — run
-[40346265387](https://github.com/croix153/neutral-eats/actions/runs/40346265387)
-(48 s): archived, exported, and verified (bundleId
-`ai.croix.neutraleats`, displayName `neutral eats`, minOS 16.0,
-location string present, signature `iPhone Distribution: Roger
-Newson (A4NAM9AA6M)`). The `.ipa` (314,340 bytes) is the run's
-`neutraleats-ios-ipa` artifact and is also stashed at
-`~/workspace/croixbrains-signing/NeutralEats-1.0-run2.ipa`. The
-upload step failed with exactly the expected error — *"No suitable
-application records were found"* — i.e. only the app record below is
-missing. (First attempt, run 40346053117, failed on a missing
-`SDKROOT = iphoneos`; fixed in commit b687167.)
+The app is live in TestFlight internal testing. Verified end-to-end
+via the ASC API:
 
-## The one manual step
+- **App record**: "neutral eats", app `6827198241`, bundle
+  `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
+  web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (4)**: uploaded by workflow run
+  [40354341480](https://github.com/croix153/neutral-eats/actions/runs/40354341480)
+  (attempt 2; attempt 1 was cancelled in GitHub's queue — macOS arm64
+  capacity, "job was not acquired by Runner of type hosted"). All
+  steps green, and the upload step's own log reads *"UPLOAD SUCCEEDED
+  with no errors"*, delivery UUID
+  `f829f816-9df0-4d6d-976a-26820fecc9a5` (the build's ASC id).
+- Built with **Xcode 26.6 / iPhoneOS 26.5 SDK** on the `macos-26`
+  runner. The earlier `macos-14` pin (Xcode 15.4, iOS 17.5 SDK) built
+  fine but Apple rejected the upload (run 40351906981) — uploads now
+  require the iOS 26 SDK. Fixed in commit `efc7e3e`, which also
+  removed `continue-on-error` from the upload step: its failure had
+  been masking as a green run.
+- ASC processing: build state **VALID**;
+  `usesNonExemptEncryption=false` declared via API; build attached
+  to the **Internal Testers** group
+  (`bd9e8edd-c932-480e-9f8f-253229e45049`); build beta detail
+  `internalBuildState = IN_BETA_TESTING`; Croix's tester state
+  flipped NOT_INVITED → **INVITED**.
+
+Earlier history: first CI build (run 40346265387) archived/exported/
+verified cleanly (`.ipa` stashed at
+`~/workspace/croixbrains-signing/NeutralEats-1.0-run2.ipa`) but could
+not upload because the app record did not exist yet; the very first
+attempt (run 40346053117) failed on a missing `SDKROOT = iphoneos`,
+fixed in commit b687167.
+
+## Shipping the next build
+
+1. Dispatch `.github/workflows/ios.yml` (build number = workflow
+   run number; an upload failure now fails the run honestly).
+2. When the build shows VALID in ASC, declare export compliance and
+   attach it to Internal Testers via the ASC API:
+   `PATCH /v1/builds/{id}` with `usesNonExemptEncryption=false`,
+   then `POST /v1/betaGroups/bd9e8edd-c932-480e-9f8f-253229e45049/relationships/builds`.
+
+## The one manual step (done)
 
 The ASC API cannot create the **app record** (POST /v1/apps returns
-403 for any API key — proven with Creams). Until the record for
-`ai.croix.neutraleats` is created once in App Store Connect's web UI
-(name "neutral eats", SKU e.g. `neutraleats-ios`), the workflow's
-upload step fails with Apple's "no application records found" error
-(it is `continue-on-error`; the verified .ipa is still produced).
-After the record exists: re-dispatch the workflow, then declare
-export compliance (`usesNonExemptEncryption=false`) and attach the
-build to the "Internal Testers" group via the ASC API.
-
-Possible wrinkle: ASC app *names* are globally unique — if "neutral
-eats" is already taken by another developer, the record will need a
-variant name (Creams became "Creams for Teams"). The in-app display
-name stays "neutral eats" regardless.
+403 for any API key — proven with Creams), so the record was created
+once in App Store Connect's web UI on 2026-10-26 (name "neutral
+eats" was available; SKU `neutraleats-ios`). Nothing else in the
+pipeline needs the web UI.
