@@ -21,6 +21,7 @@ import CoreLocation
 struct ContentView: View {
     @StateObject private var store = VenueStore()
     @StateObject private var location = LocationManager()
+    @StateObject private var theme = ThemeStore()
 
     @State private var filter: VenueFilter = .all
     @State private var searchText: String = ""
@@ -46,7 +47,7 @@ struct ContentView: View {
             contentRegion
         }
         .background(NEColor.bg)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(theme.mode == .day ? .light : .dark)
         .overlay(alignment: .bottom) {
             if let toastMessage = toastMessage {
                 Text(toastMessage)
@@ -96,22 +97,26 @@ struct ContentView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 0) {
-                    Text("neutral eats")
-                        .font(.system(size: 29, weight: .bold, design: .serif))
-                        .foregroundColor(NEColor.ink)
-                    Text(".")
-                        .font(.system(size: 29, weight: .bold, design: .serif))
-                        .foregroundColor(NEColor.accent)
+            HStack(alignment: .top, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 0) {
+                        Text("neutral eats")
+                            .font(.system(size: 29, weight: .bold, design: .serif))
+                            .foregroundColor(NEColor.ink)
+                        Text(".")
+                            .font(.system(size: 29, weight: .bold, design: .serif))
+                            .foregroundColor(NEColor.accent)
+                    }
+                    HStack(spacing: 0) {
+                        Text("No ads. ")
+                        Text("No bias.").foregroundColor(NEColor.inkDim)
+                        Text(" Just food.")
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(NEColor.ink)
                 }
-                HStack(spacing: 0) {
-                    Text("No ads. ")
-                    Text("No bias.").foregroundColor(NEColor.inkDim)
-                    Text(" Just food.")
-                }
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(NEColor.ink)
+                Spacer()
+                themeToggleButton
             }
 
             HStack(spacing: 8) {
@@ -165,6 +170,24 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    /// Day/night switcher, top-right of the header in the spot Croix
+    /// marked (2026-10-26). Like the web's toggle, the icon shows the
+    /// theme you'll switch TO: sun at night, moon by day.
+    private var themeToggleButton: some View {
+        Button {
+            theme.toggle()
+        } label: {
+            Image(systemName: theme.mode == .day ? "moon.fill" : "sun.max.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(NEColor.ink)
+                .frame(width: 38, height: 38)
+                .background(NEColor.panel2)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(NEColor.line, lineWidth: 1))
+        }
+        .accessibilityLabel(theme.mode == .day ? "Switch to night theme" : "Switch to day theme")
     }
 
     private func chip(for chipFilter: VenueFilter) -> some View {
@@ -235,6 +258,7 @@ struct ContentView: View {
                 venues: store.venues,
                 selectedID: selectedID,
                 showsUserLocation: location.isAuthorized,
+                isDay: theme.mode == .day,
                 centerRequest: centerRequest,
                 onRegionSettled: { region in
                     store.regionSettled(region, filter: filter, search: searchText)

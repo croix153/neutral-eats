@@ -18,13 +18,14 @@ struct CenterRequest: Equatable {
     }
 }
 
-/// MKMapView bridge. The dark basemap comes from MapKit's own dark
-/// rendering (muted standard, dark interface style forced on the view);
+/// MKMapView bridge. The basemap follows the app theme (muted
+/// standard, interface style forced on the view to match NEColor.mode);
 /// venue dots are pre-rendered images so 500 annotations stay cheap.
 struct VenueMapView: UIViewRepresentable {
     var venues: [Venue]
     var selectedID: String?
     var showsUserLocation: Bool
+    var isDay: Bool
     var centerRequest: CenterRequest?
     var onRegionSettled: (MKCoordinateRegion) -> Void
     var onSelectVenue: (String) -> Void
@@ -37,7 +38,7 @@ struct VenueMapView: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         context.coordinator.parent = self
-        mapView.overrideUserInterfaceStyle = .dark
+        mapView.overrideUserInterfaceStyle = isDay ? .light : .dark
         mapView.mapType = .mutedStandard
         mapView.pointOfInterestFilter = .excludingAll
         mapView.showsCompass = false
@@ -48,6 +49,7 @@ struct VenueMapView: UIViewRepresentable {
 
     func updateUIView(_ mapView: MKMapView, context: Context) {
         context.coordinator.parent = self
+        mapView.overrideUserInterfaceStyle = isDay ? .light : .dark
         mapView.showsUserLocation = showsUserLocation
         context.coordinator.syncAnnotations(on: mapView, venues: venues, selectedID: selectedID)
         if let request = centerRequest, request.nonce != context.coordinator.lastCenterNonce {
@@ -124,19 +126,40 @@ struct VenueMapView: UIViewRepresentable {
     }
 }
 
-/// Pre-rendered venue dots, matching the preview: pink with a dark
-/// ring; the selected venue is a larger cyan dot with a white ring.
+/// Pre-rendered venue dots, matching the preview in both themes:
+/// night — sakura fill #FF4D7E with a #070912 ring; day — deepened
+/// fill #D92C57 with a white ring. The selected venue is a larger
+/// --good dot with a white ring. Images are cached per theme and
+/// rebuilt on the first request after NEColor.mode flips (the
+/// coordinator re-assigns every annotation's image on each sync, so
+/// a toggle repaints all dots).
 enum DotImages {
-    private static let normal = DotImages.make(
-        fill: UIColor(red: 1.0, green: 0x4D / 255.0, blue: 0x7E / 255.0, alpha: 0.95),
-        diameter: 13, ring: UIColor(red: 0x07 / 255.0, green: 0x09 / 255.0, blue: 0x12 / 255.0, alpha: 1.0),
-        ringWidth: 1.5)
-    private static let selected = DotImages.make(
-        fill: UIColor(red: 0x38 / 255.0, green: 0xE1 / 255.0, blue: 1.0, alpha: 1.0),
-        diameter: 19, ring: UIColor.white, ringWidth: 2)
+    private static var cachedMode: NEThemeMode?
+    private static var normalImg: UIImage?
+    private static var selectedImg: UIImage?
 
     static func image(selected: Bool) -> UIImage {
-        return selected ? DotImages.selected : DotImages.normal
+        if cachedMode != NEColor.mode {
+            cachedMode = NEColor.mode
+            if NEColor.mode == .day {
+                normalImg = DotImages.make(
+                    fill: UIColor(red: 0xD9 / 255.0, green: 0x2C / 255.0, blue: 0x57 / 255.0, alpha: 0.95),
+                    diameter: 13, ring: UIColor.white,
+                    ringWidth: 1.5)
+                selectedImg = DotImages.make(
+                    fill: UIColor(red: 0x0B / 255.0, green: 0x7E / 255.0, blue: 0xA4 / 255.0, alpha: 1.0),
+                    diameter: 19, ring: UIColor.white, ringWidth: 2)
+            } else {
+                normalImg = DotImages.make(
+                    fill: UIColor(red: 1.0, green: 0x4D / 255.0, blue: 0x7E / 255.0, alpha: 0.95),
+                    diameter: 13, ring: UIColor(red: 0x07 / 255.0, green: 0x09 / 255.0, blue: 0x12 / 255.0, alpha: 1.0),
+                    ringWidth: 1.5)
+                selectedImg = DotImages.make(
+                    fill: UIColor(red: 0x38 / 255.0, green: 0xE1 / 255.0, blue: 1.0, alpha: 1.0),
+                    diameter: 19, ring: UIColor.white, ringWidth: 2)
+            }
+        }
+        return (selected ? selectedImg : normalImg) ?? UIImage()
     }
 
     private static func make(fill: UIColor, diameter: CGFloat, ring: UIColor, ringWidth: CGFloat) -> UIImage {

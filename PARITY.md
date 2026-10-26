@@ -24,10 +24,10 @@ before we did. Drift like that is what this checklist prevents.
 | Enrichment render: `★ 4.5 (123) · $$` + "Full service" pill | ✓ | ✓ (build 7+) | Fields are null until the Yelp key lands; both surfaces light up together |
 | Closed venues excluded | ✓ server-side (`venues.php` + enrichment `is_closed`) | ✓ server-side | Inherited by both; no client work |
 | User location marker | Custom pulsing halo | Native MapKit blue dot | Deliberate platform idiom — visual only |
+| Day/night themes, toggle in the header, choice persisted (`ne-theme`), default = system then night | ✓ | ✓ (build 8+) | Same hex values both sides; basemap + dots restyle with the chrome |
 
 ## Known gaps (not yet at parity — Croix's call on priority)
 
 | Gap | Web | iOS | Notes |
 |---|---|---|---|
-| Day/night themes with persisted toggle | ✓ (`ne-theme`) | ✗ dark-only | App forces the night palette; a day theme is a real build, not a flag |
 | Venue name labels on the map at street zoom | ✓ (zoom ≥ 17) | ✗ dots only | v1 gap, noted since build 4 |
