@@ -25,6 +25,8 @@ struct Venue: Decodable, Identifiable {
     let cuisine: String?
     let rating: Double?
     let priceLevel: Int?
+    let reviewCount: Int?
+    let tableService: Bool?
     let address: String?
     let phone: String?
     let website: String?
@@ -38,6 +40,7 @@ struct Venue: Decodable, Identifiable {
 
     enum CodingKeys: String, CodingKey {
         case id, name, lat, lng, type, cuisine, rating, priceLevel
+        case reviewCount, tableService
         case address, phone, website, source
     }
 
@@ -51,6 +54,8 @@ struct Venue: Decodable, Identifiable {
         cuisine = Venue.flexString(c, .cuisine)
         rating = Venue.flexDouble(c, .rating)
         priceLevel = Venue.flexPrice(c, .priceLevel)
+        reviewCount = Venue.flexCount(c, .reviewCount)
+        tableService = Venue.flexBool(c, .tableService)
         address = Venue.flexString(c, .address)
         phone = Venue.flexString(c, .phone)
         website = Venue.flexString(c, .website)
@@ -66,6 +71,20 @@ struct Venue: Decodable, Identifiable {
     private static func flexDouble(_ c: KeyedDecodingContainer<CodingKeys>, _ k: CodingKeys) -> Double? {
         if let d = try? c.decode(Double.self, forKey: k) { return d }
         if let s = try? c.decode(String.self, forKey: k) { return Double(s) }
+        return nil
+    }
+
+    private static func flexCount(_ c: KeyedDecodingContainer<CodingKeys>, _ k: CodingKeys) -> Int? {
+        if let n = try? c.decode(Int.self, forKey: k) { return n }
+        if let d = try? c.decode(Double.self, forKey: k) { return Int(d) }
+        if let s = try? c.decode(String.self, forKey: k) { return Int(s) }
+        return nil
+    }
+
+    private static func flexBool(_ c: KeyedDecodingContainer<CodingKeys>, _ k: CodingKeys) -> Bool? {
+        if let b = try? c.decode(Bool.self, forKey: k) { return b }
+        if let n = try? c.decode(Int.self, forKey: k) { return n != 0 }
+        if let s = try? c.decode(String.self, forKey: k) { return s == "1" || s.lowercased() == "true" }
         return nil
     }
 
@@ -123,10 +142,15 @@ struct Venue: Decodable, Identifiable {
         return String(repeating: "$", count: min(p, 4))
     }
 
-    /// "★ 4.5 · $$" — pieces omitted when the data isn't there.
+    /// "★ 4.5 (123) · $$" — pieces omitted when the data isn't there
+    /// (review count arrives with Yelp enrichment; web parity).
     var ratingPriceLine: String {
         var parts: [String] = []
-        if let r = ratingValue { parts.append("★ " + String(format: "%.1f", r)) }
+        if let r = ratingValue {
+            var star = "★ " + String(format: "%.1f", r)
+            if let count = reviewCount, count > 0 { star += " (\(count))" }
+            parts.append(star)
+        }
         if !priceString.isEmpty { parts.append(priceString) }
         return parts.joined(separator: " · ")
     }

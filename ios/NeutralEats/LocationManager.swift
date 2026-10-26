@@ -9,9 +9,10 @@ struct GeoPoint: Equatable {
     }
 }
 
-/// Thin CoreLocation wrapper. Permission is requested ONLY from the
-/// Near-me flow (in context) — never on cold launch, same rule as the
-/// web preview's user-location indicator.
+/// Thin CoreLocation wrapper. Permission is requested on cold launch
+/// (ContentView.launchLocate) and from the Near-me re-center — the
+/// same rule as the web preview, which locates on cold load and asks
+/// as part of that attempt (Croix, 2026-10-26).
 @MainActor
 final class LocationManager: NSObject, ObservableObject {
     @Published private(set) var authorization: CLAuthorizationStatus

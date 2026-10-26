@@ -30,6 +30,7 @@ struct ContentView: View {
     @State private var centerRequest: CenterRequest? = nil
     @State private var centerNonce: Int = 0
     @State private var wantsCenter: Bool = false
+    @State private var didLaunchLocate: Bool = false
     @State private var toastMessage: String? = nil
     @State private var toastToken: Int = 0
 
@@ -68,6 +69,7 @@ struct ContentView: View {
         }
         .onAppear {
             store.regionSettled(kHomeRegion, filter: filter, search: searchText)
+            launchLocate()
         }
         .onChange(of: filter) { newFilter in
             dismissDetail()
@@ -551,6 +553,16 @@ struct ContentView: View {
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(NEColor.ink)
                     detailMeta(venue)
+                    if venue.tableService == true {
+                        Text("Full service")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(NEColor.good)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 4)
+                            .background(NEColor.panel2)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
+                    }
                     if let cuisine = venue.cuisine {
                         Text(cuisine)
                             .font(.system(size: 14))
@@ -669,8 +681,32 @@ struct ContentView: View {
         centerRequest = CenterRequest(coordinate: coordinate, span: span, nonce: centerNonce)
     }
 
-    /// Near-me is the ONLY place location permission is requested —
-    /// in context, at the moment he asks to be centered (web parity).
+    /// Cold-launch default (Croix, 2026-10-26 — web parity): the app
+    /// opens centered on the user. Already-granted permission centers
+    /// as soon as the one-shot fix lands; notDetermined gets the system
+    /// permission prompt as part of this attempt (iOS asks once, then
+    /// remembers the decision); denied/restricted falls back to the
+    /// home region quietly — Near-me is where that case gets explained.
+    /// Runs once per process: a later .onAppear (e.g. after a sheet
+    /// dismisses) must never yank the map back.
+    private func launchLocate() {
+        guard !didLaunchLocate else { return }
+        didLaunchLocate = true
+        switch location.authorization {
+        case .authorizedWhenInUse, .authorizedAlways:
+            wantsCenter = true
+            location.requestOneShotLocation()
+        case .notDetermined:
+            wantsCenter = true
+            location.requestPermission()
+        default:
+            break
+        }
+    }
+
+    /// Near-me is the manual re-center. Permission is also requested
+    /// on cold launch (launchLocate, above); this remains the place a
+    /// denied user hears why centering is unavailable.
     private func nearMe() {
         switch location.authorization {
         case .authorizedWhenInUse, .authorizedAlways:
