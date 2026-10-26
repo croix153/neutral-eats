@@ -8,17 +8,17 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root{
-    --bg:#14100d;
-    --panel:rgba(26,20,16,.96); /* raised from .92: #sheet no longer uses backdrop-filter (see below) */
-    --panel-solid:#1a1512;
-    --panel-2:#241c16;
-    --line:rgba(245,234,217,.10);
-    --ink:#f5ead9;
-    --ink-dim:#b8ab97;
-    --ink-faint:#8a7d6b;
-    --accent:#ffa028;
-    --accent-ink:#1c130a;
-    --good:#7fc76a;
+    --bg:#070912;
+    --panel:#101527; /* solid (no alpha): a translucent panel let the map ghost through */
+    --panel-solid:#101527;
+    --panel-2:#1a2140;
+    --line:rgba(130,150,255,.16);
+    --ink:#eef1ff;
+    --ink-dim:#a3aed6;
+    --ink-faint:#6d78a0;
+    --accent:#ff4d7e;
+    --accent-ink:#ffffff;
+    --good:#38e1ff;
     --radius:16px;
     --safe-b:env(safe-area-inset-bottom,0px);
   }
@@ -36,7 +36,7 @@
     background:rgba(20,16,13,.75)!important;color:#6f6455!important;
     font-size:9px!important;padding:1px 5px;
   }
-  .leaflet-control-attribution a{color:#8a7d6b!important}
+  .leaflet-control-attribution a{color:#6d78a0!important}
   .leaflet-bar a{
     background:var(--panel-solid);color:var(--ink);border-color:var(--line);
     width:34px;height:34px;line-height:34px;
@@ -138,7 +138,7 @@
   #sheet .handle{
     padding:9px 0 4px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:0 0 auto;
   }
-  #sheet .handle i{width:44px;height:5px;border-radius:3px;background:rgba(245,234,217,.28)}
+  #sheet .handle i{width:44px;height:5px;border-radius:3px;background:rgba(163,174,214,.35)}
   #sheet .handle{position:relative}
   #sheetChevron{
     position:absolute;right:18px;top:50%;transform:translateY(-50%);
@@ -188,7 +188,7 @@
     padding-bottom:8px;
   }
   .venue-label{
-    color:#efe4cd;
+    color:#eef1ff;
     font-size:10.5px;
     font-weight:600;
     white-space:nowrap;
@@ -207,7 +207,12 @@
   .venue-label.selected{color:var(--accent);font-weight:700}
 
   /* ---------- detail view ---------- */
-  #detail{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;display:none}
+  #detail{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;display:none;position:relative}
+  .closebtn{
+    position:absolute;top:10px;right:14px;width:34px;height:34px;border-radius:50%;
+    border:1px solid var(--line);background:var(--panel-2);color:var(--ink);
+    font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
   #detail.open{display:block}
   .backbtn{
     display:inline-flex;align-items:center;gap:5px;background:none;border:none;
@@ -302,6 +307,7 @@
 
   <div id="detail">
     <button class="backbtn" id="detailBack" type="button">‹ All results</button>
+    <button class="closebtn" id="detailClose" type="button" aria-label="Close details">✕</button>
     <div class="detailbody" id="detailBody"></div>
   </div>
 </section>
@@ -428,8 +434,8 @@
   var LABEL_ZOOM = 17;     // production's LABEL_ZOOM_THRESHOLD
   var LABEL_CAP = 120;
 
-  var DOT = { radius:6, weight:1.5, color:'#14100d', fillColor:'#ffa028', fillOpacity:.92 };
-  var DOT_ACTIVE = { radius:9, weight:2, color:'#f5ead9', fillColor:'#ff7847', fillOpacity:1 };
+  var DOT = { radius:6, weight:1.5, color:'#070912', fillColor:'#ff4d7e', fillOpacity:.95 };
+  var DOT_ACTIVE = { radius:9, weight:2, color:'#ffffff', fillColor:'#38e1ff', fillOpacity:1 };
 
   /* ================= state + fetching ================= */
   var state = { filter:'all', search:'', venues:[], serverCount:0, loading:false };
@@ -702,6 +708,7 @@
     markSelectedRow();
   }
   $('detailBack').addEventListener('click', closeDetail);
+  $('detailClose').addEventListener('click', closeDetail);
 
   // List taps (event delegation)
   $('list').addEventListener('click', function(e){
@@ -776,6 +783,12 @@
   function measureStops(){
     var vh = window.innerHeight;
     var fullH = Math.round(vh * 0.82);
+    var headerEl = document.querySelector('header');
+    var headerBottom = headerEl ? (headerEl.offsetTop + headerEl.offsetHeight) : 0;
+    // 'full' stops below the header: at 82vh the sheet top slid UNDER the
+    // brand/search/chips block and buried the drag handle and the detail's
+    // back button beneath it, leaving no way back (Croix, Oct 25).
+    var fullVisible = Math.min(fullH, vh - headerBottom - 10);
     var head = sheet.querySelector('.sheethead');
     // Collapsed shows exactly the handle + the summary head (capnote
     // included when it's on screen) — measured as rendered, not hardcoded.
@@ -783,7 +796,7 @@
     sheetGeo = {
       fullH: fullH,
       ty: {
-        full: 0,
+        full: fullH - fullVisible,
         peek: fullH - Math.round(vh * 0.46),
         collapsed: fullH - collapsedVisible
       }
@@ -825,7 +838,7 @@
       var y = e.touches ? e.touches[0].clientY : e.clientY;
       var g = sheetGeo || measureStops();
       var ty = startTY + (y - startY);   // finger down -> sheet slides down
-      ty = Math.max(0, Math.min(g.ty.collapsed, ty));
+      ty = Math.max(g.ty.full, Math.min(g.ty.collapsed, ty));
       applyTY(ty);
       if(Math.abs(ty - startTY) > 6) suppressClick = true;
     }
