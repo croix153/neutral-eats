@@ -72,6 +72,30 @@ via the ASC API:
 - **App record**: "neutral eats", app `6827198241`, bundle
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (11)** — dot clustering (Croix, on build 10: "many
+  dots don't show unless you zoom in further"). Every fetched
+  venue always had an annotation; at wide spans MapKit's
+  collision system hides overlapping dots, so whole areas read
+  as empty. Plain dots now cluster into count bubbles (accent
+  disc, dot palette) that zoom apart on tap; labeled views and
+  the selected dot never cluster. Uploaded by workflow run
+  [40421109855](https://github.com/croix153/neutral-eats/actions/runs/40421109855);
+  ASC id `ce6cbc44-2aa8-4e13-9d12-cfacb56e03b3`, VALID, attached
+  to Internal Testers; `internalBuildState = IN_BETA_TESTING`
+  (API-verified 2026-10-26).
+- **Build 1.0 (10)** — labels rebuilt as pixels (the venue name
+  rendered into the dot's image at .required priority; build 9's
+  separate label views never rendered on device — confirmed by
+  an adversarial review of the whole codebase, which also
+  produced folds for validated coordinates, identity-safe
+  decoding, keep-last-good fetch failures, fresh-fix Near-me,
+  and encoded directions URLs) and detail moved in place: the
+  map card morphs into the detail card, list rows expand
+  inline, the `.sheet` is gone. Uploaded by workflow run
+  [40419197337](https://github.com/croix153/neutral-eats/actions/runs/40419197337);
+  ASC id `7e721ca7-c41b-42a5-92a1-2e6fd1925541`, VALID, attached
+  to Internal Testers; `internalBuildState = IN_BETA_TESTING`
+  (API-verified 2026-10-26).
 - **Build 1.0 (9)** — Croix's five calls from testing builds 7/8:
   uploaded by workflow run
   [40399060420](https://github.com/croix153/neutral-eats/actions/runs/40399060420),
