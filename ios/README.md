@@ -72,6 +72,31 @@ via the ASC API:
 - **App record**: "neutral eats", app `6827198241`, bundle
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (8)** — day/night theme switcher + attribution lift
+  (commits `9b5af9b`, `f846558`): workflow run 40392133724, in
+  flight at time of writing; ASC finish via `asc_build.py 8`.
+  The switcher sits top-right of the header (the spot Croix marked);
+  palettes are the web's exact hexes in both themes, persisted as
+  `ne-theme`, default system → night. The MapKit attribution is
+  lifted via the map view's bottom layout margin (150pt) and the
+  floating card returns to its 12pt perch — Croix's preference over
+  build 7's lifted card; if iOS ignores the margin, build 7's
+  arrangement is the fallback.
+- **Build 1.0 (7)** — cold-launch locate + attribution clearance
+  (commits `62931c8`, `1416f82`): the app had kept the retired
+  never-ask-on-launch location rule after the web reversed it
+  (Croix's catch) — `launchLocate()` now asks on first open and
+  centers on the user, denied → quiet home fallback. Same build:
+  Venue decodes the enrichment fields (reviewCount, tableService)
+  and renders the web's `★ 4.5 (123) · $$` + "Full service" pill;
+  the map card's bottom padding went 12 → 38 so it no longer
+  half-covers the Apple Maps attribution. Uploaded by workflow run
+  [40391127960](https://github.com/croix153/neutral-eats/actions/runs/40391127960),
+  upload succeeded (altool, unmasked); ASC id
+  `65c6a5db-9d54-4142-89ae-7682a0ceda17`, VALID;
+  `usesNonExemptEncryption=false` declared and attached to Internal
+  Testers via `asc_build.py`; `internalBuildState =
+  IN_BETA_TESTING` (API-verified). On-device checks are Croix's.
 - **Build 1.0 (6)** — Map-state bottom-fill fix (commit `13211cb`):
   Croix's build-5 verdict was "much better", but in Map state the
   map stopped at the bottom safe-area boundary, leaving a dead
