@@ -71,6 +71,13 @@ struct VenueMapView: UIViewRepresentable {
         private var annotationsByID: [String: VenueAnnotation] = [:]
         private var venuesByID: [String: Venue] = [:]
         private var labeledIDs: Set<String> = []
+        /// Clustering is active whenever labels are not (build 11):
+        /// at wider spans, dots that would collide join a cluster
+        /// bubble instead of being silently hidden by MapKit's
+        /// collision system — Croix's "dots don't show unless you
+        /// zoom in" report. At street zoom labels take over and
+        /// every dot stands alone.
+        private var clusteringActive: Bool = true
 
         /// Street-zoom threshold for name labels, matched to the
         /// web's zoom ≥ 17 (a latitude span of ~0.0085 at this
@@ -91,6 +98,7 @@ struct VenueMapView: UIViewRepresentable {
             // annotations correctly on their first appearance.
             labeledIDs = Coordinator.computeLabeledIDs(
                 region: mapView.region, venues: Array(incoming.values))
+            clusteringActive = labeledIDs.isEmpty
             // Remove annotations whose venues left the result set.
             for (id, annotation) in annotationsByID where incoming[id] == nil {
                 mapView.removeAnnotation(annotation)
@@ -153,26 +161,65 @@ struct VenueMapView: UIViewRepresentable {
                 view.image = rendered.image
                 view.centerOffset = CGPoint(x: 0, y: rendered.centerOffsetY)
                 view.displayPriority = .required
+                view.clusteringIdentifier = nil
             } else {
                 view.image = DotImages.image(selected: selected)
                 view.centerOffset = .zero
-                view.displayPriority = .defaultHigh
+                // The selected dot must never be collision-hidden
+                // or clustered away — it marks the open detail.
+                view.displayPriority = selected ? .required : .defaultHigh
+                view.clusteringIdentifier =
+                    (!selected && clusteringActive) ? "venueDot" : nil
             }
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation { return nil }
+            if let cluster = annotation as? MKClusterAnnotation {
+                let reuseID = "venue-cluster"
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
+                    ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
+                view.annotation = annotation
+                view.canShowCallout = false
+                view.collisionMode = .circle
+                view.displayPriority = .defaultHigh
+                view.image = ClusterImages.image(count: cluster.memberAnnotations.count)
+                return view
+            }
             guard let venueAnnotation = annotation as? VenueAnnotation else { return nil }
             let reuseID = "venue-dot"
             let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
                 ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
             view.annotation = annotation
             view.canShowCallout = false
+            view.collisionMode = .circle
             applyAppearance(view, venueID: venueAnnotation.venueID, selectedID: parent?.selectedID)
             return view
         }
 
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+            // Tapping a cluster zooms into its members — the
+            // standard "this bubble is N places, come closer" move.
+            if let cluster = view.annotation as? MKClusterAnnotation {
+                mapView.deselectAnnotation(cluster, animated: false)
+                var rect = MKMapRect.null
+                for member in cluster.memberAnnotations {
+                    let point = MKMapPoint(member.coordinate)
+                    rect = rect.union(MKMapRect(x: point.x, y: point.y, width: 0, height: 0))
+                }
+                let padding = UIEdgeInsets(top: 70, left: 44, bottom: 130, right: 44)
+                if rect.isNull || rect.size.width == 0 || rect.size.height == 0 {
+                    let region = MKCoordinateRegion(
+                        center: cluster.coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                    mapView.setRegion(region, animated: true)
+                } else {
+                    let grown = rect.insetBy(dx: -rect.size.width * 0.3,
+                                             dy: -rect.size.height * 0.3)
+                    mapView.setVisibleMapRect(grown, edgePadding: padding, animated: true)
+                }
+                return
+            }
             guard let venueAnnotation = view.annotation as? VenueAnnotation else { return }
             mapView.deselectAnnotation(venueAnnotation, animated: false)
             parent?.onSelectVenue(venueAnnotation.venueID)
@@ -241,6 +288,48 @@ enum DotImages {
             path.fill()
             path.stroke()
         }
+    }
+}
+
+/// Cluster bubbles (build 11): a filled accent disc carrying the
+/// member count, in the dot palette for both themes. Diameter
+/// steps up with magnitude; images cached per (count, mode).
+enum ClusterImages {
+    private static var cache: [String: UIImage] = [:]
+
+    static func image(count: Int) -> UIImage {
+        let key = "\(count)|\(NEColor.mode == .day ? "day" : "night")"
+        if let cached = cache[key] { return cached }
+        let diameter: CGFloat = count < 10 ? 30 : (count < 100 ? 36 : 42)
+        let fill: UIColor = NEColor.mode == .day
+            ? UIColor(red: 0xD9 / 255.0, green: 0x2C / 255.0, blue: 0x57 / 255.0, alpha: 0.95)
+            : UIColor(red: 1.0, green: 0x4D / 255.0, blue: 0x7E / 255.0, alpha: 0.92)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 3
+        let size = CGSize(width: diameter, height: diameter)
+        let img = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            let rect = CGRect(origin: .zero, size: size)
+                .insetBy(dx: 1.5, dy: 1.5)
+            fill.setFill()
+            UIBezierPath(ovalIn: rect).fill()
+            UIColor.white.setStroke()
+            let ring = UIBezierPath(ovalIn: rect)
+            ring.lineWidth = 2
+            ring.stroke()
+            let text = count > 999 ? "999+" : "\(count)"
+            let fontSize: CGFloat = count < 10 ? 13 : (count < 100 ? 13 : 12)
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: fontSize, weight: .bold),
+                .foregroundColor: UIColor.white,
+            ]
+            let textSize = (text as NSString).size(withAttributes: attrs)
+            (text as NSString).draw(
+                at: CGPoint(x: (diameter - textSize.width) / 2,
+                            y: (diameter - textSize.height) / 2),
+                withAttributes: attrs)
+        }
+        cache[key] = img
+        return img
     }
 }
 
