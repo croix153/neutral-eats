@@ -69,10 +69,19 @@ try {
     $params[':west'] = $west;
     $params[':east'] = $east;
     
-    // Type filter
+    // Type filter. The clients' chips are CATEGORIES, and the
+    // server owns the category-to-type mapping: "Bars" means the
+    // bar AND pub venue types (Croix's call, 2026-10-26 — pubs
+    // belong under Bars). Keeping the mapping here means every
+    // client, including already-installed app builds that send
+    // type=bar, picks the taxonomy up with no client update.
     if ($type && in_array($type, ['restaurant', 'cafe', 'bar', 'pub'])) {
-        $whereClauses[] = 'venues.type = :type';
-        $params[':type'] = $type;
+        if ($type === 'bar') {
+            $whereClauses[] = "venues.type IN ('bar', 'pub')";
+        } else {
+            $whereClauses[] = 'venues.type = :type';
+            $params[':type'] = $type;
+        }
     }
 
     // Full-text search
