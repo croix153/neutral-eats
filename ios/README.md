@@ -3,15 +3,42 @@
 Native SwiftUI + MapKit app (no web wrapper), v1 parity with
 `web/preview.html`: dark Tokyo-palette map with venue dots (pink,
 selected cyan), brand header + search + cuisine/type chips, a
-three-stop bottom sheet with the distance-ranked list, venue detail
-with Call / Website / Directions and the data-source line, and
-Near-me (the only place location permission is asked — in context).
+two-state Map/List content region (see "Layout model" below), venue
+detail as a modal sheet with Call / Website / Directions and the
+data-source line, and Near-me (the only place location permission
+is asked — in context).
 
 - Bundle ID: `ai.croix.neutraleats` — display name **neutral eats** (all lowercase)
 - Minimum iOS 16.0, iPhone, no third-party dependencies
 - Data: production API `https://neutraleats.com/api/venues.php`
   (same params/envelope as the web preview; ranking is re-sorted to
   pure distance client-side — neutrality is the product)
+
+## Layout model (2026-10-26 redesign)
+
+The main screen is a fixed header + ONE content region with two
+states, switched by a Map/List control in the header:
+
+- **Header** — solid panel, always on top: wordmark, search field,
+  filter chips, Map/List switch. Content never slides under it.
+- **Map state** — the map fills the region; a compact card anchored
+  to the region's bottom shows the result count and the nearest
+  venue (tap → List state) and carries the Near-me button.
+- **List state** — the distance-ranked list fills the entire
+  region, from directly under the header to the physical screen
+  bottom (standard list insets; no dead band). The "Ranked by
+  distance. Nothing is sponsored — ever." line and the 500-cap
+  note live at its head.
+- **Venue detail** is a modal `.sheet` from both states.
+
+The map layer stays in the view hierarchy underneath the list
+layer, so toggling states preserves the camera, the loaded venues,
+search text and chip filter — no refetch, no layout negotiation.
+
+This replaced a three-stop bottom sheet (drag stops at
+collapsed/peek/full) whose hand-rolled geometry kept colliding
+with the top UI and stopping short of the bottom edge. The sheet
+was removed, not patched: there is no drag-detent code left.
 
 ## Pipeline (mirrors the Creams iOS lane)
 
@@ -45,6 +72,17 @@ via the ASC API:
 - **App record**: "neutral eats", app `6827198241`, bundle
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (5)** — the two-state Map/List redesign (commit
+  `bbdb700`): uploaded by workflow run
+  [40361504905](https://github.com/croix153/neutral-eats/actions/runs/40361504905),
+  all steps green; the upload step's log reads *"UPLOAD SUCCEEDED
+  with no errors"*, delivery UUID
+  `3a4ad178-f158-40a3-8b8d-03c80767c685` (the build's ASC id). Took
+  ~12 minutes to become visible in ASC, arriving already VALID;
+  `usesNonExemptEncryption=false` declared via API; attached to
+  Internal Testers; `internalBuildState = IN_BETA_TESTING`
+  (API-verified). On-device feel is UNVERIFIED until Croix
+  installs it from TestFlight.
 - **Build 1.0 (4)**: uploaded by workflow run
   [40354341480](https://github.com/croix153/neutral-eats/actions/runs/40354341480)
   (attempt 2; attempt 1 was cancelled in GitHub's queue — macOS arm64
