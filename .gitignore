@@ -1,0 +1,11 @@
+# secrets — never commit live configs
+config.php
+server/minerva/config/database.php
+# data files (databases live on the server / local data dir, not in git)
+*.db
+*.sql.gz
+# runtime
+*.log
+*.pid
+sessions/
+__pycache__/

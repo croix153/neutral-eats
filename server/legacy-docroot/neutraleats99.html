@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neutral Eats</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="main.css" />
+</head>
+<body class="cmap">
+<div class="mcontain">
+<h1>neutral eats.</h1>
+<p><i>restaurants near you instead of restaurants promoted near you</i></p><br><br>
+    <div id="map"></div>
+</div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map',{ minZoom: 1});
+
+        // function to set map view to user's location
+        function locateUser() {
+            map.locate({setView: true, maxZoom: 13}); // Default to max zoom 13 if not specified
+        }
+
+        // Check if geolocation is available and attempt to locate user
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+                    map.setView([lat, lon], 13);
+		
+		// Add a marker for the user's location
+                    var userIcon = L.icon({
+                        iconUrl: 'dirtylips.png',
+                        iconSize:     [77, 24], 
+                        iconAnchor:   [33, 12],
+                        popupAnchor:  [10, -17] // point from which the popup should open relative to the iconAnchor
+                    });
+
+                    var userMarker = L.marker([lat, lon], {icon: userIcon}).addTo(map);
+		    userMarker._leaflet_id='user';
+                    userMarker.bindPopup("You are here.").openPopup();
+                    // After setting view, fetch locations
+                    fetchLocations();
+                },
+                (error) => {
+                    // If geolocation fails or is denied, use a default location
+                    console.error("Could not locate user:", error.message);
+                    map.setView([28.578444041317972, -81.35052852617207], 13); // Default to Lunch Territory
+                    fetchLocations();
+                },
+                {timeout: 10000} // Timeout after 10 seconds
+            );
+        } else {
+            // If geolocation is not available, use a default location
+            console.log("Geolocation is not available");
+            map.setView([28.578444041317972, -81.35052852617207], 13); // Default to Lunch Territory
+            fetchLocations();
+        }
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 45,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+let markersAdded = [];
+let markers = [];
+
+function fetchLocations() {
+    console.log('fetchLocations called');
+    const bounds = map.getBounds();
+
+   // First, remove markers that are no longer in view
+    markers = markers.filter(marker => {
+	const mapBounds = map.getBounds();
+       	const lat = location.latitude;
+        const lon = location.longitude;
+  	const northEast = mapBounds.getNorthEast();
+        const southWest = mapBounds.getSouthWest();
+
+        // Check if the location is within the current map view
+        if (lat >= southWest.lat && lat <= northEast.lat && lon >= southWest.lng && lon <= northEast.lng) {
+            map.removeLayer(marker);
+	    console.log('removed marker: ',marker._leaflet_id);	
+		 if (map.hasLayer(marker)) {
+            		console.error('Marker was not removed:', marker._leaflet_id);
+        			}
+            return false; // Filter out the marker
+        }
+        return true; // Keep the marker in the array
+    });
+
+    // prevent cache fuckery
+    const timestamp = new Date().getTime();
+
+    fetch('neutraleats.php?=t=${timestamp}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+	    'Cache-Control': 'no-cache, no-store, must-revalidate',
+	    'Pragma': 'no-cache',
+            'Expires': '0'
+        },
+        body: JSON.stringify({
+            bounds: {
+                northEast: bounds.getNorthEast(),
+                southWest: bounds.getSouthWest()
+            }
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Received data:', data);
+
+if (Array.isArray(data)) {
+            const mapBounds = map.getBounds();
+            const northEast = mapBounds.getNorthEast();
+            const southWest = mapBounds.getSouthWest();
+
+            // Update all existing markers before adding new ones
+            markers.forEach(marker => {
+                const location = data.find(loc => loc.restaurant_id === marker._leaflet_id);
+                let iconHtml = `<img src="redpin.png" style="width:25px; height:28px;"/>`;
+                if(location && map.getZoom() > 15) {
+			 iconHtml += `<br>${location.restaurant_name}`;
+                }
+                marker.setIcon(L.divIcon({
+                    html: iconHtml,
+                    className: 'custom-div-icon',
+                    iconSize: [50, 50],
+                    iconAnchor: [25, 28],
+                }));
+            });
+
+            // Then, handle new markers if necessary
+            data.forEach(location => {
+                const lat = location.latitude;
+                const lon = location.longitude;
+
+                // Check if the location is within the current map view
+                if (lat >= southWest.lat && lat <= northEast.lat && lon >= southWest.lng && lon <= northEast.lng) {
+                    let marker = markers.find(m => m._leaflet_id === location.restaurant_id);
+                    if (!marker) {
+                        // If no marker exists, create one
+                        let iconHtml = `<img src="yellowpin.png" style="width:25px; height:28px;"/>`;
+                        if(map.getZoom() > 15) {
+                            iconHtml += `<br>${location.restaurant_name}`;
+                        }
+                        let restaurantIcon = L.divIcon({
+                            html: iconHtml,
+                            className: 'custom-div-icon',
+                            iconSize: [50, 50],
+                            iconAnchor: [25, 28],
+                        });
+                        marker = L.marker([lat, lon], {icon: restaurantIcon}).addTo(map);
+                        marker._leaflet_id = location.restaurant_id; // Set the marker's ID for future reference
+                        markers.push(marker);
+                        //markersAdded.push(location.restaurant_id);
+                    } 
+                    // Note: Updating is now handled by the loop above for all markers
+                }
+            });
+        } else if (data.status === 'error') {
+            console.error('Server error:', data.message);
+        } else {
+            console.error('Unexpected data format:', data);
+        }
+     removeOrphanedMarkers();
+	})
+    .catch(error => console.error('Error:', error));
+}
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+const debouncedFetchLocations = debounce(fetchLocations, 200); // 200ms delay
+map.on('moveend', debouncedFetchLocations);
+map.on('zoomend', fetchLocations);
+
+function checkSync() {
+    let mapMarkers = map._layers; // This gets all layers on the map, including markers
+    let arrayMarkers = new Set(markers.map(m => m._leaflet_id));
+    let mapMarkerIds = Object.values(mapMarkers).filter(layer => layer instanceof L.Marker).map(marker => marker._leaflet_id);
+
+    console.log('Markers in array but not on map:', [...arrayMarkers].filter(id => !mapMarkerIds.includes(id)));
+    console.log('Markers on map but not in array:', mapMarkerIds.filter(id => !arrayMarkers.has(id)));
+}
+
+function removeOrphanedMarkers() {
+    let mapMarkers = map._layers; // Get all layers on the map
+    Object.keys(mapMarkers).forEach(key => {
+        let layer = mapMarkers[key];
+        if (layer instanceof L.Marker && layer._leaflet_id !=='user' && !markers.includes(layer)) {
+            map.removeLayer(layer);
+            console.log('Removed orphaned marker:', layer._leaflet_id);
+        }
+    });
+}
+
+map.on('moveend', checkSync);
+
+
+// Call fetchLocations when the map moves or zooms
+document.addEventListener('DOMContentLoaded', locateUser);
+    </script>
+</body>
+</html>

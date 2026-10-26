@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neutral Eats Overture BBox Tool</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:system-ui,-apple-system,sans-serif; background:#0f172a; color:#f8fafc; height:100vh; display:flex; flex-direction:column; }
+        .header { padding:1rem; background:#1e293b; border-bottom:1px solid #334155; display:flex; align-items:center; gap:1rem; }
+        .logo { font-weight:700; font-size:1.5rem; }
+        .accent { color:#0ea5e9; }
+        #map { flex:1; }
+        .bbox-panel { padding:1rem; background:#1e293b; border-top:1px solid #334155; display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+        .bbox-display { font-family:monospace; background:#334155; padding:0.5rem 1rem; border-radius:0.5rem; font-size:0.875rem; flex:1; }
+        .btn { background:#0ea5e9; color:white; border:none; padding:0.75rem 1.5rem; border-radius:0.5rem; cursor:pointer; font-weight:600; }
+        .btn:hover { background:#0284c7; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Neutral<span class="accent">Eats</span></div>
+        <div style="color:#94a3b8;">Overture Maps BBox Tool</div>
+    </header>
+    <div id="map"></div>
+    <div class="bbox-panel">
+        <div class="bbox-display" id="bbox-display">BBox: Loading...</div>
+        <button class="btn" id="open-fused-btn">Get the bbox here</button>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([28.538, -81.379], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM' }).addTo(map);
+        let currentBbox = null;
+        function updateBbox() {
+            const b = map.getBounds();
+            currentBbox = b.getWest().toFixed(4) + ',' + b.getSouth().toFixed(4) + ',' + b.getEast().toFixed(4) + ',' + b.getNorth().toFixed(4);
+            document.getElementById('bbox-display').textContent = 'BBox: ' + currentBbox;
+        }
+        map.on('moveend', updateBbox);
+        map.on('zoomend', updateBbox);
+        updateBbox();
+        document.getElementById('open-fused-btn').addEventListener('click', () => {
+            const url = 'https://www.fused.io/server/v1/realtime-shared/UDF_Overture_Maps_Example/run/file?bbox=' + currentBbox + '&overture_type=place&format=geojson';
+            window.open(url, '_blank');
+        });
+    </script>
+</body>
+</html>

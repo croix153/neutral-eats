@@ -1,0 +1,8 @@
+<?php
+// Copy to database.php and fill in. NEVER commit the real file.
+return [
+    'host' => 'localhost',
+    'user' => 'neutraleats_user',
+    'password' => 'CHANGE_ME',
+    'database' => 'neutraleats',
+];

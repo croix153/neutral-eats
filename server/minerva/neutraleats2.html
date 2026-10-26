@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neutral Eats 3.0</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:system-ui,-apple-system,sans-serif; background:#0f172a; color:#f8fafc; }
+        .app { height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+        .header { padding:1rem; background:#1e293b; border-bottom:1px solid #334155; display:flex; align-items:center; gap:1rem; flex-shrink:0; position:relative; z-index:1000; isolation:isolate; }
+        .header-toggle { background:transparent; color:#f8fafc; border:none; padding:0.5rem; cursor:pointer; font-size:1.5rem; display:flex; align-items:center; justify-content:center; }
+        .logo { font-weight:700; font-size:1.5rem; }
+        .accent { color:#0ea5e9; }
+        .tagline { font-size:0.875rem; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .main { flex:1 1 auto; display:flex; position:relative; min-height:0; }
+        .sidebar { width:320px; background:#1e293b; border-right:1px solid #334155; display:flex; flex-direction:column; height:100%; flex-shrink:0; transition: transform 0.3s ease; will-change: transform; contain: layout style; overflow:hidden; }
+        .sidebar-header { padding:1rem; border-bottom:1px solid #334155; background:#1e293b; flex-shrink:0; }
+        .sidebar-content { flex:1; overflow-y:auto; padding:1rem; }
+        .search { width:100%; padding:0.5rem; border:1px solid #475569; border-radius:0.5rem; background:#334155; color:#f8fafc; margin-bottom:0.75rem; }
+        .filter-chip { display:inline-block; padding:0.25rem 0.75rem; margin:0.25rem; border:1px solid #475569; border-radius:1rem; background:#334155; cursor:pointer; }
+        /* Move Leaflet zoom controls to bottom right to avoid sidebar overlap */
+        .leaflet-control-zoom { margin-bottom: 80px !important; }
+        /* Ensure header/footer stay above Leaflet */
+        .leaflet-container { z-index: 1 !important; }
+        .header, .footer { z-index: 1000 !important; }
+        .filter-chip.active { background:#0ea5e9; border-color:#0ea5e9; }
+        .venue-card { padding:0.75rem; border:1px solid #334155; border-radius:0.5rem; margin-bottom:0.5rem; cursor:pointer; background:#1e293b; contain: layout style paint; }
+        .venue-card:hover, .venue-card.active { background:#2d3748; border-color:#0ea5e9; }
+        .venue-cuisine { display:inline-block; padding:0.15rem 0.5rem; margin-top:0.25rem; background:#0ea5e9; color:white; border-radius:0.75rem; font-size:0.75rem; }
+        .map { flex:1; position:relative; overflow:hidden; z-index:1; }
+        #map { width:100%; height:100%; min-height:400px; touch-action:pan-x pan-y; position:relative; overscroll-behavior:contain; }
+        html, body { height:100%; margin:0; overflow:hidden; }
+        .footer { padding:0.75rem; background:#1e293b; border-top:1px solid #334155; text-align:center; font-size:0.75rem; color:#94a3b8; flex:0 0 auto; min-height:44px; display:flex; align-items:center; justify-content:center; position:relative; z-index:1000; isolation:isolate; box-sizing:border-box; }
+        /* Header toggle button - always visible */
+        #sidebar-toggle {
+            background: transparent;
+            color: #f8fafc;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+        .loading-more { text-align:center; padding:1rem; color:#64748b; font-size:0.875rem; }
+        .marker-cluster { background:rgba(14, 165, 233, 0.6); border-radius:50%; }
+        .marker-cluster div { background:#0ea5e9; color:white; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; }
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                width: 85vw;
+                max-width: 360px;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+                border-right: none;
+                border-bottom: 1px solid #334155;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-header { padding: 1rem; }
+            .sidebar-content { padding: 0.75rem; }
+            .main { padding-left: 0 !important; }
+            .header { padding: 0.75rem; }
+            .tagline { display:none; }
+            .logo { font-size: 1.25rem; }
+            /* Move zoom control higher on mobile */
+            .leaflet-control-zoom { margin-bottom: 100px !important; margin-right: 10px !important; }
+        }
+        .sidebar-overlay {
+            display:none;
+            position:fixed;
+            top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.5);
+            z-index:999;
+        }
+        @media (max-width: 1024px) {
+            .sidebar-overlay.show { display:block; }
+            .footer { font-size:0.7rem; padding:0.5rem; min-height:40px; }
+        }
+        /* Desktop specific fixes */
+        @media (min-width: 1025px) {
+            .sidebar {
+                height: 100%;
+                max-height: calc(100dvh - 60px - 44px); /* viewport - header - footer */
+            }
+            .sidebar-content {
+                overflow-y: auto;
+                overflow-x: hidden;
+                max-height: 100%;
+            }
+        }
+        .spinner {
+            border: 3px solid #334155;
+            border-top: 3px solid #0ea5e9;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 0.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Dark scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        /* Firefox scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #334155 #0f172a;
+        }
+        
+        /* Venue name labels - no background, curved around pin */
+        .venue-label-container {
+            display: flex !important;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+        }
+        .venue-label {
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+            pointer-events: none;
+            text-shadow: 
+                -1px -1px 0 #0f172a,
+                1px -1px 0 #0f172a,
+                -1px 1px 0 #0f172a,
+                1px 1px 0 #0f172a,
+                0 1px 3px rgba(0,0,0,0.8);
+            letter-spacing: 0.2px;
+            transition: opacity 0.2s ease;
+            text-align: center;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <button id="sidebar-toggle" class="header-toggle">☰</button>
+            <div class="logo">Neutral<span class="accent">Eats</span> <sup>3.0</sup></div>
+            <div class="tagline">Restaurants near you, instead of restaurants promoted near you</div>
+            <button id="locate-me" style="margin-left:auto; background:#0ea5e9; color:white; border:none; padding:0.5rem 1rem; border-radius:0.5rem; cursor:pointer; font-size:0.875rem;">📍 Locate Me</button>
+        </header>
+        <main class="main">
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <input class="search" type="text" placeholder="Search restaurants..." id="search">
+                    <div>
+                        <span class="filter-chip active" data-filter="all">All</span>
+                        <span class="filter-chip" data-filter="restaurant">Restaurants</span>
+                        <span class="filter-chip" data-filter="bar">Bars</span>
+                        <span class="filter-chip" data-filter="cafe">Cafés</span>
+                    </div>
+                </div>
+                <div class="sidebar-content">
+                    <div id="results">
+                        <div style="padding:2rem; text-align:center; color:#64748b;">Loading venues...</div>
+                    </div>
+                    <div id="load-more-container"></div>
+                </div>
+            </aside>
+            <div class="map">
+                <div id="map"></div>
+            </div>
+        </main>
+        <footer class="footer">
+            neutraleats.com • No ads. No bias. Just food.
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            INITIAL_VENUE_LIMIT: 25,
+            VENUES_PER_PAGE: 25,
+            MAX_VENUES: 200,
+            DEBOUNCE_DELAY: 100,
+            API_BASE_URL: './api' // Local API endpoint
+        };
+
+        let map, markers, userMarker, venues = [], activeFilter = 'all';
+        let displayedVenues = 0;
+        let isSidebarOpen = false;
+        let currentMarkerIds = new Set();
+        let markerCache = new Map();
+        let labelCache = new Map(); // Cache for venue name labels
+        const LABEL_ZOOM_THRESHOLD = 17; // Show labels when zoomed in to level 17+
+
+        // Orlando sample data for immediate display
+        const samples = [
+            { id:1, name:"The Rusty Spoon", lat:28.5411, lng:-81.3792, type:"restaurant", cuisine:"American" },
+            { id:2, name:"Lake Eola Park Café", lat:28.5441, lng:-81.3728, type:"cafe", cuisine:"Coffee" },
+            { id:3, name:"Harry Buffalo", lat:28.5408, lng:-81.3795, type:"bar", cuisine:"American" },
+            { id:4, name:"The Boheme", lat:28.5395, lng:-81.3742, type:"restaurant", cuisine:"European" },
+            { id:5, name:"Downtown Credo", lat:28.5402, lng:-81.3771, type:"cafe", cuisine:"Coffee" },
+            { id:6, name:"Craft & Common", lat:28.5409, lng:-81.3778, type:"cafe", cuisine:"Coffee" },
+            { id:7, name:"The Stubborn Mule", lat:28.5413, lng:-81.3789, type:"restaurant", cuisine:"American" },
+            { id:8, name:"The Falcon Bar", lat:28.5421, lng:-81.3756, type:"bar", cuisine:"Cocktails" }
+        ];
+
+        function initMap() {
+            map = L.map('map', {
+                tap: true,
+                touchZoom: true,
+                scrollWheelZoom: 'center',
+                dragging: true,
+                tapTolerance: 15,
+                preferCanvas: true,
+                zoomControl: false // Disable default zoom control, we'll add it in bottom-right
+            }).setView([28.538, -81.379], 13);
+            
+            // Add zoom control to bottom-right to avoid sidebar overlap
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            markers = L.markerClusterGroup({
+                chunkedLoading: true,
+                spiderfyOnMaxZoom: false,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                maxClusterRadius: 60,
+                animate: false,
+                animateAddingMarkers: false,
+                disableClusteringAtZoom: 18,
+                iconCreateFunction: function(cluster) {
+                    return L.divIcon({
+                        html: '<div>' + cluster.getChildCount() + '</div>',
+                        className: 'marker-cluster',
+                        iconSize: L.point(40, 40)
+                    });
+                }
+            });
+            map.addLayer(markers);
+            
+            // Cluster click handler: at close zoom, zoom to show names instead of spiderfying
+            markers.on('clusterclick', function(e) {
+                var cluster = e.layer;
+                var currentZoom = map.getZoom();
+                
+                // If we're at zoom 15-17 (close but not showing names yet), zoom to name level
+                if (currentZoom >= 15 && currentZoom < LABEL_ZOOM_THRESHOLD) {
+                    map.flyTo(cluster.getLatLng(), LABEL_ZOOM_THRESHOLD, { duration: 0.3 });
+                } else {
+                    // Otherwise, normal behavior (zoom to bounds)
+                    map.fitBounds(cluster.getBounds());
+                }
+            });
+        }
+
+        function getPriceRange(cuisine, brand, name) {
+            const c = (cuisine || '').toLowerCase();
+            const b = (brand || '').toLowerCase();
+            const n = (name || '').toLowerCase();
+            
+            // Budget / Fast Food ($)
+            if (b.includes('mcdonald') || b.includes('burger king') || b.includes('wendy') || 
+                b.includes('taco bell') || b.includes('kfc') || b.includes('popeyes') ||
+                b.includes('arbys') || b.includes('sonic') || b.includes('jack in the box') ||
+                b.includes('whataburger') || b.includes('in-n-out') || b.includes('five guys') ||
+                n.includes('fast food') || n.includes('drive thru') || n.includes('drive-in') ||
+                n.includes('subway') || n.includes('jimmy john') || n.includes('jersey mike') ||
+                n.includes('firehouse subs') || n.includes('panda express') || n.includes('chipotle') ||
+                n.includes('qdoba') || n.includes('moes') || n.includes('dairy queen') ||
+                n.includes('dunkin') || n.includes('starbucks') || n.includes('dutch bros') ||
+                n.includes('smoothie king') || n.includes('tropical smoothie') ||
+                n.includes('pizza hut') || n.includes('dominos') || n.includes('papa john') ||
+                n.includes('little caesars') || n.includes('chick-fil-a') || n.includes('chickfila') ||
+                n.includes('raising cane') || n.includes('zaxby') || n.includes('wingstop') ||
+                n.includes('buffalo wild wings') || n.includes('hooters')) return '💲';
+            
+            // High End ($$$)
+            if (c.includes('fine dining') || c.includes('steakhouse') || c.includes('steak house') ||
+                c.includes('fine_dining') || n.includes('steakhouse') || n.includes('chophouse') ||
+                n.includes('fine dining') || n.includes('upscale') || n.includes('luxury') ||
+                n.includes('prime steak') || n.includes('ocean prime') || n.includes('ruths chris') ||
+                n.includes('flemings') || n.includes('mortons') || n.includes('del friscos') ||
+                n.includes('capital grille') || n.includes('flemings') || n.includes('palm steak') ||
+                n.includes('peter luger') || n.includes('smith & wollensky') ||
+                n.includes('nobu') || n.includes('momofuku') || n.includes('eleven madison') ||
+                n.includes('per se') || n.includes('le bernardin') || n.includes('jean georges') ||
+                n.includes('daniel') || n.includes('the french laundry') || n.includes('alinea')) return '💲💲💲';
+            
+            // Mid-Range ($$) - chains and nicer places
+            if (b.includes('applebees') || b.includes('chilis') || b.includes('tgi fridays') ||
+                b.includes('olive garden') || b.includes('red lobster') || b.includes('outback') ||
+                b.includes('longhorn') || b.includes('texas roadhouse') || b.includes('cheddars') ||
+                b.includes('bahama breeze') || b.includes('seasons 52') || b.includes('yard house') ||
+                b.includes('bonefish grill') || b.includes('carrabbas') || b.includes('macaroni grill') ||
+                b.includes('bjs restaurant') || b.includes('cheesecake factory') ||
+                n.includes('grill') || n.includes('bistro') || n.includes('brasserie') ||
+                n.includes('gastropub') || n.includes('wine bar') || n.includes('chophouse') ||
+                n.includes('seafood grill') || n.includes('sushi bar') ||
+                c.includes('italian') || c.includes('french') || c.includes('japanese') ||
+                c.includes('seafood') || c.includes('steak')) return '💲💲';
+            
+            // Default to $
+            return '💲';
+        }
+        
+        // Infer cuisine from restaurant name
+        function inferCuisine(name, existingCuisine) {
+            if (existingCuisine && existingCuisine !== 'Various') return existingCuisine;
+            if (!name) return 'Various';
+            
+            const n = name.toLowerCase();
+            
+            // Common restaurant patterns
+            if (n.includes('taco') || n.includes('burrito') || n.includes('mexican') || n.includes('cantina')) return 'Mexican';
+            if (n.includes('pizza') || n.includes('pizzeria') || n.includes('italian') || n.includes('trattoria') || n.includes('osteria')) return 'Italian';
+            if (n.includes('burger') || n.includes('hamburger') || n.includes('shake shack') || n.includes('five guys')) return 'Burgers';
+            if (n.includes('sushi') || n.includes('japanese') || n.includes('ramen') || n.includes('hibachi')) return 'Japanese';
+            if (n.includes('chinese') || n.includes('wok') || n.includes('dragon') || n.includes('garden') || n.includes('panda express')) return 'Chinese';
+            if (n.includes('thai') || n.includes('pad thai')) return 'Thai';
+            if (n.includes('indian') || n.includes('curry') || n.includes('tandoor')) return 'Indian';
+            if (n.includes('bbq') || n.includes('barbecue') || n.includes('smokehouse') || n.includes('smoke')) return 'BBQ';
+            if (n.includes('seafood') || n.includes('fish') || n.includes('lobster') || n.includes('crab') || n.includes('shrimp')) return 'Seafood';
+            if (n.includes('steak') || n.includes('chophouse') || n.includes('grill')) return 'Steakhouse';
+            if (n.includes('chicken') || n.includes('wings') || n.includes('popeyes') || n.includes('kfc') || n.includes('chick-fil')) return 'Chicken';
+            if (n.includes('sandwich') || n.includes('sub') || n.includes('deli') || n.includes('jersey mike') || n.includes('firehouse')) return 'Sandwiches';
+            if (n.includes('coffee') || n.includes('cafe') || n.includes('espresso') || n.includes('dunkin') || n.includes('starbucks')) return 'Coffee';
+            if (n.includes('ice cream') || n.includes('gelato') || n.includes('frozen') || n.includes('dairy queen')) return 'Dessert';
+            if (n.includes('brewery') || n.includes('pub') || n.includes('tavern')) return 'Pub';
+            if (n.includes('donut') || n.includes('bagel') || n.includes('bakery') || n.includes('krispy kreme')) return 'Bakery';
+            if (n.includes('smoothie') || n.includes('juice') || n.includes('acai')) return 'Healthy';
+            if (n.includes('pho') || n.includes('vietnamese') || n.includes('banh mi')) return 'Vietnamese';
+            if (n.includes('greek') || n.includes('gyro') || n.includes('mediterranean') || n.includes('falafel')) return 'Mediterranean';
+            if (n.includes('korean') || n.includes('bibimbap') || n.includes('kimchi')) return 'Korean';
+            if (n.includes('breakfast') || n.includes('brunch') || n.includes('waffle') || n.includes('pancake') || n.includes('ihop') || n.includes('denny')) return 'Breakfast';
+            if (n.includes('tapas') || n.includes('spanish') || n.includes('paella')) return 'Spanish';
+            if (n.includes('french') || n.includes('bistro') || n.includes('crepe')) return 'French';
+            if (n.includes('cajun') || n.includes('creole') || n.includes('jambalaya')) return 'Cajun';
+            
+            return existingCuisine || 'Various';
+        }
+
+        // Map database type values to display strings
+        function mapType(type) {
+            const typeMap = {
+                '0': 'restaurant',
+                '1': 'cafe', 
+                '2': 'bar',
+                '3': 'pub',
+                'restaurant': 'restaurant',
+                'cafe': 'cafe',
+                'bar': 'bar',
+                'pub': 'pub'
+            };
+            return typeMap[type] || type || 'restaurant';
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function getFilteredVenues() {
+            let filtered = venues;
+            if (activeFilter !== 'all') {
+                filtered = filtered.filter(v => v.type === activeFilter);
+            }
+            return filtered.slice(0, CONFIG.MAX_VENUES);
+        }
+
+        function renderMarkers() {
+            const filtered = getFilteredVenues();
+            const newIds = new Set(filtered.map(v => v.id));
+            
+            const toRemove = [];
+            currentMarkerIds.forEach(id => {
+                if (!newIds.has(id)) {
+                    toRemove.push(id);
+                }
+            });
+            
+            const toAdd = [];
+            filtered.forEach(v => {
+                if (!currentMarkerIds.has(v.id)) {
+                    toAdd.push(v);
+                }
+            });
+            
+            toRemove.forEach(id => {
+                const marker = markerCache.get(id);
+                if (marker) {
+                    markers.removeLayer(marker);
+                    markerCache.delete(id);
+                    currentMarkerIds.delete(id);
+                }
+                // Also remove label if exists
+                const label = labelCache.get(id);
+                if (label) {
+                    map.removeLayer(label);
+                    labelCache.delete(id);
+                }
+            });
+            
+            toAdd.forEach(v => {
+                const cuisine = inferCuisine(v.name, v.cuisine);
+                const typeDisplay = mapType(v.type);
+                const popup = `<b>${v.name}</b><br>
+                    <small>${typeDisplay}</small><br>
+                    <span style="color:#0ea5e9">${cuisine}</span><br>
+                    <small>${getPriceRange(cuisine, v.brand, v.name)}</small>`;
+                const marker = L.marker([v.lat, v.lng]);
+                marker.bindPopup(popup);
+                marker.venueId = v.id;
+                markers.addLayer(marker);
+                markerCache.set(v.id, marker);
+                currentMarkerIds.add(v.id);
+                
+                // Create label but don't add to map yet - we'll show based on zoom
+                const label = L.divIcon({
+                    className: 'venue-label-container',
+                    html: `<div class="venue-label">${v.name}</div>`,
+                    iconSize: [100, 20],
+                    iconAnchor: [50, 0]
+                });
+                const labelMarker = L.marker([v.lat, v.lng], { icon: label, interactive: false });
+                labelMarker.venueId = v.id;
+                labelCache.set(v.id, labelMarker);
+            });
+            
+            // Update label visibility based on current zoom
+            updateLabelVisibility();
+        }
+        
+        // Show/hide venue name labels based on zoom level
+        function updateLabelVisibility() {
+            const currentZoom = map.getZoom();
+            const shouldShowLabels = currentZoom >= LABEL_ZOOM_THRESHOLD;
+            
+            labelCache.forEach((label, id) => {
+                if (shouldShowLabels) {
+                    // Only show if marker is still on map
+                    if (currentMarkerIds.has(id) && !map.hasLayer(label)) {
+                        label.addTo(map);
+                    }
+                } else {
+                    if (map.hasLayer(label)) {
+                        map.removeLayer(label);
+                    }
+                }
+            });
+        }
+
+        function renderList(reset = false) {
+            const resultsEl = document.getElementById('results');
+            const filtered = getFilteredVenues();
+            
+            if (filtered.length === 0) {
+                resultsEl.innerHTML = '<div style="padding:2rem; text-align:center; color:#64748b;">No venues found</div>';
+                displayedVenues = 0;
+                updateLoadMoreButton();
+                return;
+            }
+
+            if (reset) {
+                resultsEl.innerHTML = '';
+                displayedVenues = 0;
+            }
+
+            const toShow = Math.min(filtered.length, displayedVenues + CONFIG.VENUES_PER_PAGE);
+            const newVenues = filtered.slice(displayedVenues, toShow);
+            
+            const fragment = document.createDocumentFragment();
+            newVenues.forEach(v => {
+                const cuisine = inferCuisine(v.name, v.cuisine);
+                const typeDisplay = mapType(v.type);
+                const card = document.createElement('div');
+                card.className = 'venue-card';
+                card.dataset.id = v.id;
+                card.dataset.lat = v.lat;
+                card.dataset.lng = v.lng;
+                card.innerHTML = `
+                    <strong>${v.name}</strong><br>
+                    <small>${typeDisplay}</small>
+                    <div style="margin-top:0.25rem; font-size:0.75rem; color:#64748b;">
+                        source: ${v.source || 'unknown'}
+                    </div>
+                    <div style="margin-top:0.25rem; font-size:0.8rem; color:#94a3b8;">
+                        ${getPriceRange(cuisine, v.brand, v.name)}
+                    </div>
+                    <div class="venue-cuisine">${cuisine}</div>
+                `;
+                card.addEventListener('click', () => handleVenueClick(v, card));
+                fragment.appendChild(card);
+            });
+            
+            resultsEl.appendChild(fragment);
+            displayedVenues = toShow;
+            updateLoadMoreButton(filtered.length);
+        }
+
+        function updateLoadMoreButton(totalCount) {
+            const container = document.getElementById('load-more-container');
+            if (displayedVenues < totalCount && displayedVenues < CONFIG.MAX_VENUES) {
+                container.innerHTML = `<div class="loading-more" id="load-more-btn">Load more (${displayedVenues}/${Math.min(totalCount, CONFIG.MAX_VENUES)})...</div>`;
+                document.getElementById('load-more-btn').addEventListener('click', () => renderList(false));
+            } else {
+                container.innerHTML = `<div class="loading-more">${displayedVenues} venues shown</div>`;
+            }
+        }
+
+        function handleVenueClick(venue, cardElement) {
+            document.querySelectorAll('.venue-card').forEach(c => c.classList.remove('active'));
+            cardElement.classList.add('active');
+            
+            // Fly to location first
+            map.flyTo([venue.lat, venue.lng], 16, {duration: 0.5});
+            
+            // Wait for fly animation to complete, then open popup
+            map.once('moveend', () => {
+                // Small delay to allow marker clusters to update
+                setTimeout(() => {
+                    markers.zoomToShowLayer(markerCache.get(venue.id), () => {
+                        const marker = markerCache.get(venue.id);
+                        if (marker) {
+                            marker.openPopup();
+                        }
+                    });
+                }, 100);
+            });
+            
+            if (window.innerWidth <= 1024) {
+                closeSidebar();
+            }
+        }
+
+        // NEW: Fetch from local server-side API
+        async function fetchVenues(bounds) {
+            console.log('🦉 Fetching from local API...');
+            
+            const south = bounds.getSouth();
+            const west = bounds.getWest();
+            const north = bounds.getNorth();
+            const east = bounds.getEast();
+            
+            const url = `${CONFIG.API_BASE_URL}/venues.php?south=${south}&west=${west}&north=${north}&east=${east}&limit=${CONFIG.MAX_VENUES}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                if (data.success && data.venues) {
+                    console.log(`🦉 Loaded ${data.venues.length} venues from local database`);
+                    venues = data.venues;
+                    displayedVenues = 0;
+                    renderMarkers();
+                    renderList(true);
+                } else {
+                    // Fallback to samples if API fails
+                    console.log('🦉 API returned no venues, using samples');
+                    venues = [...samples];
+                    displayedVenues = 0;
+                    renderMarkers();
+                    renderList(true);
+                }
+            } catch (error) {
+                console.log('🦉 Local API error:', error.message);
+                // Fallback to samples
+                venues = [...samples];
+                displayedVenues = 0;
+                renderMarkers();
+                renderList(true);
+            }
+        }
+
+        // Sidebar functions
+        function openSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.add('open');
+            overlay.classList.add('show');
+            isSidebarOpen = true;
+            document.getElementById('sidebar-toggle').textContent = '✕';
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+            isSidebarOpen = false;
+            document.getElementById('sidebar-toggle').textContent = '☰';
+        }
+
+        function toggleSidebar() {
+            if (isSidebarOpen) closeSidebar();
+            else openSidebar();
+        }
+
+        // Event listeners
+        document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+        document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
+
+        // Filters
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeFilter = chip.dataset.filter;
+                displayedVenues = 0;
+                renderMarkers();
+                renderList(true);
+            });
+        });
+
+        // Search with debounce
+        const debouncedSearch = debounce((term) => {
+            const cards = document.querySelectorAll('.venue-card');
+            cards.forEach(card => {
+                const name = card.querySelector('strong').textContent.toLowerCase();
+                card.style.display = name.includes(term) ? 'block' : 'none';
+            });
+        }, CONFIG.DEBOUNCE_DELAY);
+
+        document.getElementById('search').addEventListener('input', (e) => {
+            debouncedSearch(e.target.value.toLowerCase());
+        });
+
+        // Locate Me
+        document.getElementById('locate-me').addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert('Geolocation not supported');
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    map.setView([lat, lng], 14);
+                    if (userMarker) {
+                        userMarker.setLatLng([lat, lng]);
+                    } else {
+                        userMarker = L.marker([lat, lng], {
+                            icon: L.divIcon({
+                                className: 'user-location-icon',
+                                html: '<div style="background:#0ea5e9; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }).addTo(map);
+                    }
+                    const smallBounds = L.latLngBounds([lat - 0.045, lng - 0.045], [lat + 0.045, lng + 0.045]);
+                    fetchVenues(smallBounds);
+                },
+                (err) => {
+                    console.warn('Geolocation error:', err.message);
+                    alert('Could not get location.');
+                },
+                { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+            );
+        });
+
+        // Map move handler with debounce
+        const debouncedMapMove = debounce(() => {
+            const bounds = map.getBounds();
+            fetchVenues(bounds);
+        }, CONFIG.DEBOUNCE_DELAY);
+
+        // Init
+        function initApp() {
+            console.log('🦉 Neutral Eats 3.0 Server Edition initializing...');
+            initMap();
+            
+            map.on('moveend', debouncedMapMove);
+            map.on('zoomend', updateLabelVisibility);
+            
+            // Show samples immediately, then fetch from API
+            venues = [...samples];
+            renderMarkers();
+            renderList(true);
+            
+            // Fetch real data
+            const bounds = map.getBounds();
+            fetchVenues(bounds);
+            
+            // Request geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        console.log('🦉 Got user location:', lat, lng);
+                        map.setView([lat, lng], 14);
+                        userMarker = L.marker([lat, lng], {
+                            icon: L.divIcon({
+                                className: 'user-location-icon',
+                                html: '<div style="background:#0ea5e9; width:24px; height:24px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 12]
+                            })
+                        }).addTo(map);
+                        const userBounds = L.latLngBounds([lat - 0.045, lng - 0.045], [lat + 0.045, lng + 0.045]);
+                        fetchVenues(userBounds);
+                    },
+                    (err) => {
+                        console.log('🦉 Geolocation denied:', err.message);
+                    },
+                    { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+                );
+            }
+        }
+        
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            initApp();
+        } else {
+            document.addEventListener('DOMContentLoaded', initApp);
+        }
+    </script>
+</body>
+</html>
