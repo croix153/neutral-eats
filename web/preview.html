@@ -131,6 +131,16 @@
     padding:9px 0 4px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:0 0 auto;
   }
   #sheet .handle i{width:44px;height:5px;border-radius:3px;background:rgba(245,234,217,.28)}
+  #sheet .handle{position:relative}
+  #sheetChevron{
+    position:absolute;right:18px;top:50%;transform:translateY(-50%);
+    color:var(--ink-faint);font-size:12px;line-height:1;transition:transform .25s;
+  }
+  #sheet.collapsed #sheetChevron{transform:translateY(-50%) rotate(180deg)}
+  /* collapsed: only handle + summary head remain; the map owns the screen */
+  #sheet.collapsed #list{display:none}
+  #sheet.collapsed #detail{display:none}
+  #sheet.collapsed .capnote{display:none!important}
   .sheethead{padding:2px 18px 10px;border-bottom:1px solid var(--line);flex:0 0 auto}
   .sheethead .count{font-size:17px;font-weight:700}
   .sheethead .count em{font-style:normal;color:var(--accent)}
@@ -240,7 +250,7 @@
 </header>
 
 <section id="sheet" aria-label="Results">
-  <div class="handle" id="sheetHandle"><i></i></div>
+  <div class="handle" id="sheetHandle"><i></i><span id="sheetChevron" aria-hidden="true">&#9662;</span></div>
 
   <div id="listView" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">
     <div class="sheethead">
@@ -647,33 +657,65 @@
     }, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
   });
 
-  /* ================= bottom sheet drag (mobile) ================= */
-  var sheet = $('sheet'), handle = $('sheetHandle');
-  function expandSheet(){
-    if(window.innerWidth < 900) sheet.style.height = '82vh';
+  /* ============ bottom sheet: collapsed / peek / full (mobile) ============ */
+  var sheet = $('sheet'), handle = $('sheetHandle'), toastEl = $('toast');
+  var sheetState = 'peek';   // 'collapsed' | 'peek' | 'full'
+  function capNoteH(){
+    var c = $('capNote');
+    return (c && c.classList.contains('show')) ? c.offsetHeight + 4 : 0;
   }
+  function collapsedH(){
+    var head = sheet.querySelector('.sheethead');
+    return handle.offsetHeight + (head ? head.offsetHeight - capNoteH() : 0) + 2;
+  }
+  function setSheet(state, px){
+    if(window.innerWidth >= 900) return;
+    sheetState = state;
+    sheet.classList.toggle('collapsed', state === 'collapsed');
+    var vh = window.innerHeight;
+    var h = (px != null) ? px
+      : state === 'collapsed' ? collapsedH()
+      : state === 'full' ? Math.round(vh * 0.82)
+      : Math.round(vh * 0.46);
+    sheet.style.height = h + 'px';
+    toastEl.style.bottom = (h + 14) + 'px';
+  }
+  function expandSheet(){ setSheet('full'); }
   (function(){
-    var startY = 0, startH = 0, dragging = false;
+    var startY = 0, startH = 0, dragging = false, suppressClick = false;
     function onDown(e){
       if(window.innerWidth >= 900) return;
-      dragging = true; startY = e.touches ? e.touches[0].clientY : e.clientY;
+      dragging = true; suppressClick = false;
+      startY = e.touches ? e.touches[0].clientY : e.clientY;
       startH = sheet.getBoundingClientRect().height;
+      sheet.classList.remove('collapsed');
       e.preventDefault();
     }
     function onMove(e){
       if(!dragging) return;
       var y = e.touches ? e.touches[0].clientY : e.clientY;
       var h = startH + (startY - y);
-      var min = window.innerHeight * 0.22, max = window.innerHeight * 0.88;
+      var min = collapsedH(), max = window.innerHeight * 0.88;
       h = Math.max(min, Math.min(max, h));
       sheet.style.height = h + 'px';
+      toastEl.style.bottom = (h + 14) + 'px';
+      if(Math.abs(h - startH) > 6) suppressClick = true;
     }
     function onUp(){
       if(!dragging) return;
       dragging = false;
-      // snap: under 55% viewport -> peek height, else near-full
-      var h = sheet.getBoundingClientRect().height;
-      sheet.style.height = (h > window.innerHeight * 0.55) ? '82vh' : '46vh';
+      // snap to the nearest stop: collapsed / peek / full
+      var vh = window.innerHeight;
+      var stops = [
+        { state:'collapsed', h: collapsedH() },
+        { state:'peek',      h: Math.round(vh * 0.46) },
+        { state:'full',      h: Math.round(vh * 0.82) }
+      ];
+      var h = sheet.getBoundingClientRect().height, best = stops[0];
+      for(var i = 0; i < stops.length; i++){
+        if(Math.abs(stops[i].h - h) < Math.abs(best.h - h)) best = stops[i];
+      }
+      setSheet(best.state);
     }
     handle.addEventListener('touchstart', onDown, { passive:false });
     handle.addEventListener('mousedown', onDown);
@@ -682,8 +724,15 @@
     window.addEventListener('touchend', onUp);
     window.addEventListener('mouseup', onUp);
     handle.addEventListener('click', function(){
-      if(window.innerWidth >= 900) return;
-      sheet.style.height = (sheet.getBoundingClientRect().height > window.innerHeight * 0.55) ? '46vh' : '82vh';
+      if(window.innerWidth >= 900 || suppressClick) return;
+      // tap the handle: collapse down to the summary bar, or restore the list
+      setSheet(sheetState === 'collapsed' ? 'peek' : 'collapsed');
+    });
+    window.addEventListener('resize', function(){
+      if(window.innerWidth >= 900){
+        sheet.style.height = ''; toastEl.style.bottom = '';
+        sheet.classList.remove('collapsed');
+      }
     });
   })();
 
