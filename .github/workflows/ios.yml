@@ -8,19 +8,21 @@ name: Build iOS (TestFlight)
 # PREREQUISITE: the app record for ai.croix.neutraleats must exist in
 # App Store Connect (the ASC API cannot create app records — POST
 # /v1/apps is 403 for any API key; the record is a one-time web-UI
-# step). Until it exists, the archive/verify steps still pass and the
-# upload step fails with Apple's "no application records found" error,
-# which is marked continue-on-error so the run stays green and the
-# verified .ipa is kept as an artifact. Bundle ID, distribution cert
-# and the "neutral eats App Store" profile were created via the ASC
-# API on 2026-10-26.
+# step). The record was created on 2026-10-26 (app 6827198241), so the
+# upload step is load-bearing: its failure fails the run. Bundle ID,
+# distribution cert and the "neutral eats App Store" profile were
+# created via the ASC API on 2026-10-26.
+#
+# The runner is macos-26 because Apple requires uploads built with
+# the iOS 26 SDK (Xcode 26+); the previous macos-14 pin (Xcode 15.4,
+# iOS 17.5 SDK) built fine but Apple rejected the upload.
 
 on:
   workflow_dispatch:
 
 jobs:
   build-ios:
-    runs-on: macos-14
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,11 +111,9 @@ jobs:
           retention-days: 7
 
       - name: Upload to App Store Connect
-        # Expected to fail until the app record exists in App Store
-        # Connect (see header). continue-on-error keeps the verified
-        # artifact green; once the record exists this completes the
-        # TestFlight delivery on the next dispatch.
-        continue-on-error: true
+        # The app record now exists (app 6827198241), so this step is
+        # the delivery itself: no continue-on-error — an upload
+        # failure fails the run loudly instead of masking as green.
         env:
           ASC_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
