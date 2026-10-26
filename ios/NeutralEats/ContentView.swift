@@ -241,10 +241,20 @@ struct ContentView: View {
                     presentDetail(id: id)
                 }
             )
+            // Full-bleed to the physical screen bottom, under the
+            // home indicator — the same treatment the list layer
+            // gets. Without this the map stopped at the bottom
+            // safe-area boundary and the root background showed
+            // through under the card as a dead black band.
+            .ignoresSafeArea(edges: .bottom)
 
+            // The card stays in the safe-area-aware layout, so its
+            // bottom edge lands at (safe-area inset + 12pt) above
+            // the physical screen bottom — just above the home
+            // indicator, sitting on the map.
             mapCard
                 .padding(.horizontal, 12)
-                .padding(.bottom, 10)
+                .padding(.bottom, 12)
         }
     }
 
