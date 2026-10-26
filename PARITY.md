@@ -20,7 +20,7 @@ before we did. Drift like that is what this checklist prevents.
 | Home fallback view | ✓ Lake Mary, FL (28.713, −81.326) | ✓ same coordinates (`kHomeRegion`) | |
 | Near-me manual re-center | ✓ | ✓ | |
 | Ranking: distance + data quality only; nothing sponsored, ever; honesty line shown | ✓ | ✓ | Core product rule — never platform-optional |
-| Search + type chips (All / Restaurants / Cafés / Bars / Fast Food / Bakeries) | ✓ | ✓ | Same six filters |
+| Search + type chips (All / Restaurants / Cafés / Bars / Fast Food / Bakeries) | ✓ | ✓ | Same six filters. Bars is a category: the API maps `type=bar` to bar + pub types (server-side, 2026-10-26). Extraction folds pub/wine_bar/etc. into type `bar`, so no `pub` rows exist today — pubs appear under Bars as bars |
 | Enrichment render: `★ 4.5 (123) · $$` + "Full service" pill | ✓ | ✓ (build 7+) | Fields are null until the Yelp key lands; both surfaces light up together |
 | Closed venues excluded | ✓ server-side (`venues.php` + enrichment `is_closed`) | ✓ server-side | Inherited by both; no client work |
 | User location marker | Custom pulsing halo | Native MapKit blue dot | Deliberate platform idiom — visual only |
