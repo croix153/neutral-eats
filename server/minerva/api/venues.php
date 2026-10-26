@@ -8,6 +8,14 @@
  *   type - Filter by venue type (optional)
  *   limit - Max results (default 100, max 500)
  *   search - Full-text search query (optional)
+ *
+ * Enrichment merge (2026-10-26): rows are LEFT JOINed with the
+ * `enrichment` side table (Yelp data; see pipeline/enrich_yelp.py).
+ * Enrichment values win when present — rating, reviewCount,
+ * priceLevel, tableService — with the venues table's own legacy
+ * fields as fallback. Venues flagged is_closed in enrichment are
+ * excluded. Enrichment is display/closure data only, never a
+ * ranking input: ORDER BY below is unchanged.
  */
 
 header('Content-Type: application/json');
@@ -49,10 +57,13 @@ try {
     
     // Build query
     $params = [];
-    $whereClauses = ['is_active = 1'];
-    
+    $whereClauses = ['venues.is_active = 1'];
+
+    // Enrichment closure suppression: hide venues Yelp says are closed
+    $whereClauses[] = '(e.is_closed IS NULL OR e.is_closed = 0)';
+
     // Spatial filter
-    $whereClauses[] = 'lat >= :south AND lat <= :north AND lng >= :west AND lng <= :east';
+    $whereClauses[] = 'venues.lat >= :south AND venues.lat <= :north AND venues.lng >= :west AND venues.lng <= :east';
     $params[':south'] = $south;
     $params[':north'] = $north;
     $params[':west'] = $west;
@@ -60,29 +71,35 @@ try {
     
     // Type filter
     if ($type && in_array($type, ['restaurant', 'cafe', 'bar', 'pub'])) {
-        $whereClauses[] = 'type = :type';
+        $whereClauses[] = 'venues.type = :type';
         $params[':type'] = $type;
     }
-    
+
     // Full-text search
     $searchJoin = '';
     if ($search) {
-        $whereClauses[] = 'MATCH(name, cuisine, brand, address) AGAINST (:search IN BOOLEAN MODE)';
+        $whereClauses[] = 'MATCH(venues.name, venues.cuisine, venues.brand, venues.address) AGAINST (:search IN BOOLEAN MODE)';
         $params[':search'] = $search . '*';
     }
     
     $whereSql = implode(' AND ', $whereClauses);
     
-    $sql = "SELECT 
-        id, name, lat, lng, type, cuisine, brand, 
-        rating, price_level, address, phone, website,
-        source, last_updated
+    $sql = "SELECT
+        venues.id, venues.name, venues.lat, venues.lng, venues.type,
+        venues.cuisine, venues.brand,
+        venues.rating, venues.price_level, venues.rating_count,
+        venues.address, venues.phone, venues.website,
+        venues.source, venues.last_updated,
+        e.rating AS e_rating, e.review_count AS e_review_count,
+        e.price_level AS e_price_level,
+        e.table_service AS e_table_service, e.is_closed AS e_is_closed
     FROM venues
+    LEFT JOIN enrichment e ON e.venue_id = venues.id
     WHERE $whereSql
-    ORDER BY 
-        FIELD(source, 'overture', 'osm'),
-        rating DESC,
-        name ASC
+    ORDER BY
+        FIELD(venues.source, 'overture', 'osm'),
+        venues.rating DESC,
+        venues.name ASC
     LIMIT :limit";
     
     $stmt = $pdo->prepare($sql);
@@ -102,8 +119,11 @@ try {
             'type' => $row['type'],
             'cuisine' => $row['cuisine'] ?? 'Various',
             'brand' => $row['brand'] ?? '',
-            'rating' => $row['rating'] ? floatval($row['rating']) : null,
-            'priceLevel' => $row['price_level'] ? intval($row['price_level']) : null,
+            'rating' => $row['e_rating'] !== null ? floatval($row['e_rating']) : ($row['rating'] ? floatval($row['rating']) : null),
+            'reviewCount' => $row['e_review_count'] !== null ? intval($row['e_review_count']) : (!empty($row['rating_count']) ? intval($row['rating_count']) : null),
+            'priceLevel' => $row['e_price_level'] !== null ? intval($row['e_price_level']) : ($row['price_level'] ? intval($row['price_level']) : null),
+            'tableService' => $row['e_table_service'] !== null ? intval($row['e_table_service']) === 1 : null,
+            'isClosed' => $row['e_is_closed'] !== null ? intval($row['e_is_closed']) === 1 : null,
             'address' => $row['address'],
             'phone' => $row['phone'],
             'website' => $row['website'],

@@ -250,6 +250,8 @@
   .venue .dist{font-size:13px;font-weight:700;color:var(--accent)}
   .venue .rp{margin-top:3px;font-size:12.5px;color:var(--ink-dim)}
   .venue .rp .star{color:var(--accent)}
+  .venue .rp .rc{color:var(--ink-faint)}
+  .svc{display:inline-block;margin-top:4px;padding:1px 7px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:650;color:var(--ink-dim);background:var(--panel-2);white-space:nowrap}
   .statebox{padding:34px 24px;text-align:center;color:var(--ink-dim);font-size:14px;line-height:1.55}
   .statebox .big{font-size:17px;color:var(--ink);font-weight:650;margin-bottom:6px}
   .statebox button{
@@ -301,6 +303,7 @@
   .detailbody{padding:8px 18px 22px}
   .detailbody h2{font-size:23px;line-height:1.2;font-family:Georgia,serif;font-weight:700}
   .detailbody .dmeta{margin-top:5px;font-size:14px;color:var(--ink-dim)}
+  .detailbody .dmeta .svc{margin-top:0;vertical-align:1px}
   .detailbody .dmeta .star{color:var(--accent)}
   .detailbody .daddr{margin-top:10px;font-size:14.5px;line-height:1.5;color:var(--ink)}
   .detailbody .ddist{margin-top:2px;font-size:13px;color:var(--ink-faint)}
@@ -490,6 +493,19 @@
   function ratingOf(v){
     var r = parseFloat(v.rating);
     return (isFinite(r) && r > 0) ? r : null;
+  }
+  function reviewCountOf(v){
+    var c = (v.reviewCount != null ? v.reviewCount : v.review_count);
+    c = parseInt(c, 10);
+    return (isFinite(c) && c > 0) ? c : null;
+  }
+  function serviceOf(v){
+    // Known only once Yelp enrichment lands (tableService from the API):
+    // true = table service, false = counter service, else unknown — and
+    // unknown means NO badge; never guess a service style.
+    if(v.tableService === true || v.tableService === 1) return 'Full service';
+    if(v.tableService === false || v.tableService === 0) return 'Counter service';
+    return '';
   }
   function typeLabel(v){
     if(TYPE_LABELS[v.type]) return TYPE_LABELS[v.type];
@@ -800,8 +816,13 @@
     state.venues.forEach(function(v){
       var r = ratingOf(v), p = priceOf(v);
       var rp = '';
-      if(r !== null) rp += '<span class="star">★</span> ' + esc(r.toFixed(1));
+      if(r !== null){
+        rp += '<span class="star">★</span> ' + esc(r.toFixed(1));
+        var rc = reviewCountOf(v);
+        if(rc !== null) rp += ' <span class="rc">(' + esc(rc.toLocaleString()) + ')</span>';
+      }
       if(p) rp += (rp ? ' · ' : '') + esc(p);
+      var svc = serviceOf(v);
       html +=
         '<div class="venue' + (String(v.id) === String(selectedId) ? ' selected' : '') + '" data-id="' + esc(v.id) + '">' +
           '<div class="main">' +
@@ -812,6 +833,7 @@
           '<div class="side">' +
             '<div class="dist">' + esc(fmtDist(v._d)) + '</div>' +
             (rp ? '<div class="rp">' + rp + '</div>' : '') +
+            (svc ? '<div><span class="svc">' + esc(svc) + '</span></div>' : '') +
           '</div>' +
         '</div>';
     });
@@ -857,8 +879,14 @@
     markSelectedLabel();
     var r = ratingOf(v), p = priceOf(v);
     var meta = [];
-    if(r !== null) meta.push('<span class="star">★</span> ' + esc(r.toFixed(1)));
+    if(r !== null){
+      var drc = reviewCountOf(v);
+      meta.push('<span class="star">★</span> ' + esc(r.toFixed(1)) +
+        (drc !== null ? ' (' + esc(drc.toLocaleString()) + ' reviews)' : ''));
+    }
     if(p) meta.push(esc(p));
+    var dsvc = serviceOf(v);
+    if(dsvc) meta.push('<span class="svc">' + esc(dsvc) + '</span>');
     meta.push(esc(typeLabel(v)));
     var site = safeUrl(v.website);
     var tel = v.phone ? String(v.phone).replace(/[^+0-9]/g, '') : '';
