@@ -12,7 +12,7 @@
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Cache-Control: public, max-age=300'); // 5 min client cache
+header('Cache-Control: public, max-age=3600'); // 1h client cache; data refreshes monthly (perf 2026-10-25)
 
 // Database configuration
 $dbHost = 'localhost';
@@ -112,38 +112,37 @@ try {
         ];
     }
     
-    // Get grid cell info for this area
-    $gridCell = getGridCell(($south + $north) / 2, ($west + $east) / 2);
-    $stmt = $pdo->prepare("SELECT last_fetched, venue_count FROM grid_cells WHERE cell_key = :cell");
-    $stmt->execute([':cell' => $gridCell]);
-    $cellInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-    
     $response = [
         'success' => true,
         'venues' => $venues,
         'count' => count($venues),
         'bounds' => ['south' => $south, 'west' => $west, 'north' => $north, 'east' => $east],
-        'gridCell' => $gridCell,
-        'cached' => $cellInfo ? true : false,
-        'lastFetched' => $cellInfo ? intval($cellInfo['last_fetched']) : null,
         'timestamp' => time()
     ];
-    
-    // If not cached or stale (>7 days), trigger background fetch
-    if (!$cellInfo || (time() - intval($cellInfo['last_fetched'])) > 604800) {
-        $response['refreshing'] = true;
+
+    $json = json_encode($response, JSON_PRETTY_PRINT);
+
+    // ETag / conditional requests (perf 2026-10-25)
+    $etag = '"' . md5($json) . '"';
+    header('ETag: ' . $etag);
+    if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
+        foreach (explode(',', $_SERVER['HTTP_IF_NONE_MATCH']) as $candidate) {
+            $candidate = trim($candidate, 'W/ ');
+            // mod_deflate appends -gzip to the ETag of compressed responses
+            if (substr($candidate, -6) === '-gzip"') {
+                $candidate = substr($candidate, 0, -6) . '"';
+            }
+            if ($candidate === '*' || $candidate === $etag) {
+                http_response_code(304);
+                exit;
+            }
+        }
     }
-    
-    echo json_encode($response, JSON_PRETTY_PRINT);
+
+    echo $json;
     
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
-}
-
-function getGridCell($lat, $lng, $gridSize = 0.02) {
-    $gridLat = floor($lat / $gridSize) * $gridSize;
-    $gridLng = floor($lng / $gridSize) * $gridSize;
-    return sprintf('%.3f,%.3f', $gridLat, $gridLng);
 }
 ?>
