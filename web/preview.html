@@ -6,6 +6,7 @@
 <title>Neutral Eats — No ads. No bias. Just food.</title>
 <meta name="description" content="Restaurants near you, instead of restaurants promoted near you. Ranked by distance. Nothing is sponsored — ever.">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <style>
   :root{
     --bg:#070912;
@@ -245,6 +246,26 @@
   }
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* ---------- your location dot ---------- */
+  .userloc{background:none;border:none;pointer-events:none}
+  .userloc-halo{
+    position:absolute;left:50%;top:50%;width:24px;height:24px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(56,225,255,.30);
+    animation:userloc-pulse 2.2s ease-out infinite;
+  }
+  .userloc-dot{
+    position:absolute;left:50%;top:50%;width:13px;height:13px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:#38e1ff;border:2.5px solid #fff;
+    box-shadow:0 0 0 1px rgba(7,9,18,.45),0 1px 6px rgba(0,0,0,.5);
+  }
+  @keyframes userloc-pulse{
+    0%{box-shadow:0 0 0 0 rgba(56,225,255,.45)}
+    70%{box-shadow:0 0 0 17px rgba(56,225,255,0)}
+    100%{box-shadow:0 0 0 0 rgba(56,225,255,0)}
+  }
+
   /* ---------- desktop: side panel ---------- */
   @media (min-width:900px){
     header{max-width:560px;padding-left:20px}
@@ -315,6 +336,8 @@
 <div id="toast" role="status"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"></script>
 <script>
 (function(){
   'use strict';
@@ -409,20 +432,41 @@
   /* ================= map ================= */
   // Canvas renderer + circle markers keep 500 results smooth (no DOM img per point).
   var canvasRenderer = L.canvas({ padding: 0.5 });
-  var map = L.map('map', { preferCanvas:true, zoomControl:true, attributionControl:true })
+  var map = L.map('map', { preferCanvas:true, zoomControl:true, attributionControl:true, maxZoom:20 })
     .setView(HOME, 14);
   map.zoomControl.setPosition('bottomright');
-  // Dark basemap: Esri World Dark Gray Canvas (keyless) plus its reference
-  // overlay for labels. CARTO's basemap CDN now stamps its tiles with an
-  // "API KEY REQUIRED" watermark (verified 2026-10-25), so it was replaced.
-  // Production still uses the standard OSM raster style.
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-    maxNativeZoom: 16, maxZoom: 18,
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community'
-  }).addTo(map);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-    maxNativeZoom: 16, maxZoom: 18
-  }).addTo(map);
+  // Vector basemap (round 4): MapLibre GL under Leaflet renders our Tokyo
+  // style (OpenFreeMap vector data, recolored to the UI palette; the style
+  // JSON is hosted next to this page as tokyo-style.json). Vector tiles stay
+  // sharp at every zoom — the Esri raster pair they replace went pixelated
+  // past its native zoom 16, exactly where the venue labels live, and capped
+  // zoom-in too early. If GL fails to load or init, fall back to that Esri
+  // pair so the page is never mapless. (CARTO's CDN stamps its raster tiles
+  // with an "API KEY REQUIRED" watermark — verified 2026-10-25 — and
+  // production still uses the standard OSM raster style.)
+  function addEsriFallback(){
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      maxNativeZoom: 16, maxZoom: 20,
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, and the GIS user community'
+    }).addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+      maxNativeZoom: 16, maxZoom: 20
+    }).addTo(map);
+  }
+  var glLayer = null;
+  try {
+    if(window.maplibregl && L.maplibreGL){
+      glLayer = L.maplibreGL({
+        style: './tokyo-style.json',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://openfreemap.org/">OpenFreeMap</a>'
+      }).addTo(map);
+    } else {
+      addEsriFallback();
+    }
+  } catch(e) {
+    glLayer = null;
+    addEsriFallback();
+  }
   var markerLayer = L.layerGroup().addTo(map);
   var markers = {};   // venue id -> circleMarker
   var selectedId = null;
@@ -763,11 +807,64 @@
     if(!navigator.geolocation){ toast('Location is not available on this device.'); return; }
     toast('Finding you…');
     navigator.geolocation.getCurrentPosition(function(pos){
+      showUserLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+      startUserWatch();
       map.setView([pos.coords.latitude, pos.coords.longitude], 15);
     }, function(){
       toast('Couldn\'t get your location — check location permissions.');
     }, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
   });
+
+  /* ================= your location =================
+     Cyan dot + pulsing halo + accuracy ring. The dot is a divIcon in the
+     marker pane (above the canvas venue dots), glued to its lat/lng by
+     Leaflet, with pointer-events off so it never swallows taps meant for
+     venues. Shown only after a real fix — Near-me, or an on-load fix when
+     permission was ALREADY granted on a previous visit; this page never
+     prompts for location uninvited. Ranking stays "from map center". */
+  var userMarker = null, userAccuracy = null, userWatchId = null;
+  function showUserLocation(lat, lng, accuracy){
+    var ll = [lat, lng];
+    if(!userMarker){
+      userMarker = L.marker(ll, {
+        interactive: false, keyboard: false, zIndexOffset: 1000,
+        icon: L.divIcon({
+          className: 'userloc',
+          html: '<span class="userloc-halo"></span><span class="userloc-dot"></span>',
+          iconSize: [24, 24], iconAnchor: [12, 12]
+        })
+      }).addTo(map);
+    } else {
+      userMarker.setLatLng(ll);
+    }
+    if(accuracy && accuracy > 0){
+      if(!userAccuracy){
+        userAccuracy = L.circle(ll, {
+          interactive: false, stroke: false, fillColor: '#38e1ff', fillOpacity: 0.10
+        }).addTo(map);
+      } else {
+        userAccuracy.setLatLng(ll);
+      }
+      userAccuracy.setRadius(accuracy);
+    } else if(userAccuracy){
+      map.removeLayer(userAccuracy); userAccuracy = null;
+    }
+  }
+  function removeUserLocation(){
+    if(userMarker){ map.removeLayer(userMarker); userMarker = null; }
+    if(userAccuracy){ map.removeLayer(userAccuracy); userAccuracy = null; }
+  }
+  function startUserWatch(){
+    if(userWatchId !== null || !navigator.geolocation) return;
+    userWatchId = navigator.geolocation.watchPosition(function(pos){
+      showUserLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+    }, function(err){
+      if(err && err.code === 1){   // permission revoked: tidy up quietly
+        if(userWatchId !== null){ navigator.geolocation.clearWatch(userWatchId); userWatchId = null; }
+        removeUserLocation();
+      }
+    }, { enableHighAccuracy: true, maximumAge: 30000 });
+  }
 
   /* ============ bottom sheet: collapsed / peek / full (mobile) ============
      The sheet is a FIXED 82vh panel positioned with transform: translateY();
@@ -783,6 +880,13 @@
   function measureStops(){
     var vh = window.innerHeight;
     var fullH = Math.round(vh * 0.82);
+    // ONE unit for the whole sheet: the height is set in px from the same
+    // innerHeight the stops are computed from. The old CSS 82vh height
+    // diverged from these px stops on iOS (vh counts the area under the
+    // collapsing browser chrome), so the sheet could still land tens of px
+    // past its stops and slide into the header. The CSS vh values remain
+    // only as pre-JS paint.
+    if(window.innerWidth < 900) sheet.style.height = fullH + 'px';
     var headerEl = document.querySelector('header');
     var headerBottom = headerEl ? (headerEl.offsetTop + headerEl.offsetHeight) : 0;
     // 'full' stops below the header: at 82vh the sheet top slid UNDER the
@@ -868,7 +972,7 @@
     });
     window.addEventListener('resize', function(){
       if(window.innerWidth >= 900){
-        sheet.style.transform = ''; toastEl.style.bottom = ''; curTY = null;
+        sheet.style.transform = ''; sheet.style.height = ''; toastEl.style.bottom = ''; curTY = null;
         sheet.classList.remove('collapsed', 'peek', 'full', 'dragging');
       } else if(curTY !== null){
         setSheet(sheetState);   // re-snap the same state at the new size
@@ -878,6 +982,29 @@
 
   /* ================= go ================= */
   if(window.innerWidth < 900) setSheet('peek');
+  // Re-snap once the page (and the brand font) has fully settled: geometry
+  // measured during first paint can be a few px off, which is all it takes
+  // for the sheet to kiss the header.
+  window.addEventListener('load', function(){
+    if(window.innerWidth < 900) setSheet(sheetState);
+  });
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){
+      if(window.innerWidth < 900) setSheet(sheetState);
+    });
+  }
+  // Location dot on load ONLY when permission is already granted — never a
+  // surprise prompt. Near-me remains the way to grant it from a tap.
+  if(navigator.geolocation && navigator.permissions && navigator.permissions.query){
+    navigator.permissions.query({ name: 'geolocation' }).then(function(st){
+      if(st.state === 'granted'){
+        navigator.geolocation.getCurrentPosition(function(pos){
+          showUserLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+        }, function(){}, { maximumAge: 300000 });
+        startUserWatch();
+      }
+    }).catch(function(){});
+  }
   load();
 })();
 </script>
