@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#14100d;
-    --panel:rgba(26,20,16,.92);
+    --panel:rgba(26,20,16,.96); /* raised from .92: #sheet no longer uses backdrop-filter (see below) */
     --panel-solid:#1a1512;
     --panel-2:#241c16;
     --line:rgba(245,234,217,.10);
@@ -118,15 +118,23 @@
   /* ---------- results sheet / panel ---------- */
   #sheet{
     position:absolute;left:0;right:0;bottom:0;z-index:500;
-    height:46vh;
-    background:var(--panel);backdrop-filter:blur(14px);
+    /* Fixed full height, positioned with transform. Animating height forced a
+       full layout of sheet + list every frame (the jank Croix felt); a
+       transform is composited instead. Visible slice = 82vh - translateY,
+       and the initial transform below is the peek stop (JS drives it after).
+       No backdrop-filter: it repainted the whole panel over the moving map
+       on every frame. */
+    height:82vh;
+    transform:translateY(calc(82vh - 46vh));
+    background:var(--panel);
     border-top:1px solid var(--line);
     border-radius:20px 20px 0 0;
     display:flex;flex-direction:column;
     padding-bottom:var(--safe-b);
-    transition:height .25s ease;
+    transition:transform .28s ease;
     box-shadow:0 -12px 40px rgba(0,0,0,.5);
   }
+  #sheet.dragging{transition:none}
   #sheet .handle{
     padding:9px 0 4px;display:flex;justify-content:center;cursor:grab;touch-action:none;flex:0 0 auto;
   }
@@ -137,10 +145,8 @@
     color:var(--ink-faint);font-size:12px;line-height:1;transition:transform .25s;
   }
   #sheet.collapsed #sheetChevron{transform:translateY(-50%) rotate(180deg)}
-  /* collapsed: only handle + summary head remain; the map owns the screen */
-  #sheet.collapsed #list{display:none}
-  #sheet.collapsed #detail{display:none}
-  #sheet.collapsed .capnote{display:none!important}
+  /* collapsed needs no display:none rules anymore: with transform
+     positioning, the list simply sits below the visible slice of the sheet */
   .sheethead{padding:2px 18px 10px;border-bottom:1px solid var(--line);flex:0 0 auto}
   .sheethead .count{font-size:17px;font-weight:700}
   .sheethead .count em{font-style:normal;color:var(--accent)}
@@ -170,6 +176,35 @@
     margin-top:12px;background:var(--accent);color:var(--accent-ink);border:none;
     font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;cursor:pointer;
   }
+
+  /* ---------- venue name labels (zoom >= 17; mirrors production) ----------
+     Production neutraleats2.html shows bare-text labels over its bright
+     tiles in slate with a dark halo. Here the text flips to warm cream with
+     the same dark halo so names read over the dark Esri basemap. */
+  .venue-label-container{
+    display:flex !important;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:8px;
+  }
+  .venue-label{
+    color:#efe4cd;
+    font-size:10.5px;
+    font-weight:600;
+    white-space:nowrap;
+    pointer-events:none;
+    text-shadow:
+      -1px -1px 0 rgba(13,10,8,.95),
+       1px -1px 0 rgba(13,10,8,.95),
+      -1px  1px 0 rgba(13,10,8,.95),
+       1px  1px 0 rgba(13,10,8,.95),
+       0 1px 4px rgba(0,0,0,.9);
+    letter-spacing:.2px;
+    transition:opacity .2s ease;
+    text-align:center;
+    line-height:1;
+  }
+  .venue-label.selected{color:var(--accent);font-weight:700}
 
   /* ---------- detail view ---------- */
   #detail{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;display:none}
@@ -211,6 +246,7 @@
     .brand h1{font-size:32px}
     #sheet{
       left:auto;right:18px;top:18px;bottom:18px;width:392px;height:auto;
+      transform:none;
       border:1px solid var(--line);border-radius:20px;padding-bottom:0;
     }
     #sheet .handle{display:none}
@@ -384,6 +420,13 @@
   var markerLayer = L.layerGroup().addTo(map);
   var markers = {};   // venue id -> circleMarker
   var selectedId = null;
+  // Venue name labels (production parity): bare-text divIcons that only
+  // appear at street-level zoom. Capped to the nearest LABEL_CAP venues of
+  // the current distance-sorted set so the DOM stays light.
+  var labelLayer = L.layerGroup().addTo(map);
+  var labelMarkers = {};   // venue id -> label marker
+  var LABEL_ZOOM = 17;     // production's LABEL_ZOOM_THRESHOLD
+  var LABEL_CAP = 120;
 
   var DOT = { radius:6, weight:1.5, color:'#14100d', fillColor:'#ffa028', fillOpacity:.92 };
   var DOT_ACTIVE = { radius:9, weight:2, color:'#f5ead9', fillColor:'#ff7847', fillOpacity:1 };
@@ -470,7 +513,46 @@
   /* ================= rendering ================= */
   function render(){
     renderMarkers();
+    renderLabels();
     renderList();
+  }
+
+  function renderLabels(){
+    labelLayer.clearLayers();
+    labelMarkers = {};
+    state.venues.slice(0, LABEL_CAP).forEach(function(v){
+      var icon = L.divIcon({
+        className: 'venue-label-container',
+        html: '<div class="venue-label' + (String(v.id) === String(selectedId) ? ' selected' : '') + '">' +
+              esc(v.name || 'Unnamed') + '</div>',
+        iconSize: [100, 20],
+        iconAnchor: [50, 0]
+      });
+      var lm = L.marker([parseFloat(v.lat), parseFloat(v.lng)], { icon: icon, keyboard: false });
+      // Same selection path as tapping the venue's dot.
+      lm.on('click', function(){ openDetail(v.id, false); });
+      labelMarkers[v.id] = lm;
+      labelLayer.addLayer(lm);
+    });
+    updateLabelVisibility();
+  }
+
+  function updateLabelVisibility(){
+    if(map.getZoom() >= LABEL_ZOOM){
+      if(!map.hasLayer(labelLayer)) map.addLayer(labelLayer);
+    } else if(map.hasLayer(labelLayer)){
+      map.removeLayer(labelLayer);
+    }
+  }
+  map.on('zoomend', updateLabelVisibility);
+
+  function markSelectedLabel(){
+    Object.keys(labelMarkers).forEach(function(k){
+      var el = labelMarkers[k].getElement();
+      if(!el) return;   // label layer is off the map below LABEL_ZOOM
+      var inner = el.querySelector('.venue-label');
+      if(inner) inner.classList.toggle('selected', String(k) === String(selectedId));
+    });
   }
 
   function renderMarkers(){
@@ -492,6 +574,8 @@
     return n + (n === 1 ? ' place' : ' places') + ' near this spot';
   }
 
+  var lastListIds = null;       // venue-id sequence of the last list render
+  var listResetPending = true;  // filter/search/reset: next render starts at the top
   function renderList(){
     var list = $('list');
     $('resultCount').innerHTML = esc(headerText()).replace(state.venues.length, '<em>' + state.venues.length + '</em>');
@@ -501,10 +585,24 @@
         '<div class="statebox"><div class="big">Nothing on the table here</div>' +
         'No places found in this view. Try zooming out, clearing the search, or picking a different filter.' +
         '<br><button type="button" id="resetView">Reset view</button></div>';
+      lastListIds = null; listResetPending = false;
       var rb = $('resetView');
       if(rb) rb.addEventListener('click', resetAll);
       return;
     }
+    var idsKey = state.venues.map(function(v){ return String(v.id); }).join(',');
+    if(idsKey === lastListIds){
+      // Identical set in identical order (the common case while panning):
+      // skip the DOM rebuild entirely so the list never flickers and the
+      // user's scroll position is never yanked mid-gesture.
+      if(listResetPending){ list.scrollTop = 0; listResetPending = false; }
+      return;
+    }
+    lastListIds = idsKey;
+    // Map-move re-renders keep the scroll position; filter/search/reset
+    // (which set listResetPending) start back at the top.
+    var keepTop = listResetPending ? 0 : list.scrollTop;
+    listResetPending = false;
     var html = '';
     state.venues.forEach(function(v){
       var r = ratingOf(v), p = priceOf(v);
@@ -525,12 +623,14 @@
         '</div>';
     });
     list.innerHTML = html;
+    list.scrollTop = keepTop;
   }
 
   function renderError(){
     $('resultCount').textContent = 'Something went wrong';
     $('capNote').classList.remove('show');
     markerLayer.clearLayers(); markers = {};
+    labelLayer.clearLayers(); labelMarkers = {}; lastListIds = null;
     $('list').innerHTML =
       '<div class="statebox"><div class="big">The kitchen hit a snag</div>' +
       'We couldn\'t load places just now. Check your connection and try again.' +
@@ -561,6 +661,7 @@
     Object.keys(markers).forEach(function(k){
       markers[k].setStyle(String(k) === String(selectedId) ? DOT_ACTIVE : DOT);
     });
+    markSelectedLabel();
     var r = ratingOf(v), p = priceOf(v);
     var meta = [];
     if(r !== null) meta.push('<span class="star">★</span> ' + esc(r.toFixed(1)));
@@ -595,6 +696,7 @@
   function closeDetail(){
     selectedId = null;
     Object.keys(markers).forEach(function(k){ markers[k].setStyle(DOT); });
+    markSelectedLabel();
     $('detail').classList.remove('open');
     $('listView').style.display = 'flex';
     markSelectedRow();
@@ -617,6 +719,7 @@
 
   function setFilter(f){
     state.filter = f;
+    listResetPending = true;
     var chips = $('chips').querySelectorAll('.chip');
     for(var i = 0; i < chips.length; i++)
       chips[i].classList.toggle('active', chips[i].getAttribute('data-filter') === f);
@@ -635,6 +738,7 @@
     $('searchClear').classList.toggle('show', !!val);
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(function(){
+      listResetPending = true;
       state.search = val;
       closeDetail();
       load();
@@ -643,6 +747,7 @@
   $('searchClear').addEventListener('click', function(){
     $('search').value = '';
     $('searchClear').classList.remove('show');
+    listResetPending = true;
     state.search = '';
     load();
   });
@@ -657,65 +762,85 @@
     }, { enableHighAccuracy:true, timeout:9000, maximumAge:60000 });
   });
 
-  /* ============ bottom sheet: collapsed / peek / full (mobile) ============ */
+  /* ============ bottom sheet: collapsed / peek / full (mobile) ============
+     The sheet is a FIXED 82vh panel positioned with transform: translateY();
+     visible height = 82vh - translateY. (Animating `height`, the round-1
+     approach, forced a full layout of sheet + list on every frame — that
+     was the jank.) While dragging, .dragging kills the transition so the
+     sheet tracks the finger 1:1; on release it snaps to the nearest stop. */
   var sheet = $('sheet'), handle = $('sheetHandle'), toastEl = $('toast');
   var sheetState = 'peek';   // 'collapsed' | 'peek' | 'full'
-  function capNoteH(){
-    var c = $('capNote');
-    return (c && c.classList.contains('show')) ? c.offsetHeight + 4 : 0;
-  }
-  function collapsedH(){
+  var curTY = null;          // current translateY, px (mobile only)
+  var sheetGeo = null;       // measured stop geometry
+
+  function measureStops(){
+    var vh = window.innerHeight;
+    var fullH = Math.round(vh * 0.82);
     var head = sheet.querySelector('.sheethead');
-    return handle.offsetHeight + (head ? head.offsetHeight - capNoteH() : 0) + 2;
+    // Collapsed shows exactly the handle + the summary head (capnote
+    // included when it's on screen) — measured as rendered, not hardcoded.
+    var collapsedVisible = handle.offsetHeight + (head ? head.offsetHeight : 0) + 2;
+    sheetGeo = {
+      fullH: fullH,
+      ty: {
+        full: 0,
+        peek: fullH - Math.round(vh * 0.46),
+        collapsed: fullH - collapsedVisible
+      }
+    };
+    return sheetGeo;
   }
-  function setSheet(state, px){
+  function applyTY(ty){
+    curTY = ty;
+    sheet.style.transform = 'translateY(' + ty + 'px)';
+    if(sheetGeo) toastEl.style.bottom = (sheetGeo.fullH - ty + 14) + 'px';
+  }
+  function setSheet(state){
     if(window.innerWidth >= 900) return;
     sheetState = state;
     sheet.classList.toggle('collapsed', state === 'collapsed');
-    var vh = window.innerHeight;
-    var h = (px != null) ? px
-      : state === 'collapsed' ? collapsedH()
-      : state === 'full' ? Math.round(vh * 0.82)
-      : Math.round(vh * 0.46);
-    sheet.style.height = h + 'px';
-    toastEl.style.bottom = (h + 14) + 'px';
+    sheet.classList.toggle('peek', state === 'peek');
+    sheet.classList.toggle('full', state === 'full');
+    applyTY(measureStops().ty[state]);
   }
   function expandSheet(){ setSheet('full'); }
   (function(){
-    var startY = 0, startH = 0, dragging = false, suppressClick = false;
+    var startY = 0, startTY = 0, dragging = false, suppressClick = false;
+    function currentTY(){
+      if(curTY !== null) return curTY;
+      var g = measureStops();
+      return g.ty[sheetState] != null ? g.ty[sheetState] : g.ty.peek;
+    }
     function onDown(e){
       if(window.innerWidth >= 900) return;
       dragging = true; suppressClick = false;
       startY = e.touches ? e.touches[0].clientY : e.clientY;
-      startH = sheet.getBoundingClientRect().height;
-      sheet.classList.remove('collapsed');
+      measureStops();
+      startTY = currentTY();
+      sheet.classList.add('dragging');
       e.preventDefault();
     }
     function onMove(e){
       if(!dragging) return;
       var y = e.touches ? e.touches[0].clientY : e.clientY;
-      var h = startH + (startY - y);
-      var min = collapsedH(), max = window.innerHeight * 0.88;
-      h = Math.max(min, Math.min(max, h));
-      sheet.style.height = h + 'px';
-      toastEl.style.bottom = (h + 14) + 'px';
-      if(Math.abs(h - startH) > 6) suppressClick = true;
+      var g = sheetGeo || measureStops();
+      var ty = startTY + (y - startY);   // finger down -> sheet slides down
+      ty = Math.max(0, Math.min(g.ty.collapsed, ty));
+      applyTY(ty);
+      if(Math.abs(ty - startTY) > 6) suppressClick = true;
     }
     function onUp(){
       if(!dragging) return;
       dragging = false;
-      // snap to the nearest stop: collapsed / peek / full
-      var vh = window.innerHeight;
-      var stops = [
-        { state:'collapsed', h: collapsedH() },
-        { state:'peek',      h: Math.round(vh * 0.46) },
-        { state:'full',      h: Math.round(vh * 0.82) }
-      ];
-      var h = sheet.getBoundingClientRect().height, best = stops[0];
-      for(var i = 0; i < stops.length; i++){
-        if(Math.abs(stops[i].h - h) < Math.abs(best.h - h)) best = stops[i];
-      }
-      setSheet(best.state);
+      sheet.classList.remove('dragging');
+      // snap to the nearest stop in translateY space
+      var g = sheetGeo || measureStops();
+      var cur = currentTY(), best = 'peek', bestD = Infinity;
+      ['full', 'peek', 'collapsed'].forEach(function(s){
+        var d = Math.abs(g.ty[s] - cur);
+        if(d < bestD){ bestD = d; best = s; }
+      });
+      setSheet(best);
     }
     handle.addEventListener('touchstart', onDown, { passive:false });
     handle.addEventListener('mousedown', onDown);
@@ -730,13 +855,16 @@
     });
     window.addEventListener('resize', function(){
       if(window.innerWidth >= 900){
-        sheet.style.height = ''; toastEl.style.bottom = '';
-        sheet.classList.remove('collapsed');
+        sheet.style.transform = ''; toastEl.style.bottom = ''; curTY = null;
+        sheet.classList.remove('collapsed', 'peek', 'full', 'dragging');
+      } else if(curTY !== null){
+        setSheet(sheetState);   // re-snap the same state at the new size
       }
     });
   })();
 
   /* ================= go ================= */
+  if(window.innerWidth < 900) setSheet('peek');
   load();
 })();
 </script>
