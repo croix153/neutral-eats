@@ -23,18 +23,26 @@ enum NEColor {
     static var mode: NEThemeMode = .night
     private static var day: Bool { return mode == .day }
 
-    static var bg: Color { return day ? Color(hex: 0xE8ECF7) : Color(hex: 0x070912) }            // --bg
+    // Day values realigned 2026-10-26 to the Creams Tokyo DAY spec
+    // (Croix: "that blue and vermillion"): washi paper #FAF7F2,
+    // ai-iro indigo #165E83, shu-iro vermillion #EB471F, warm stone
+    // text. accentText is vermillion deepened for small text
+    // (#C6360F, ~5:1 on washi); user is the gold you-are-here star.
+    static var bg: Color { return day ? Color(hex: 0xFAF7F2) : Color(hex: 0x070912) }            // --bg
     static var panel: Color { return day ? Color(hex: 0xFFFFFF) : Color(hex: 0x101527) }        // --panel (solid)
-    static var panel2: Color { return day ? Color(hex: 0xEEF1FA) : Color(hex: 0x1A2140) }       // --panel-2
-    static var ink: Color { return day ? Color(hex: 0x161C33) : Color(hex: 0xEEF1FF) }          // --ink
-    static var inkDim: Color { return day ? Color(hex: 0x4C5878) : Color(hex: 0xA3AED6) }       // --ink-dim
-    static var inkFaint: Color { return day ? Color(hex: 0x8590B0) : Color(hex: 0x6D78A0) }     // --ink-faint
-    static var accent: Color { return day ? Color(hex: 0xD92C57) : Color(hex: 0xFF4D7E) }       // --accent
+    static var panel2: Color { return day ? Color(hex: 0xF5EFE4) : Color(hex: 0x1A2140) }       // --panel-2
+    static var ink: Color { return day ? Color(hex: 0x2B2B2B) : Color(hex: 0xEEF1FF) }          // --ink
+    static var inkDim: Color { return day ? Color(hex: 0x44403C) : Color(hex: 0xA3AED6) }       // --ink-dim
+    static var inkFaint: Color { return day ? Color(hex: 0x857E73) : Color(hex: 0x6D78A0) }     // --ink-faint
+    static var accent: Color { return day ? Color(hex: 0xEB471F) : Color(hex: 0xFF4D7E) }       // --accent
+    static var accentText: Color { return day ? Color(hex: 0xC6360F) : Color(hex: 0xFF4D7E) }   // --accent-text
+    static var brand: Color { return day ? Color(hex: 0x165E83) : Color(hex: 0xFF4D7E) }        // --brand
+    static var user: Color { return day ? Color(hex: 0xDD8E00) : Color(hex: 0xFFC53D) }         // --user (gold star)
     static var accentInk: Color { return Color.white }                                          // --accent-ink
-    static var good: Color { return day ? Color(hex: 0x0B7EA4) : Color(hex: 0x38E1FF) }         // --good
+    static var good: Color { return day ? Color(hex: 0x165E83) : Color(hex: 0x38E1FF) }         // --good
     static var line: Color {                                                                    // --line
         return day
-            ? Color(red: 30.0 / 255.0, green: 40.0 / 255.0, blue: 90.0 / 255.0, opacity: 0.14)
+            ? Color(red: 105.0 / 255.0, green: 88.0 / 255.0, blue: 70.0 / 255.0, opacity: 0.18)
             : Color(red: 130.0 / 255.0, green: 150.0 / 255.0, blue: 1.0, opacity: 0.16)
     }
 }

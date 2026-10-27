@@ -78,6 +78,16 @@ struct VenueMapView: UIViewRepresentable {
         /// zoom in" report. At street zoom labels take over and
         /// every dot stands alone.
         private var clusteringActive: Bool = true
+        /// Previous sync's clustering state. When it flips (the
+        /// street-zoom threshold was crossed either way), every
+        /// venue annotation is rebuilt so each view is born via
+        /// viewFor with the right clusteringIdentifier — flipping
+        /// the identifier on live, possibly clustered views is
+        /// where MapKit's clustering bookkeeping can corrupt
+        /// (build 12 crash hardening; Croix hit a crash drilling
+        /// into a cluster and zooming, 2026-10-26).
+        private var lastClusteringActive: Bool?
+        private var syncScheduled = false
 
         /// Street-zoom threshold for name labels, matched to the
         /// web's zoom ≥ 17 (a latitude span of ~0.0085 at this
@@ -99,6 +109,20 @@ struct VenueMapView: UIViewRepresentable {
             labeledIDs = Coordinator.computeLabeledIDs(
                 region: mapView.region, venues: Array(incoming.values))
             clusteringActive = labeledIDs.isEmpty
+            // Clustering-mode flip: rebuild every venue annotation
+            // (see lastClusteringActive). Re-adding fires viewFor,
+            // which dresses each fresh view with the identifier and
+            // image for the new mode — no live-view mutation of
+            // clustering state mid-pass.
+            if lastClusteringActive != nil
+                && lastClusteringActive != clusteringActive
+                && !annotationsByID.isEmpty {
+                for (_, annotation) in annotationsByID {
+                    mapView.removeAnnotation(annotation)
+                }
+                annotationsByID = [:]
+            }
+            lastClusteringActive = clusteringActive
             // Remove annotations whose venues left the result set.
             for (id, annotation) in annotationsByID where incoming[id] == nil {
                 mapView.removeAnnotation(annotation)
@@ -119,9 +143,13 @@ struct VenueMapView: UIViewRepresentable {
             }
             // Existing views get the current dress: selection swaps
             // the dot image; the label set swaps in/out the combined
-            // dot+name image.
+            // dot+name image. Identity check first: for a venue that
+            // is currently clustered, view(for:) can hand back the
+            // CLUSTER's view — dressing that view as a dot corrupts
+            // the cluster's bookkeeping (build 12 crash hardening).
             for (id, annotation) in annotationsByID {
-                if let view = mapView.view(for: annotation) {
+                if let view = mapView.view(for: annotation),
+                   view.annotation === annotation {
                     applyAppearance(view, venueID: id, selectedID: selectedID)
                 }
             }
@@ -174,7 +202,20 @@ struct VenueMapView: UIViewRepresentable {
         }
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            if annotation is MKUserLocation { return nil }
+            if annotation is MKUserLocation {
+                // You-are-here is a gold star (Croix, 2026-10-26),
+                // replacing the stock blue dot — a custom view for
+                // the user annotation is the supported way to do it.
+                let reuseID = "user-star"
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
+                    ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
+                view.annotation = annotation
+                view.canShowCallout = false
+                view.displayPriority = .required
+                view.clusteringIdentifier = nil
+                view.image = UserStarImages.image()
+                return view
+            }
             if let cluster = annotation as? MKClusterAnnotation {
                 let reuseID = "venue-cluster"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
@@ -200,23 +241,36 @@ struct VenueMapView: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
             // Tapping a cluster zooms into its members — the
             // standard "this bubble is N places, come closer" move.
+            // The zoom is deferred one runloop tick and expressed
+            // as a clamped region (build 12 crash hardening):
+            // calling setRegion/setVisibleMapRect synchronously
+            // inside didSelect, with an unclamped member rect,
+            // re-enters MapKit's selection + clustering machinery
+            // mid-callback.
             if let cluster = view.annotation as? MKClusterAnnotation {
                 mapView.deselectAnnotation(cluster, animated: false)
-                var rect = MKMapRect.null
-                for member in cluster.memberAnnotations {
-                    let point = MKMapPoint(member.coordinate)
-                    rect = rect.union(MKMapRect(x: point.x, y: point.y, width: 0, height: 0))
-                }
-                let padding = UIEdgeInsets(top: 70, left: 44, bottom: 130, right: 44)
-                if rect.isNull || rect.size.width == 0 || rect.size.height == 0 {
-                    let region = MKCoordinateRegion(
-                        center: cluster.coordinate,
-                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-                    mapView.setRegion(region, animated: true)
-                } else {
-                    let grown = rect.insetBy(dx: -rect.size.width * 0.3,
-                                             dy: -rect.size.height * 0.3)
-                    mapView.setVisibleMapRect(grown, edgePadding: padding, animated: true)
+                let members = cluster.memberAnnotations
+                let center = cluster.coordinate
+                DispatchQueue.main.async {
+                    var rect = MKMapRect.null
+                    for member in members {
+                        let point = MKMapPoint(member.coordinate)
+                        rect = rect.union(MKMapRect(x: point.x, y: point.y,
+                                                    width: 0, height: 0))
+                    }
+                    if rect.isNull || rect.size.width == 0 && rect.size.height == 0 {
+                        let region = MKCoordinateRegion(
+                            center: center,
+                            span: MKCoordinateSpan(latitudeDelta: 0.01,
+                                                   longitudeDelta: 0.01))
+                        mapView.setRegion(region, animated: true)
+                    } else {
+                        var region = MKCoordinateRegion(rect)
+                        region.span = MKCoordinateSpan(
+                            latitudeDelta: min(max(region.span.latitudeDelta * 1.35, 0.004), 0.25),
+                            longitudeDelta: min(max(region.span.longitudeDelta * 1.35, 0.004), 0.25))
+                        mapView.setRegion(region, animated: true)
+                    }
                 }
                 return
             }
@@ -231,20 +285,34 @@ struct VenueMapView: UIViewRepresentable {
             // doesn't re-render (the venue fetch is debounced and
             // may keep the same results) — re-sync against the
             // parent's current inputs so labels track the span.
-            if let parent = parent {
-                syncAnnotations(on: mapView, venues: parent.venues, selectedID: parent.selectedID)
+            // Deferred + coalesced (build 12 crash hardening):
+            // adding/removing annotations and re-dressing views
+            // synchronously inside this callback collides with
+            // MapKit's own clustering/layout pass for the region
+            // change; one tick later the map is settled and the
+            // same sync is safe.
+            guard !syncScheduled else { return }
+            syncScheduled = true
+            DispatchQueue.main.async { [weak self, weak mapView] in
+                guard let self = self, let mapView = mapView else { return }
+                self.syncScheduled = false
+                if let parent = self.parent {
+                    self.syncAnnotations(on: mapView, venues: parent.venues,
+                                         selectedID: parent.selectedID)
+                }
             }
         }
     }
 }
 
 /// Pre-rendered venue dots, matching the preview in both themes:
-/// night — sakura fill #FF4D7E with a #070912 ring; day — deepened
-/// fill #D92C57 with a white ring. The selected venue is a larger
-/// --good dot with a white ring. Images are cached per theme and
-/// rebuilt on the first request after NEColor.mode flips (the
-/// coordinator re-assigns every annotation's image on each sync, so
-/// a toggle repaints all dots).
+/// night — sakura fill #FF4D7E with a #070912 ring; day — shu-iro
+/// vermillion #EB471F with a white ring (Creams Tokyo day realign,
+/// build 12). The selected venue is a larger --good dot with a
+/// white ring (day: ai-iro indigo #165E83). Images are cached per
+/// theme and rebuilt on the first request after NEColor.mode
+/// flips (the coordinator re-assigns every annotation's image on
+/// each sync, so a toggle repaints all dots).
 enum DotImages {
     private static var cachedMode: NEThemeMode?
     private static var normalImg: UIImage?
@@ -255,11 +323,11 @@ enum DotImages {
             cachedMode = NEColor.mode
             if NEColor.mode == .day {
                 normalImg = DotImages.make(
-                    fill: UIColor(red: 0xD9 / 255.0, green: 0x2C / 255.0, blue: 0x57 / 255.0, alpha: 0.95),
+                    fill: UIColor(red: 0xEB / 255.0, green: 0x47 / 255.0, blue: 0x1F / 255.0, alpha: 0.95),
                     diameter: 13, ring: UIColor.white,
                     ringWidth: 1.5)
                 selectedImg = DotImages.make(
-                    fill: UIColor(red: 0x0B / 255.0, green: 0x7E / 255.0, blue: 0xA4 / 255.0, alpha: 1.0),
+                    fill: UIColor(red: 0x16 / 255.0, green: 0x5E / 255.0, blue: 0x83 / 255.0, alpha: 1.0),
                     diameter: 19, ring: UIColor.white, ringWidth: 2)
             } else {
                 normalImg = DotImages.make(
@@ -302,7 +370,7 @@ enum ClusterImages {
         if let cached = cache[key] { return cached }
         let diameter: CGFloat = count < 10 ? 30 : (count < 100 ? 36 : 42)
         let fill: UIColor = NEColor.mode == .day
-            ? UIColor(red: 0xD9 / 255.0, green: 0x2C / 255.0, blue: 0x57 / 255.0, alpha: 0.95)
+            ? UIColor(red: 0xEB / 255.0, green: 0x47 / 255.0, blue: 0x1F / 255.0, alpha: 0.95)
             : UIColor(red: 1.0, green: 0x4D / 255.0, blue: 0x7E / 255.0, alpha: 0.92)
         let format = UIGraphicsImageRendererFormat()
         format.scale = 3
@@ -375,8 +443,8 @@ enum LabelImages {
         let attributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 11, weight: .semibold),
             .foregroundColor: selected
-                ? hex(day ? 0xD92C57 : 0xFF4D7E)
-                : hex(day ? 0x161C33 : 0xEEF1FF),
+                ? hex(day ? 0xC6360F : 0xFF4D7E)
+                : hex(day ? 0x2B2B2B : 0xEEF1FF),
             .strokeColor: day ? UIColor.white : hex(0x070912),
             .strokeWidth: -3.5,
         ]
@@ -402,5 +470,59 @@ enum LabelImages {
         // venue's exact spot.
         let dotCenterY = textHeight + gap + dot.size.height / 2
         return (image, height / 2 - dotCenterY)
+    }
+}
+
+/// You-are-here gold star (Croix, 2026-10-26; build 12): a gold
+/// five-point star on a soft gold halo, white-stroked so it holds
+/// on any basemap. Gold is deliberately neither the venue color
+/// (pink/vermillion) nor the brand indigo — "you" should read
+/// instantly. Cached per theme mode like the dot images.
+enum UserStarImages {
+    private static var cachedMode: NEThemeMode?
+    private static var cachedImg: UIImage?
+
+    static func image() -> UIImage {
+        if cachedMode != NEColor.mode || cachedImg == nil {
+            cachedMode = NEColor.mode
+            let gold: UIColor = NEColor.mode == .day
+                ? UIColor(red: 0xDD / 255.0, green: 0x8E / 255.0, blue: 0.0, alpha: 1.0)
+                : UIColor(red: 1.0, green: 0xC5 / 255.0, blue: 0x3D / 255.0, alpha: 1.0)
+            cachedImg = make(gold: gold)
+        }
+        return cachedImg ?? UIImage()
+    }
+
+    private static func make(gold: UIColor) -> UIImage {
+        let canvas: CGFloat = 30
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 3
+        format.opaque = false
+        let size = CGSize(width: canvas, height: canvas)
+        return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+            // Soft halo disc behind the star (mirrors the web's
+            // pulsing halo ring, statically).
+            gold.withAlphaComponent(0.22).setFill()
+            UIBezierPath(ovalIn: CGRect(origin: .zero, size: size)).fill()
+            // Five-point star inscribed in a 23pt box, centered.
+            let center = CGPoint(x: canvas / 2, y: canvas / 2)
+            let outer: CGFloat = 11.5
+            let inner: CGFloat = outer * 0.42
+            let path = UIBezierPath()
+            for i in 0..<10 {
+                let radius = i % 2 == 0 ? outer : inner
+                let angle = -CGFloat.pi / 2 + CGFloat(i) * .pi / 5
+                let point = CGPoint(x: center.x + radius * cos(angle),
+                                    y: center.y + radius * sin(angle))
+                if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
+            }
+            path.close()
+            gold.setFill()
+            path.fill()
+            UIColor.white.setStroke()
+            path.lineWidth = 1.5
+            path.lineJoinStyle = .round
+            path.stroke()
+        }
     }
 }

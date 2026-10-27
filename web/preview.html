@@ -29,6 +29,10 @@
        whole set; every hard-coded color in this stylesheet routes
        through one of these so a theme swap leaves nothing behind. */
     --good-rgb:56,225,255;
+    --brand:#ff4d7e;
+    --accent-text:#ff4d7e;
+    --user:#ffc53d;
+    --user-rgb:255,197,61;
     --headerfade:13,10,8;
     --attr-bg:rgba(20,16,13,.75);
     --attr-ink:#6f6455;
@@ -43,37 +47,47 @@
     --toast-bg:#000;
     --toast-ink:#eef1ff;
   }
-  /* Daytime Tokyo (Croix, 2026-10-26): same brand, daylight. Accent is
-     deepened past the target #e0335f to #d92c57 — #e0335f measures
-     4.37:1 on white, under the 4.5:1 small-text floor for the pink
-     distance labels and creed; #d92c57 measures 4.72:1. --good #0b7ea4
-     measures 4.66:1 on white. */
+  /* Daytime Tokyo (Croix, 2026-10-26, realigned evening): the Creams
+     Tokyo DAY identity, verbatim where the roles line up — washi-paper
+     page #FAF7F2, white panels, ai-iro indigo #165E83 for brand, titles
+     and links, shu-iro vermillion #EB471F owning selected states and
+     highlights, warm stone text (#2B2B2B / #44403C). Two text-grade
+     derivatives keep the 4.5:1 small-text floor the first day pass set:
+     --accent-text #C6360F is vermillion deepened to 4.99:1 on washi
+     (distance labels, stars, counts); --brand carries the creed and
+     links at 6.63:1. Pure #EB471F (3.85:1 under white text) is kept
+     for fills exactly as Creams uses it. --good becomes indigo:
+     the location dot and the honesty shield read ai-iro by day. */
   html[data-theme="day"]{
-    --bg:#e8ecf7;
+    --bg:#faf7f2;
     --panel:#ffffff;
     --panel-solid:#ffffff;
-    --panel-2:#eef1fa;
-    --line:rgba(30,40,90,.14);
-    --ink:#161c33;
-    --ink-dim:#4c5878;
-    --ink-faint:#8590b0;
-    --accent:#d92c57;
+    --panel-2:#f5efe4;
+    --line:rgba(105,88,70,.18);
+    --ink:#2b2b2b;
+    --ink-dim:#44403c;
+    --ink-faint:#857e73;
+    --accent:#eb471f;
     --accent-ink:#ffffff;
-    --good:#0b7ea4;
-    --good-rgb:11,126,164;
-    --headerfade:232,236,247;
+    --accent-text:#c6360f;
+    --brand:#165e83;
+    --user:#dd8e00;
+    --user-rgb:221,142,0;
+    --good:#165e83;
+    --good-rgb:22,94,131;
+    --headerfade:250,247,242;
     --attr-bg:rgba(255,255,255,.78);
-    --attr-ink:#8590b0;
-    --attr-link:#4c5878;
-    --focus:rgba(217,44,87,.45);
-    --sheet-shadow:rgba(22,28,51,.18);
-    --handle:rgba(76,88,120,.35);
-    --scroll:#c3cde6;
-    --scroll-hover:#a9b8dc;
-    --label-ink:#161c33;
-    --label-halo:255,255,255;
-    --toast-bg:#161c33;
-    --toast-ink:#f4f6ff;
+    --attr-ink:#857e73;
+    --attr-link:#165e83;
+    --focus:rgba(235,71,31,.45);
+    --sheet-shadow:rgba(43,36,28,.18);
+    --handle:rgba(68,64,60,.35);
+    --scroll:#dcd2c2;
+    --scroll-hover:#c9bba4;
+    --label-ink:#2b2b2b;
+    --label-halo:250,247,242;
+    --toast-bg:#2b2b2b;
+    --toast-ink:#faf7f2;
     color-scheme:light;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -114,7 +128,7 @@
   .brand h1 .dot{color:var(--accent)}
   .brand .creed{
     margin-top:3px;font-size:12px;font-weight:600;letter-spacing:.4px;
-    color:var(--accent);text-transform:uppercase;
+    color:var(--brand);text-transform:uppercase;
   }
   .brand .creed span{color:var(--ink-dim)}
   .locatebtn{
@@ -217,12 +231,12 @@
      positioning, the list simply sits below the visible slice of the sheet */
   .sheethead{padding:2px 18px 10px;border-bottom:1px solid var(--line);flex:0 0 auto}
   .sheethead .count{font-size:17px;font-weight:700}
-  .sheethead .count em{font-style:normal;color:var(--accent)}
+  .sheethead .count em{font-style:normal;color:var(--accent-text)}
   .honesty{
     margin-top:3px;font-size:12.5px;color:var(--ink-dim);display:flex;align-items:center;gap:6px;
   }
   .honesty svg{width:13px;height:13px;fill:var(--good);flex:0 0 auto}
-  .capnote{margin-top:4px;font-size:12px;color:var(--accent);display:none}
+  .capnote{margin-top:4px;font-size:12px;color:var(--accent-text);display:none}
   .capnote.show{display:block}
   #list{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto}
   /* Themed scrollbars (Croix, 2026-10-26): the default light OS
@@ -247,9 +261,9 @@
   .venue .meta{margin-top:2px;font-size:13px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .venue .addr{margin-top:2px;font-size:12.5px;color:var(--ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .venue .side{flex:0 0 auto;text-align:right}
-  .venue .dist{font-size:13px;font-weight:700;color:var(--accent)}
+  .venue .dist{font-size:13px;font-weight:700;color:var(--accent-text)}
   .venue .rp{margin-top:3px;font-size:12.5px;color:var(--ink-dim)}
-  .venue .rp .star{color:var(--accent)}
+  .venue .rp .star{color:var(--accent-text)}
   .venue .rp .rc{color:var(--ink-faint)}
   .svc{display:inline-block;margin-top:4px;padding:1px 7px;border:1px solid var(--line);border-radius:999px;font-size:11px;font-weight:650;color:var(--ink-dim);background:var(--panel-2);white-space:nowrap}
   .statebox{padding:34px 24px;text-align:center;color:var(--ink-dim);font-size:14px;line-height:1.55}
@@ -286,7 +300,7 @@
     text-align:center;
     line-height:1;
   }
-  .venue-label.selected{color:var(--accent);font-weight:700}
+  .venue-label.selected{color:var(--accent-text);font-weight:700}
 
   /* ---------- detail view ---------- */
   #detail{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;display:none;position:relative}
@@ -298,13 +312,13 @@
   #detail.open{display:block}
   .backbtn{
     display:inline-flex;align-items:center;gap:5px;background:none;border:none;
-    color:var(--accent);font-size:14px;font-weight:650;padding:12px 18px 0;cursor:pointer;
+    color:var(--brand);font-size:14px;font-weight:650;padding:12px 18px 0;cursor:pointer;
   }
   .detailbody{padding:8px 18px 22px}
   .detailbody h2{font-size:23px;line-height:1.2;font-family:Georgia,serif;font-weight:700}
   .detailbody .dmeta{margin-top:5px;font-size:14px;color:var(--ink-dim)}
   .detailbody .dmeta .svc{margin-top:0;vertical-align:1px}
-  .detailbody .dmeta .star{color:var(--accent)}
+  .detailbody .dmeta .star{color:var(--accent-text)}
   .detailbody .daddr{margin-top:10px;font-size:14.5px;line-height:1.5;color:var(--ink)}
   .detailbody .ddist{margin-top:2px;font-size:13px;color:var(--ink-faint)}
   .actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
@@ -333,14 +347,20 @@
   .userloc-halo{
     position:absolute;left:50%;top:50%;width:24px;height:24px;border-radius:50%;
     transform:translate(-50%,-50%);
-    background:rgba(var(--good-rgb),.30);
+    background:rgba(var(--user-rgb),.30);
     animation:userloc-pulse 2.2s ease-out infinite;
   }
+  /* You-are-here is a gold star (Croix, 2026-10-26): a star reads as
+     "you" at a glance and gold stays clear of both the venue dots
+     (pink by night, vermillion by day) and the indigo brand color.
+     clip-path cuts the star; drop-shadow follows the clipped shape,
+     standing in for the old dot's white ring + shadow. */
   .userloc-dot{
-    position:absolute;left:50%;top:50%;width:13px;height:13px;border-radius:50%;
+    position:absolute;left:50%;top:50%;width:21px;height:21px;
     transform:translate(-50%,-50%);
-    background:var(--good);border:2.5px solid #fff;
-    box-shadow:0 0 0 1px rgba(7,9,18,.45),0 1px 6px rgba(0,0,0,.5);
+    background:var(--user);
+    clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+    filter:drop-shadow(0 0 1.2px rgba(255,255,255,.95)) drop-shadow(0 1px 2px rgba(0,0,0,.45));
   }
   @keyframes userloc-pulse{
     0%{box-shadow:0 0 0 0 rgba(var(--good-rgb),.45)}
@@ -566,11 +586,12 @@
       active: { radius:9, weight:2,   color:'#ffffff', fillColor:'#38e1ff', fillOpacity:1 }
     },
     day: {
-      dot:    { radius:6, weight:1.5, color:'#ffffff', fillColor:'#d92c57', fillOpacity:.95 },
-      active: { radius:9, weight:2,   color:'#ffffff', fillColor:'#0b7ea4', fillOpacity:1 }
+      dot:    { radius:6, weight:1.5, color:'#ffffff', fillColor:'#eb471f', fillOpacity:.95 },
+      active: { radius:9, weight:2,   color:'#ffffff', fillColor:'#165e83', fillOpacity:1 }
     }
   };
-  var GOOD_HEX = { night: '#38e1ff', day: '#0b7ea4' };
+  var GOOD_HEX = { night: '#38e1ff', day: '#165e83' };
+  var USER_HEX = { night: '#ffc53d', day: '#dd8e00' };
   function dotStyle(){ return DOTS[THEME].dot; }
   function styleFor(id){
     return String(id) === String(selectedId) ? DOTS[THEME].active : DOTS[THEME].dot;
@@ -1031,7 +1052,7 @@
       addEsriFallback();
     }
     Object.keys(markers).forEach(function(k){ markers[k].setStyle(styleFor(k)); });
-    if(userAccuracy) userAccuracy.setStyle({ fillColor: GOOD_HEX[t] });
+    if(userAccuracy) userAccuracy.setStyle({ fillColor: USER_HEX[t] });
   }
   $('themeBtn').addEventListener('click', function(){
     setTheme(THEME === 'day' ? 'night' : 'day');
@@ -1062,7 +1083,7 @@
     if(accuracy && accuracy > 0){
       if(!userAccuracy){
         userAccuracy = L.circle(ll, {
-          interactive: false, stroke: false, fillColor: GOOD_HEX[THEME], fillOpacity: 0.10
+          interactive: false, stroke: false, fillColor: USER_HEX[THEME], fillOpacity: 0.10
         }).addTo(map);
       } else {
         userAccuracy.setLatLng(ll);

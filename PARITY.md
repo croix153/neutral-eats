@@ -21,11 +21,11 @@ before we did. Drift like that is what this checklist prevents.
 | Near-me manual re-center | ✓ | ✓ | |
 | Ranking: distance + data quality only; nothing sponsored, ever; honesty line shown | ✓ | ✓ | Core product rule — never platform-optional |
 | Search + type chips (All / Restaurants / Cafés / Bars / Fast Food / Bakeries) | ✓ | ✓ | Same six filters. Bars is a category: the API maps `type=bar` to bar + pub types (server-side, 2026-10-26). Extraction folds pub/wine_bar/etc. into type `bar`, so no `pub` rows exist today — pubs appear under Bars as bars |
-| Map dot density at wide zoom | Clusters colliding dots into count bubbles that zoom apart on tap (build 11); labels replace clustering at street zoom | Renders all fetched markers (MapLibre GL) | Deliberate presentation adaptation per map engine — same underlying venue set on both surfaces |
+| Map dot density at wide zoom | Renders all fetched markers (MapLibre GL) | Clusters colliding dots into count bubbles that zoom apart on tap (build 11); labels replace clustering at street zoom | Deliberate presentation adaptation per map engine — same underlying venue set on both surfaces |
 | Enrichment render: `★ 4.5 (123) · $$` + "Full service" pill | ✓ | ✓ (build 7+) | Fields are null until the Yelp key lands; both surfaces light up together |
 | Closed venues excluded | ✓ server-side (`venues.php` + enrichment `is_closed`) | ✓ server-side | Inherited by both; no client work |
-| User location marker | Custom pulsing halo | Native MapKit blue dot | Deliberate platform idiom — visual only |
-| Day/night themes with a header switcher; default follows the device, switcher can pin day or night | ✓ (persisted `ne-theme`) | ✓ (build 9: 3-state auto → day → night cycle) | Same hex values both sides; basemap + dots restyle with the chrome |
+| User location marker | Gold star with a gold pulse halo (2026-10-26) | Gold star, custom MKUserLocation view (build 12) | Croix, 2026-10-26: a star, in its own color — gold in both themes (day #DD8E00, night #FFC53D), never the venue or brand colors |
+| Day/night themes with a header switcher; default follows the device, switcher can pin day or night | ✓ (persisted `ne-theme`) | ✓ (build 9: 3-state auto → day → night cycle) | Same hex values both sides; basemap + dots restyle with the chrome. Day palette realigned 2026-10-26 (web + build 12) to the Creams Tokyo DAY spec: washi #FAF7F2, ai-iro indigo #165E83 (brand/links/selected dot), shu-iro vermillion #EB471F (dots/selected fills), text-grade vermillion #C6360F |
 | Venue name labels on the map at street zoom | ✓ (zoom ≥ 17, nearest 120) | ✓ (build 9: span ≤ 0.0085, nearest 80) | Labels are tappable, selected venue's label wears the accent |
 | Result count at the server cap reads "500+", never a bare "500" | ✓ | ✓ (build 9) | Both key off the same cap signal (serverCount ≥ limit) |
 

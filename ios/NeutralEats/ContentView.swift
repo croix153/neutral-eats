@@ -401,7 +401,7 @@ struct ContentView: View {
             let n = store.venues.count
             (Text(displayCount)
                 .font(.system(size: 15.5, weight: .bold))
-                .foregroundColor(NEColor.accent)
+                .foregroundColor(NEColor.accentText)
                 + Text(" \(n == 1 ? "place" : "places") near this spot")
                 .font(.system(size: 15.5, weight: .bold))
                 .foregroundColor(NEColor.ink))
@@ -420,7 +420,7 @@ struct ContentView: View {
         if store.loadFailed {
             Text("Tap to try again")
                 .font(.system(size: 12.5))
-                .foregroundColor(NEColor.accent)
+                .foregroundColor(NEColor.accentText)
         } else if let nearest = store.venues.first {
             let distance = Venue.formatDistance(nearest.distanceMiles(from: store.center))
             (Text("Nearest: ")
@@ -494,7 +494,7 @@ struct ContentView: View {
             if store.serverCount >= APIClient.limit {
                 Text("Showing 500 results — zoom in for more.")
                     .font(.system(size: 12))
-                    .foregroundColor(NEColor.accent)
+                    .foregroundColor(NEColor.accentText)
                     .padding(.top, 1)
             }
         }
@@ -517,14 +517,14 @@ struct ContentView: View {
         if !searchText.isEmpty {
             return (Text(displayCount)
                 .font(.system(size: 17, weight: .bold))
-                .foregroundColor(NEColor.accent)
+                .foregroundColor(NEColor.accentText)
                 + Text(" \(n == 1 ? "match" : "matches") for “\(searchText)” nearby")
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(NEColor.ink))
         }
         return (Text(displayCount)
             .font(.system(size: 17, weight: .bold))
-            .foregroundColor(NEColor.accent)
+            .foregroundColor(NEColor.accentText)
             + Text(" \(n == 1 ? "place" : "places") near this spot")
             .font(.system(size: 17, weight: .bold))
             .foregroundColor(NEColor.ink))
@@ -582,7 +582,7 @@ struct ContentView: View {
             VStack(alignment: .trailing, spacing: 3) {
                 Text(Venue.formatDistance(venue.distanceMiles(from: store.center)))
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(NEColor.accent)
+                    .foregroundColor(NEColor.accentText)
                 if !venue.ratingPriceLine.isEmpty {
                     ratingPriceText(venue)
                         .font(.system(size: 12.5))
@@ -596,7 +596,7 @@ struct ContentView: View {
     private func ratingPriceText(_ venue: Venue) -> Text {
         var result: Text? = nil
         if venue.ratingValue != nil {
-            result = Text("★").foregroundColor(NEColor.accent)
+            result = Text("★").foregroundColor(NEColor.accentText)
                 + Text(String(venue.ratingPriceLine.dropFirst(1)))
         }
         return result ?? Text(venue.ratingPriceLine)
@@ -614,10 +614,10 @@ struct ContentView: View {
             Button(action: action) {
                 Text(buttonTitle)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(NEColor.accent)
+                    .foregroundColor(NEColor.accentText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .overlay(Capsule().stroke(NEColor.accent, lineWidth: 1))
+                    .overlay(Capsule().stroke(NEColor.accentText, lineWidth: 1))
                     .clipShape(Capsule())
             }
             .padding(.top, 6)
@@ -718,7 +718,7 @@ struct ContentView: View {
         return Group {
             if joined.hasPrefix("★") {
                 HStack(spacing: 0) {
-                    Text("★").foregroundColor(NEColor.accent)
+                    Text("★").foregroundColor(NEColor.accentText)
                     Text(String(joined.dropFirst(1))).foregroundColor(NEColor.inkDim)
                 }
             } else {
