@@ -1,0 +1,52 @@
+name: Duo Check (simulator)
+
+# Manual dispatch only. iPhone Duo rendering check for Neutral Eats:
+# SIMULATOR ONLY. This workflow never signs for distribution, never
+# archives for App Store, and never uploads anything to App Store
+# Connect. It builds an unsigned Debug build-for-simulator, runs it
+# on whatever foldable (or fallback) simulator the runner offers,
+# and uploads screenshots + logs as run artifacts.
+#
+# phase=inventory  -> dump the runner's Xcode/simctl environment so
+#                     the Duo mechanism is chosen from facts.
+# phase=full       -> inventory + build + boot + capture + fold
+#                     cycles (implemented in run-full.sh).
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Which phase to run"
+        type: choice
+        options:
+          - inventory
+          - full
+        default: inventory
+        required: true
+
+jobs:
+  duo-check:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inventory the simulator environment
+        run: |
+          chmod +x duo-check/run-inventory.sh
+          duo-check/run-inventory.sh duo-check/results
+
+      - name: Run the full Duo check
+        if: ${{ inputs.phase == 'full' }}
+        run: |
+          chmod +x duo-check/run-full.sh
+          duo-check/run-full.sh duo-check/results
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: duo-check-results
+          path: duo-check/results/
+          if-no-files-found: warn
+          retention-days: 14
