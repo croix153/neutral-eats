@@ -183,3 +183,46 @@ a per-source audit table (fl_dbpr_matches) before it is applied.
   larger sample before any apply. Audit-only until then.**
 - KC and Boston unchanged: audit-only, awaiting Croix's review
   alongside this verdict. NO production writes anywhere in NY.
+
+## Policy update + one-time closure backfill (2026-10-27)
+
+**Policy (Croix, 2026-10-27): closures no longer require licensing
+corroboration.** Overture `operating_status = 'permanently_closed'`
+is trusted directly as closure authority — sufficient on its own to
+suppress a venue. Licensing remains the higher authority where it
+speaks, and the gap layer where Overture is silent, but an Overture
+closure signal no longer waits for a second source.
+
+**One-time backfill (fix-plan step 5, closure half) EXECUTED
+2026-10-27:**
+
+- Source: the local release capture
+  `/root/overture-work/gate2/us_raw.parquet` (release 2026-10-21.0,
+  US). Staging still carries no `operating_status`, so the pull
+  re-read the release, as this doc prescribed. Pull: **638,268**
+  `permanently_closed` feature ids; **259** `temporarily_closed`.
+  Loaded to `overture_closed_ids_20261027` /
+  `overture_tempclosed_ids_20261027`.
+- Match against active production venues: **0** — by
+  `id = CONCAT('overture:', feature_id)` and by this doc's step-5
+  `source_id` join alike (the two mappings coincide on this
+  catalog). Structural, exactly as predicted above:
+  `permanently_closed` features were excluded at extract, so they
+  were never staged, loaded, or merge-matched; closed rows only
+  arrive with the next fixed refresh. Cross-checks that the joins
+  are valid: **4** active venues match the `temporarily_closed`
+  set (that class was never excluded — Starbucks, San Diego CA;
+  Fresh Kitchen Winter Park, FL; Mountain Mike's Pizza, Mansfield
+  TX; Starbucks Coffee Company, Flagstaff AZ; counted, NOT
+  suppressed), and 5 sampled production features read `open` in
+  the release.
+- Apply set was empty: backup `venues_backup_20261027_ovtclosed`
+  (0 rows) and audit `overture_closure_suppressions_20261027`
+  (0 rows) created; no production rows changed; active catalog
+  unchanged at 1,550,530.
+- Forward effect: under the fixed pipeline (implemented 2026-10-26)
+  the Nov 3 refresh stages closed rows and the merge sets
+  `is_active = 0` iff `permanently_closed` — under the new policy
+  that Overture signal applies directly, no licensing
+  corroboration needed. The open/unknown `operating_status`
+  relabeling of current rows still rides the Nov 3 refresh.
