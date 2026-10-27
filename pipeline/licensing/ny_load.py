@@ -31,6 +31,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 
 PAGE = 50000
@@ -83,10 +84,11 @@ def fetch_pages(base, select, order):
     """Page a Socrata resource endpoint; yields row dicts."""
     offset = 0
     while True:
-        q = (f"?$select={select}&$order={order}"
-             f"&$limit={PAGE}&$offset={offset}")
+        q = urllib.parse.urlencode({
+            "$select": select, "$order": order,
+            "$limit": PAGE, "$offset": offset})
         req = urllib.request.Request(
-            base + q,
+            base + "?" + q,
             headers={"User-Agent": "neutral-eats-licensing/1.0"})
         with urllib.request.urlopen(req, timeout=120) as resp:
             rows = json.load(resp)
