@@ -30,6 +30,7 @@ struct Venue: Decodable, Identifiable {
     let address: String?
     let phone: String?
     let website: String?
+    let hours: String?
     let source: String?
 
     /// Coordinates are validated, not just present (adversarial
@@ -49,7 +50,7 @@ struct Venue: Decodable, Identifiable {
     enum CodingKeys: String, CodingKey {
         case id, name, lat, lng, type, cuisine, rating, priceLevel
         case reviewCount, tableService
-        case address, phone, website, source
+        case address, phone, website, hours, source
     }
 
     init(from decoder: Decoder) throws {
@@ -67,6 +68,7 @@ struct Venue: Decodable, Identifiable {
         address = Venue.flexString(c, .address)
         phone = Venue.flexString(c, .phone)
         website = Venue.flexString(c, .website)
+        hours = Venue.flexString(c, .hours)
         source = Venue.flexString(c, .source)
     }
 
@@ -188,6 +190,21 @@ struct Venue: Decodable, Identifiable {
         }
         return "Listed via " + names.joined(separator: " + ") +
             " data. neutral eats takes no placement fees — this order is pure distance."
+    }
+
+    /// Opening hours, one day-range segment per line (OSM backfill,
+    /// 2026-10-27): the API carries the raw opening_hours string,
+    /// ';'-separated; the detail card renders one segment per line,
+    /// verbatim, and shows nothing at all when the venue has no
+    /// hours. Mirrors the .dhours block in web/preview.html — keep
+    /// the two in sync.
+    var hoursLines: [String]? {
+        guard let h = hours?.trimmingCharacters(in: .whitespaces),
+              !h.isEmpty else { return nil }
+        let lines = h.split(separator: ";")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        return lines.isEmpty ? nil : lines
     }
 
     var sanitizedPhone: String? {

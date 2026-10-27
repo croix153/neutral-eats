@@ -715,6 +715,24 @@ struct ContentView: View {
                 .font(.system(size: 13))
                 .foregroundColor(NEColor.inkFaint)
 
+            // Hours row (OSM backfill, 2026-10-27): one line per
+            // ';' segment of the raw opening_hours string, verbatim,
+            // with the OSM attribution under it. Hidden entirely
+            // when the venue has no hours — web parity.
+            if let lines = venue.hoursLines {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                        Text(line)
+                            .font(.system(size: 14))
+                            .foregroundColor(NEColor.ink)
+                    }
+                    Text("Hours © OpenStreetMap contributors")
+                        .font(.system(size: 11.5))
+                        .foregroundColor(NEColor.inkFaint)
+                        .padding(.top, 1)
+                }
+            }
+
             HStack(spacing: 10) {
                 callButton(venue)
                 websiteButton(venue)
