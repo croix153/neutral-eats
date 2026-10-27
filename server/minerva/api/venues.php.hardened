@@ -147,7 +147,7 @@ try {
         venues.id, venues.name, venues.lat, venues.lng, venues.type,
         venues.cuisine, venues.brand,
         venues.rating, venues.price_level, venues.rating_count,
-        venues.address, venues.phone, venues.website,
+        venues.address, venues.phone, venues.website, venues.hours,
         venues.source, venues.last_updated,
         e.rating AS e_rating, e.review_count AS e_review_count,
         e.price_level AS e_price_level,
@@ -188,6 +188,10 @@ try {
             'address' => $row['address'],
             'phone' => $row['phone'],
             'website' => $row['website'],
+            // Opening hours (OSM backfill 2026-10-27): raw
+            // opening_hours string, verbatim; null when the venue
+            // has none. Clients show the row only when non-empty.
+            'hours' => $row['hours'] ?? null,
             'source' => $row['source'],
             'lastUpdated' => intval($row['last_updated'])
         ];
