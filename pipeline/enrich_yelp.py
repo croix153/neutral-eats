@@ -187,15 +187,27 @@ class CallBudget:
         return self.used >= self.max_calls
 
 
+class YelpError(Exception):
+    """A Yelp call FAILED (HTTP error, network, timeout) — as
+    opposed to succeeding with an empty result. The distinction is
+    load-bearing: a failed call must never be recorded as a
+    no-match marker (adversarial review finding 12 — transient
+    failures were being written as 30-day no-match rows, and a
+    dead plan like TRIAL_EXPIRED would poison every candidate it
+    touched)."""
+
+
 class Yelp:
     def __init__(self, api_key, budget):
         self.api_key = api_key
         self.budget = budget
 
     def get(self, path, params=None):
-        """One Yelp GET. Returns parsed JSON, or None on any failure.
-        Counts against the run budget; sleeps politely before each call;
-        backs off once on HTTP 429, then gives up (returns None)."""
+        """One Yelp GET. Returns parsed JSON on success (None only
+        when the local call budget is already exhausted); raises
+        YelpError on any API/network failure. Counts against the
+        run budget; sleeps politely before each call; backs off
+        once on HTTP 429, then raises."""
         if self.budget.exhausted():
             return None
         url = API_BASE + path
@@ -219,13 +231,10 @@ class Yelp:
                           file=sys.stderr)
                     time.sleep(5)
                     continue
-                print(f"  ! Yelp HTTP {err.code} for {path}", file=sys.stderr)
-                return None
+                raise YelpError(f"HTTP {err.code} for {path}")
             except Exception as err:  # network, JSON, timeout
-                print(f"  ! Yelp call failed for {path}: {err}",
-                      file=sys.stderr)
-                return None
-        return None
+                raise YelpError(f"call failed for {path}: {err}")
+        raise YelpError(f"call failed for {path}: retries exhausted")
 
     def search_phone(self, phone_e164):
         data = self.get("/businesses/search/phone", {"phone": phone_e164})
@@ -296,8 +305,15 @@ def normalize_phone(raw):
     return None
 
 
-def match_venue(yelp, venue):
-    """Return (business_dict, matched_via) or (None, None)."""
+def match_venue(yelp, venue, min_score):
+    """Return (business_dict, matched_via) or (None, None).
+    A search candidate must clear BOTH the name-ratio floor and
+    the caller's --min-score on the combined score — the flag was
+    parsed but never applied until 2026-10-26 (finding 12), so
+    weak-scored matches were being accepted at the ratio floor
+    alone. The phone path keeps its own bar: an exact phone match
+    is strong evidence on its own, corroborated by a 0.40 name
+    ratio. Raises YelpError when a call fails."""
     phone = normalize_phone(venue.get("phone"))
     if phone:
         biz = yelp.search_phone(phone)
@@ -306,7 +322,7 @@ def match_venue(yelp, venue):
     best, best_score = None, 0.0
     for biz in yelp.search_near(venue["name"], venue["lat"], venue["lng"]):
         score, ratio = candidate_score(venue, biz)
-        if ratio >= 0.55 and score > best_score:
+        if ratio >= 0.55 and score >= min_score and score > best_score:
             best, best_score = biz, score
     if best is not None:
         return best, "search"
@@ -440,17 +456,44 @@ def main(argv=None):
 
     budget = CallBudget(args.max_calls, args.delay)
     yelp = Yelp(api_key, budget)
-    matched = written = 0
+    matched = written = failures = attempted = 0
     for venue in candidates:
         if budget.exhausted():
             print(f"call budget exhausted ({budget.used} calls); stopping")
             break
-        biz, via = match_venue(yelp, venue)
+        attempted += 1
+        try:
+            biz, via = match_venue(yelp, venue, args.min_score)
+        except YelpError as err:
+            # A FAILED call is not a no-match: write nothing, so
+            # the venue stays a candidate for the next run instead
+            # of being poisoned with a 30-day marker (finding 12).
+            failures += 1
+            print(f"  ! match failed for {venue['name']}: {err}",
+                  file=sys.stderr)
+            if failures >= 3 and matched == 0:
+                print("Yelp calls are failing systemically (plan "
+                      "expired? bad key?); aborting without writes.",
+                      file=sys.stderr)
+                return 1
+            continue
         if biz is None:
+            if budget.exhausted():
+                # Budget ran out mid-match: the empty result is
+                # not evidence of no match. Write nothing.
+                print(f"call budget exhausted ({budget.used} calls); "
+                      "stopping")
+                break
             row = marker_row(venue, args.ttl_days)
             print(f"  no match: {venue['name']}")
         else:
-            details = yelp.details(biz["id"])
+            try:
+                details = yelp.details(biz["id"])
+            except YelpError:
+                # The search payload already carries rating,
+                # review_count, price and is_closed; details only
+                # adds attributes. Keep the match.
+                details = None
             row = row_from_details(venue, biz, via, details, args.ttl_days)
             matched += 1
             print(f"  matched via {via}: {venue['name']} -> "
@@ -463,6 +506,7 @@ def main(argv=None):
             write_row(row)
             written += 1
     print(f"done: {matched} matched, {written} row(s) written, "
+          f"{failures} failed (skipped, unwritten), "
           f"{budget.used} Yelp call(s) used")
     return 0
 
