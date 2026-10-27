@@ -1,0 +1,159 @@
+Port:
+    UUID: 35A062FF-02A2-4E85-88EB-9940F6CF3907
+    Class: Unknown
+    Port Identifier: com.apple.display.captureservice
+    Power state: On
+
+Port:
+    UUID: 6EB2F73C-9903-484C-844A-CA1D33FDFF96
+    Class: Display
+    Port Identifier: com.apple.framebuffer.display
+    Power state: On
+    Display class: 0
+    Default width: 1080
+    Default height: 2340
+    Default pixel format: 'BGRA'
+    IOSurface port:
+        width              = 1080
+        height             = 2340
+        bytes per row      = 4352
+        size               = 10183680
+        pixel format       = 'BGRA'
+        bytes per element  = 4
+        CPU cache mode     = Default cache
+        Pixel size casting = Yes
+
+Port:
+    UUID: 3C7D7698-C55F-4EA6-8225-E04EFF2D6A83
+    Class: Display
+    Port Identifier: com.apple.framebuffer.display
+    Power state: On
+    Display class: 1
+    Default width: 720
+    Default height: 480
+    Default pixel format: 'BGRA'
+
+Port:
+    UUID: 3E7A1E43-BFD5-403C-B4BA-6382BC22D39D
+    Class: DisplayAdapter
+    Port Identifier: com.apple.framebuffer.server
+    Power state: On
+    Creatable Screen Properties:
+    (101) CarPlay:
+        Screen ID: 101
+        Name: CarPlay
+        Unique ID: CarPlay
+        Seed: 1
+        Screen Type: CarPlay
+        Pixel Size: {720, 480}
+        Dot Pitch: 460
+        Mask URL: (none)
+        Preferred UI Scale: 1
+        Pixel Format: 'BGRA'
+        Colorspace: sRGB
+        HDR Mode: SDR
+        Refresh Rate: 6000
+    Connected Screens:
+    (2) TVOut:
+        Screen ID: 2
+        Name: TVOut
+        Unique ID: PurpleTVOut
+        Seed: 2
+        Screen Type: TVOut
+        Pixel Size: {720, 480}
+        Dot Pitch: 0
+        Mask URL: (none)
+        Preferred UI Scale: 1
+        Pixel Format: 'BGRA'
+        Colorspace: sRGB
+        HDR Mode: SDR
+        Refresh Rate: 3000
+    (1) LCD:
+        Screen ID: 1
+        Name: LCD
+        Unique ID: PurpleMain
+        Seed: 3
+        Screen Type: Integrated
+        Pixel Size: {1080, 2340}
+        Dot Pitch: 476
+        Mask URL: file:///Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone%2013%20mini.simdevicetype/Contents/Resources/51C7C897-7BB5-4A78-A961-D382E90D9C5F.pdf
+        Preferred UI Scale: 3
+        Pixel Format: 'BGRA'
+        Colorspace: sRGB
+        HDR Mode: SDR
+        Refresh Rate: 6000
+
+Port:
+    UUID: 68FAD7D5-88C7-4811-B488-6E9310F5E382
+    Class: Accelerator
+    Port Identifier: com.apple.accelerator.metal
+    Power state: On
+
+Port:
+    UUID: 35CB76AB-047F-45CC-9478-77AFF883A120
+    Class: Accelerator
+    Port Identifier: com.apple.accelerator.iosurface
+    Power state: On
+
+Port:
+    UUID: 47DC2BE5-8AB6-460A-AC78-CEB2499E4360
+    Class: LegacyHID
+    Port Identifier: com.apple.CoreSimulator.HID.LegacyHID
+    Power state: On
+
+Port:
+    UUID: 6EED7721-AB17-456D-A145-38BCD28177E0
+    Class: StreamProcessor
+    Port Identifier: com.apple.SimStreamProcessor.default
+    Power state: On
+    Stream processor device
+    Specification:
+        SimStreamProcessorSpecificationPerformanceHint = SimStreamProcessorSpecificationPerformanceHint_Default
+        SimStreamProcessorSpecificationRendererHint = SimStreamProcessorSpecificationRendererHint_OpenGL
+        SimStreamProcessorSpecificationEmulationHint = SimStreamProcessorSpecificationEmulationHint_SerialProcessing
+    Renderer private name: Apple Software Renderer
+    Renderer version: 4.1 APPLE-23.1.1
+    Denylisted: No
+    Memory regions:
+        (Timed out trying to list memory regions)
+
+Port:
+    UUID: D2FB321C-87A2-4521-90D8-77D4B4B52007
+    Class: StreamProcessor
+    Port Identifier: com.apple.SimStreamProcessor.default
+    Power state: On
+    Stream processor device
+    Specification:
+        SimStreamProcessorSpecificationPerformanceHint = SimStreamProcessorSpecificationPerformanceHint_MaximizePerformance
+        SimStreamProcessorSpecificationRendererHint = SimStreamProcessorSpecificationRendererHint_Metal
+        SimStreamProcessorSpecificationEmulationHint = SimStreamProcessorSpecificationEmulationHint_NoEmulation
+    Renderer private name: Apple Paravirtual device
+    Renderer version: 1.3
+    Denylisted: No
+    Memory regions:
+        (Timed out trying to list memory regions)
+
+Port:
+    UUID: 74F1DD6F-DBC3-40E2-8A9D-0054276F1DAD
+    Class: Audio
+    Port Identifier: com.apple.CoreSimulator.Audio.HostRoute
+    Power state: On
+    Guest Audio Input -> Default Host Audio Device
+    Guest Audio Output -> Default Host Audio Device
+    Host Audio Devices:
+        AVIODevice: Speakers (0 In / 2 Out)
+        AVIODevice 2: Microphone (2 In / 0 Out)
+        NullAudioDevice_UID: Data Source Item 0 (2 In / 2 Out)
+
+Port:
+    UUID: 1F6FF3DB-A049-4F9A-B576-D488D7477F41
+    Class: Unknown
+    Port Identifier: com.apple.gputools.service.simulator
+    Power state: On
+
+Port:
+    UUID: B9317B21-C575-4A35-AF03-87079DF07B00
+    Class: Unknown
+    Port Identifier: com.apple.gputools.GPUToolsAgentService.simulator
+    Power state: On
+

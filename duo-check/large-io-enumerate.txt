@@ -1,0 +1,145 @@
+Port:
+    UUID: 13B1C389-E648-4845-8875-2F2AB13CF398
+    Class: Unknown
+    Port Identifier: com.apple.display.captureservice
+    Power state: On
+
+Port:
+    UUID: 304F5AD0-86A5-4DB8-808B-FDE1060EFE5A
+    Class: Display
+    Port Identifier: com.apple.framebuffer.display
+    Power state: On
+    Display class: 0
+    Default width: 1488
+    Default height: 2266
+    Default pixel format: 'BGRA'
+    IOSurface port:
+        width              = 1488
+        height             = 2266
+        bytes per row      = 5952
+        size               = 13487232
+        pixel format       = 'BGRA'
+        bytes per element  = 4
+        CPU cache mode     = Default cache
+        Pixel size casting = Yes
+
+Port:
+    UUID: 187C2DF1-4FA4-48FE-98C0-7D5B3583D9FE
+    Class: Display
+    Port Identifier: com.apple.framebuffer.display
+    Power state: On
+    Display class: 1
+    Default width: 720
+    Default height: 480
+    Default pixel format: 'BGRA'
+
+Port:
+    UUID: C43E66AA-5DD5-4602-8184-263C50D47E8F
+    Class: DisplayAdapter
+    Port Identifier: com.apple.framebuffer.server
+    Power state: On
+    Creatable Screen Properties:
+    Connected Screens:
+    (2) TVOut:
+        Screen ID: 2
+        Name: TVOut
+        Unique ID: PurpleTVOut
+        Seed: 11
+        Screen Type: TVOut
+        Pixel Size: {720, 480}
+        Dot Pitch: 0
+        Mask URL: (none)
+        Preferred UI Scale: 1
+        Pixel Format: 'BGRA'
+        Colorspace: sRGB
+        HDR Mode: SDR
+        Refresh Rate: 3000
+    (1) LCD:
+        Screen ID: 1
+        Name: LCD
+        Unique ID: PurpleMain
+        Seed: 12
+        Screen Type: Integrated
+        Pixel Size: {1488, 2266}
+        Dot Pitch: 326
+        Mask URL: file:///Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPad%20mini%20(A17%20Pro).simdevicetype/Contents/Resources/6C3E86A6-7852-4766-A147-E3A56F876E82.pdf
+        Preferred UI Scale: 2
+        Pixel Format: 'BGRA'
+        Colorspace: sRGB
+        HDR Mode: SDR
+        Refresh Rate: 6000
+
+Port:
+    UUID: EEAF0474-C6A7-4D8D-A44E-79A41B941FC5
+    Class: Accelerator
+    Port Identifier: com.apple.accelerator.metal
+    Power state: On
+
+Port:
+    UUID: E700B856-9B7B-449E-930F-BBE5DA625D08
+    Class: Accelerator
+    Port Identifier: com.apple.accelerator.iosurface
+    Power state: On
+
+Port:
+    UUID: 0AA2144D-7D89-444D-B2AF-A71C4B073937
+    Class: LegacyHID
+    Port Identifier: com.apple.CoreSimulator.HID.LegacyHID
+    Power state: On
+
+Port:
+    UUID: 3AB8C0B3-D7CE-4637-9294-21A8ECD9893C
+    Class: StreamProcessor
+    Port Identifier: com.apple.SimStreamProcessor.default
+    Power state: On
+    Stream processor device
+    Specification:
+        SimStreamProcessorSpecificationPerformanceHint = SimStreamProcessorSpecificationPerformanceHint_Default
+        SimStreamProcessorSpecificationRendererHint = SimStreamProcessorSpecificationRendererHint_OpenGL
+        SimStreamProcessorSpecificationEmulationHint = SimStreamProcessorSpecificationEmulationHint_SerialProcessing
+    Renderer private name: Apple Software Renderer
+    Renderer version: 4.1 APPLE-23.1.1
+    Denylisted: No
+    Memory regions:
+        (Timed out trying to list memory regions)
+
+Port:
+    UUID: 8E209378-6397-444E-819A-2AA6F760470F
+    Class: StreamProcessor
+    Port Identifier: com.apple.SimStreamProcessor.default
+    Power state: On
+    Stream processor device
+    Specification:
+        SimStreamProcessorSpecificationPerformanceHint = SimStreamProcessorSpecificationPerformanceHint_MaximizePerformance
+        SimStreamProcessorSpecificationRendererHint = SimStreamProcessorSpecificationRendererHint_Metal
+        SimStreamProcessorSpecificationEmulationHint = SimStreamProcessorSpecificationEmulationHint_NoEmulation
+    Renderer private name: Apple Paravirtual device
+    Renderer version: 1.3
+    Denylisted: No
+    Memory regions:
+        (Timed out trying to list memory regions)
+
+Port:
+    UUID: 0642540A-C883-4818-B45A-8FBEAE48D18F
+    Class: Audio
+    Port Identifier: com.apple.CoreSimulator.Audio.HostRoute
+    Power state: On
+    Guest Audio Input -> Default Host Audio Device
+    Guest Audio Output -> Default Host Audio Device
+    Host Audio Devices:
+        AVIODevice: Speakers (0 In / 2 Out)
+        AVIODevice 2: Microphone (2 In / 0 Out)
+        NullAudioDevice_UID: Data Source Item 0 (2 In / 2 Out)
+
+Port:
+    UUID: AFACF95A-E158-4AEB-9CD8-36A598B4B969
+    Class: Unknown
+    Port Identifier: com.apple.gputools.service.simulator
+    Power state: On
+
+Port:
+    UUID: 3E609607-FAE4-468C-8BC1-765FDEF12E5A
+    Class: Unknown
+    Port Identifier: com.apple.gputools.GPUToolsAgentService.simulator
+    Power state: On
+
