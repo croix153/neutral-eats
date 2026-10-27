@@ -119,14 +119,21 @@ a per-source audit table (fl_dbpr_matches) before it is applied.
 
 ## Rollout status (2026-10-26 night)
 
-- **NY (audit-only, re-running):** first crosswalk matched
+- **NY (audit-only, re-run DONE):** first crosswalk matched
   36,130 but produced 8,343 closure candidates — not credible:
   the NYS inactive file is a 20-year graveyard and venues matched
   dead predecessor records at their own addresses. Fix shipped:
   live licenses get +0.06 in the greedy assignment, and the
   live-successor gate demotes any closure candidate whose
-  (zip, house number) has a live license. Re-run in progress;
-  NO production writes until the gated numbers are reviewed.
+  (zip, house number) has a live license. Re-run: 36,125 matched
+  (live matches 26,935 → 27,029), **closure candidates 8,343 →
+  5,767**, watchlist 3,329 (2,480 gate demotions). Still too
+  many to close on one signal — the residue is venues whose
+  only licensing trace is a dead record (concentrated in
+  1999–2006 records; likely a mix of genuine POI ghosts and
+  unmatched live permits). Next step before any NY apply:
+  sample-verify ~30 candidates against independent sources to
+  estimate precision. NO production writes.
 - **King County (audit-only, DONE):** 12,295 licenses staged
   (only 7 carry the closed flag on their latest inspection —
   the flag is precise but rare); 5,180 matched (STRONG 4,112),
