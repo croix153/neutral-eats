@@ -9,12 +9,17 @@ MEDIUM too"). Two writes, both reversible from the backup table:
      fl_dbpr_matches audit table. Status codes map 20 -> current,
      45 -> delinquent, 46 -> relinquished.
   2. CLOSE the strict-rule closure set: lic_status 46 (any), or
-     lic_status 45 with expiry on/before 2024-12-31 OR last
-     inspection on/before 2024-12-31 or none. (The audit table's
-     original closure_candidate flag used a looser 2025 boundary
-     that caught the late-renewal cohort — 70 flags; the strict
-     rule leaves 9. This script first rewrites the audit flags
-     to the strict rule so the audit trail stays truthful.)
+     lic_status 45 with expiry on/before 2024-12-31 AND no sign
+     of life in 2026 (last inspection on/before 2025-12-31 or
+     none). Exactly 9 venues. (Rule history: the match audit's
+     original flag used a looser 2025 expiry boundary — 70 flags,
+     mostly the late-renewal cohort. A first apply draft with an
+     OR-form rule counted 23 and aborted on its own guard: it
+     swept in 13 venues inspected in 2026 — alive, however stale
+     their licenses — plus 1 fresh delinquency. The final rule
+     above is the conjunction that matches the set Croix
+     approved; this script rewrites the audit flags to it so
+     the audit trail stays truthful.)
      Closed venues get is_active=0 + operating_status=
      'permanently_closed' (licensing > Overture authority).
 
@@ -54,9 +59,9 @@ def main():
     run("""
 UPDATE fl_dbpr_matches SET closure_candidate =
   CASE WHEN lic_status='46' THEN 1
-       WHEN lic_status='45' AND (expiry_date <= '2024-12-31'
-            OR last_inspection <= '2024-12-31'
-            OR last_inspection IS NULL) THEN 1
+       WHEN lic_status='45' AND expiry_date <= '2024-12-31'
+            AND (last_inspection <= '2025-12-31'
+                 OR last_inspection IS NULL) THEN 1
        ELSE 0 END;
 """)
     run("""
