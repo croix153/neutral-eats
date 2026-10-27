@@ -29,11 +29,13 @@ struct ContentView: View {
     @StateObject private var store = VenueStore()
     @StateObject private var location = LocationManager()
     @StateObject private var theme = ThemeStore()
+    @StateObject private var tips = TipStore()
 
     @State private var filter: VenueFilter = .all
     @State private var searchText: String = ""
     @State private var selectedID: String? = nil
     @State private var cardExpanded: Bool = false
+    @State private var supportOpen: Bool = false
     @State private var centerRequest: CenterRequest? = nil
     @State private var centerNonce: Int = 0
     @State private var wantsCenter: Bool = false
@@ -75,6 +77,15 @@ struct ContentView: View {
         .onAppear {
             store.regionSettled(kHomeRegion, filter: filter, search: searchText)
             launchLocate()
+        }
+        // Tip ladder loads quietly alongside the first venue
+        // fetch; the Support entries only appear once products
+        // are actually in hand (TipStore.hasProducts).
+        .task {
+            await tips.load()
+        }
+        .sheet(isPresented: $supportOpen) {
+            SupportSheet(tips: tips)
         }
         .onChange(of: filter) { newFilter in
             dismissDetail()
@@ -467,6 +478,24 @@ struct ContentView: View {
                 .clipShape(Capsule())
                 .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
             }
+
+            // Tip jar entry (build 21): a quiet heart beside
+            // Near me, present only when the store actually
+            // returned the tip products.
+            if tips.hasProducts {
+                Button {
+                    supportOpen = true
+                } label: {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(NEColor.accentText)
+                        .frame(width: 38, height: 38)
+                        .background(NEColor.panel2)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(NEColor.line, lineWidth: 1))
+                }
+                .accessibilityLabel("Support Neutral Eats")
+            }
         }
         .padding(.horizontal, 14)
         .padding(.bottom, 12)
@@ -634,6 +663,20 @@ struct ContentView: View {
                 .listRowSeparatorTint(NEColor.line)
                 .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
             }
+            // The list's last row is the tip jar (build 21):
+            // same Support sheet as the summary card's heart,
+            // present only when tip products loaded.
+            if tips.hasProducts {
+                Button {
+                    supportOpen = true
+                } label: {
+                    supportRow
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(NEColor.panel)
+                .listRowSeparatorTint(NEColor.line)
+                .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
+            }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -670,6 +713,31 @@ struct ContentView: View {
                         .foregroundColor(NEColor.inkDim)
                 }
             }
+        }
+    }
+
+    /// The tip jar's list-form row: heart, the ask, and a
+    /// chevron — same visual weight as a venue row so it sits at
+    /// the bottom of the results without shouting over them.
+    private var supportRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "heart.fill")
+                .font(.system(size: 14))
+                .foregroundColor(NEColor.accentText)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Support Neutral Eats")
+                    .font(.system(size: 15.5, weight: .semibold))
+                    .foregroundColor(NEColor.ink)
+                    .lineLimit(1)
+                Text("Tips cover the servers and data. They buy nothing.")
+                    .font(.system(size: 12.5))
+                    .foregroundColor(NEColor.inkDim)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 4)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(NEColor.inkFaint)
         }
     }
 

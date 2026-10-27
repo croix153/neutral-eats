@@ -42,6 +42,7 @@ before we did. Drift like that is what this checklist prevents.
 | Behavior | Web | iOS | Why |
 |---|---|---|---|
 | Venue detail presentation | Bottom sheet over the map (peek/full stops); list lives in the sheet, detail replaces the list inside it | ONE bottom card over the map, no Map/List switcher (build 13): summary → expanded list → detail, morphed by state | Same interaction model since build 13 (Croix): the map never leaves; one card at the bottom holds list and detail. Stop counts differ per platform idiom (sheet stops vs card forms); content is the same. Supersedes the build 10 in-place design and its inline list expansion |
+| Support / tip jar | Not built — planned equivalent: a Stripe "pay what you want" button/link | ✓ build 21: "Support Neutral Eats" sheet — 7 consumable IAP tips on a $0.99–$49.99 ladder (StoreKit 2), entered from the summary card's heart button and the list's last row; entries render only when the store returns the products | **Planned platform exception (Croix, 2026-10-27).** Tips are commerce plumbing, not content: in-app purchases must run through Apple's IAP on iOS, while the web has no store and takes the external-link route instead. The rule both surfaces keep: a tip buys nothing — the app/site is identical either way, and nothing about results changes |
 
 ## Known gaps (not yet at parity — Croix's call on priority)
 
