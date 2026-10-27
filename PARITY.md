@@ -24,7 +24,10 @@ before we did. Drift like that is what this checklist prevents.
 | Map dot density at wide zoom | Renders all fetched markers (MapLibre GL) | Clusters colliding dots into count bubbles that zoom apart on tap (build 11); labels replace clustering at street zoom | Deliberate presentation adaptation per map engine — same underlying venue set on both surfaces |
 | Enrichment render: `★ 4.5 (123) · $$` + "Full service" pill | ✓ | ✓ (build 7+) | Fields are null until the Yelp key lands; both surfaces light up together |
 | Closed venues excluded | ✓ server-side (`venues.php` + enrichment `is_closed`) | ✓ server-side | Inherited by both; no client work |
-| User location marker | Gold star with a gold pulse halo (2026-10-26) | Gold star, custom MKUserLocation view (build 12) | Croix, 2026-10-26: a star, in its own color — gold in both themes (day #DD8E00, night #FFC53D), never the venue or brand colors |
+| User location marker | Star in the theme's location color (`--good`): indigo #165E83 by day, neon cyan #38E1FF by night, with a matching pulse halo | Star, custom MKUserLocation view, same two colors (build 13) | Croix, 2026-10-26 evening: gold retired — it was the palette's only warm metal and read off-theme in both modes. The star shape + white keyline + halo still set "you" apart from the round venue dots |
+| Meta lines never repeat the type word the cuisine already says ("Restaurant" over "restaurant,…" / "Pizza Restaurant") | ✓ `dedupedType()` | ✓ `Venue.dedupedTypeLabel` (build 13) | Same rule both sides: drop the bare type when a cuisine term equals it or the first term ends with it |
+| Selecting a venue lands the camera on it | ✓ list taps pan + zoom to 16 when zoomed out; map taps pan | ✓ any selection snaps to span 0.008 (build 13) | The detail opens in the bottom card/sheet on both surfaces |
+| Pure grocery stores are not results | ✓ inherited (data) | ✓ inherited (data) | Server-side suppression, 2026-10-26: 463 venues (cuisine/chain/name rules, zero food-service terms allowed) set `is_active=0`; audit table `grocery_suppressions_20261026` is the one-command undo. Delis, bakeries, food courts and pubs that serve food stay |
 | Day/night themes with a header switcher; default follows the device, switcher can pin day or night | ✓ (persisted `ne-theme`) | ✓ (build 9: 3-state auto → day → night cycle) | Same hex values both sides; basemap + dots restyle with the chrome. Day palette realigned 2026-10-26 (web + build 12) to the Creams Tokyo DAY spec: washi #FAF7F2, ai-iro indigo #165E83 (brand/links/selected dot), shu-iro vermillion #EB471F (dots/selected fills), text-grade vermillion #C6360F |
 | Venue name labels on the map at street zoom | ✓ (zoom ≥ 17, nearest 120) | ✓ (build 9: span ≤ 0.0085, nearest 80) | Labels are tappable, selected venue's label wears the accent |
 | Result count at the server cap reads "500+", never a bare "500" | ✓ | ✓ (build 9) | Both key off the same cap signal (serverCount ≥ limit) |
@@ -33,7 +36,7 @@ before we did. Drift like that is what this checklist prevents.
 
 | Behavior | Web | iOS | Why |
 |---|---|---|---|
-| Venue detail presentation | Bottom sheet | In place (build 10): map card morphs into the detail card; list rows expand inline | Croix, 2026-10-26: the slide-up sheet "doesn't feel like it interacts organically with the list" — detail now opens where the selection already lives. Content is the same on both surfaces. |
+| Venue detail presentation | Bottom sheet over the map (peek/full stops); list lives in the sheet, detail replaces the list inside it | ONE bottom card over the map, no Map/List switcher (build 13): summary → expanded list → detail, morphed by state | Same interaction model since build 13 (Croix): the map never leaves; one card at the bottom holds list and detail. Stop counts differ per platform idiom (sheet stops vs card forms); content is the same. Supersedes the build 10 in-place design and its inline list expansion |
 
 ## Known gaps (not yet at parity — Croix's call on priority)
 

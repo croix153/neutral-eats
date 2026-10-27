@@ -153,6 +153,29 @@ struct VenueMapView: UIViewRepresentable {
                     applyAppearance(view, venueID: id, selectedID: selectedID)
                 }
             }
+            // Cluster bubbles and the user star are dressed ONLY
+            // in viewFor, and MapKit never re-asks for those views
+            // when the theme flips — so a toggle repainted every
+            // venue dot but left the number bubbles (and the star)
+            // wearing the old theme until the viewport moved and
+            // clustering re-ran (Croix, build 13). Re-dress them
+            // here, IMAGE ONLY: assigning an image is cosmetic —
+            // no displayPriority, no clusteringIdentifier, none of
+            // the bookkeeping the build 12 hardening keeps out of
+            // live passes — under the same identity check the
+            // venue loop above uses.
+            for annotation in mapView.annotations {
+                if let cluster = annotation as? MKClusterAnnotation,
+                   let view = mapView.view(for: cluster),
+                   view.annotation === cluster {
+                    view.image = ClusterImages.image(count: cluster.memberAnnotations.count)
+                }
+            }
+            if mapView.showsUserLocation,
+               let userView = mapView.view(for: mapView.userLocation),
+               userView.annotation === mapView.userLocation {
+                userView.image = UserStarImages.image()
+            }
         }
 
         /// Street-zoom labels: the nearest venues to the map center,
@@ -203,7 +226,7 @@ struct VenueMapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation {
-                // You-are-here is a gold star (Croix, 2026-10-26),
+                // You-are-here is a star (Croix, 2026-10-26),
                 // replacing the stock blue dot — a custom view for
                 // the user annotation is the supported way to do it.
                 let reuseID = "user-star"
@@ -473,11 +496,13 @@ enum LabelImages {
     }
 }
 
-/// You-are-here gold star (Croix, 2026-10-26; build 12): a gold
-/// five-point star on a soft gold halo, white-stroked so it holds
-/// on any basemap. Gold is deliberately neither the venue color
-/// (pink/vermillion) nor the brand indigo — "you" should read
-/// instantly. Cached per theme mode like the dot images.
+/// You-are-here star (Croix, 2026-10-26; build 12, recolored the
+/// same evening): a five-point star on a soft halo, white-stroked
+/// so it holds on any basemap. The fill is the theme's location
+/// color (--good): ai-iro indigo by day, neon cyan by night. Gold
+/// was tried first and retired — it read off-palette. The star
+/// shape plus the halo keep "you" distinct from the round venue
+/// dots. Cached per theme mode like the dot images.
 enum UserStarImages {
     private static var cachedMode: NEThemeMode?
     private static var cachedImg: UIImage?
@@ -485,15 +510,15 @@ enum UserStarImages {
     static func image() -> UIImage {
         if cachedMode != NEColor.mode || cachedImg == nil {
             cachedMode = NEColor.mode
-            let gold: UIColor = NEColor.mode == .day
-                ? UIColor(red: 0xDD / 255.0, green: 0x8E / 255.0, blue: 0.0, alpha: 1.0)
-                : UIColor(red: 1.0, green: 0xC5 / 255.0, blue: 0x3D / 255.0, alpha: 1.0)
-            cachedImg = make(gold: gold)
+            let tint: UIColor = NEColor.mode == .day
+                ? UIColor(red: 0x16 / 255.0, green: 0x5E / 255.0, blue: 0x83 / 255.0, alpha: 1.0)
+                : UIColor(red: 0x38 / 255.0, green: 0xE1 / 255.0, blue: 1.0, alpha: 1.0)
+            cachedImg = make(tint: tint)
         }
         return cachedImg ?? UIImage()
     }
 
-    private static func make(gold: UIColor) -> UIImage {
+    private static func make(tint: UIColor) -> UIImage {
         let canvas: CGFloat = 30
         let format = UIGraphicsImageRendererFormat()
         format.scale = 3
@@ -502,7 +527,7 @@ enum UserStarImages {
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
             // Soft halo disc behind the star (mirrors the web's
             // pulsing halo ring, statically).
-            gold.withAlphaComponent(0.22).setFill()
+            tint.withAlphaComponent(0.22).setFill()
             UIBezierPath(ovalIn: CGRect(origin: .zero, size: size)).fill()
             // Five-point star inscribed in a 23pt box, centered.
             let center = CGPoint(x: canvas / 2, y: canvas / 2)
@@ -517,7 +542,7 @@ enum UserStarImages {
                 if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
             }
             path.close()
-            gold.setFill()
+            tint.setFill()
             path.fill()
             UIColor.white.setStroke()
             path.lineWidth = 1.5

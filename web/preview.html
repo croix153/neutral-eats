@@ -31,8 +31,8 @@
     --good-rgb:56,225,255;
     --brand:#ff4d7e;
     --accent-text:#ff4d7e;
-    --user:#ffc53d;
-    --user-rgb:255,197,61;
+    --user:#38e1ff;
+    --user-rgb:56,225,255;
     --headerfade:13,10,8;
     --attr-bg:rgba(20,16,13,.75);
     --attr-ink:#6f6455;
@@ -71,8 +71,8 @@
     --accent-ink:#ffffff;
     --accent-text:#c6360f;
     --brand:#165e83;
-    --user:#dd8e00;
-    --user-rgb:221,142,0;
+    --user:#165e83;
+    --user-rgb:22,94,131;
     --good:#165e83;
     --good-rgb:22,94,131;
     --headerfade:250,247,242;
@@ -350,11 +350,14 @@
     background:rgba(var(--user-rgb),.30);
     animation:userloc-pulse 2.2s ease-out infinite;
   }
-  /* You-are-here is a gold star (Croix, 2026-10-26): a star reads as
-     "you" at a glance and gold stays clear of both the venue dots
-     (pink by night, vermillion by day) and the indigo brand color.
-     clip-path cuts the star; drop-shadow follows the clipped shape,
-     standing in for the old dot's white ring + shadow. */
+  /* You-are-here is a star (Croix, 2026-10-26) wearing the theme's
+     own location color --good: ai-iro indigo by day, neon cyan by
+     night (gold read off-palette; Croix's call, evening of the
+     26th). The star shape plus the white keyline and the pulsing
+     halo keep it distinct from the round venue dots (vermillion
+     by day, pink by night). clip-path cuts the star; drop-shadow
+     follows the clipped shape, standing in for the old dot's
+     white ring + shadow. */
   .userloc-dot{
     position:absolute;left:50%;top:50%;width:21px;height:21px;
     transform:translate(-50%,-50%);
@@ -534,11 +537,26 @@
     if(v.cuisine) return String(v.cuisine).split(',')[0].trim();
     return 'Food & Drink';
   }
+  // The type label, unless the cuisine already says it: when a
+  // cuisine term IS the type ("restaurant,...") or the first term
+  // ends with it ("Pizza Restaurant"), the bare type is pure echo
+  // under the name (Croix, 2026-10-26). Mirrors dedupedTypeLabel
+  // in the iOS Models.swift — keep the two in sync.
+  function dedupedType(v){
+    var t = typeLabel(v);
+    if(!v.cuisine) return t;
+    var tl = t.toLowerCase();
+    var terms = String(v.cuisine).split(',').map(function(s){ return s.trim().toLowerCase(); });
+    if(terms.indexOf(tl) !== -1) return '';
+    var firstWords = terms[0].split(' ');
+    if(firstWords[firstWords.length - 1] === tl) return '';
+    return t;
+  }
   function metaLine(v){
     var parts = [];
-    var t = typeLabel(v);
+    var t = dedupedType(v);
     if(t) parts.push(t);
-    if(v.cuisine && v.cuisine !== t){
+    if(v.cuisine){
       // Cuisine strings repeat the type a lot; show a trimmed version.
       var c = String(v.cuisine);
       if(c.length > 44) c = c.slice(0, 44).trim() + '…';
@@ -591,7 +609,7 @@
     }
   };
   var GOOD_HEX = { night: '#38e1ff', day: '#165e83' };
-  var USER_HEX = { night: '#ffc53d', day: '#dd8e00' };
+  var USER_HEX = { night: '#38e1ff', day: '#165e83' };
   function dotStyle(){ return DOTS[THEME].dot; }
   function styleFor(id){
     return String(id) === String(selectedId) ? DOTS[THEME].active : DOTS[THEME].dot;
@@ -916,7 +934,8 @@
     if(p) meta.push(esc(p));
     var dsvc = serviceOf(v);
     if(dsvc) meta.push('<span class="svc">' + esc(dsvc) + '</span>');
-    meta.push(esc(typeLabel(v)));
+    var dtype = dedupedType(v);
+    if(dtype) meta.push(esc(dtype));
     var site = safeUrl(v.website);
     var tel = v.phone ? String(v.phone).replace(/[^+0-9]/g, '') : '';
     var dest = encodeURIComponent((v.name || '') + ' ' + (v.address || ''));
@@ -939,7 +958,13 @@
     $('listView').style.display = 'none';
     $('detail').classList.add('open');
     expandSheet();
-    if(pan) map.panTo([parseFloat(v.lat), parseFloat(v.lng)]);
+    // Selecting a place always lands the camera on it (build 13
+    // parity with the iOS card); a LIST selection also raises the
+    // zoom to street level when we're zoomed out, while a map tap
+    // keeps the zoom the user chose — they tapped it in view.
+    var ll = [parseFloat(v.lat), parseFloat(v.lng)];
+    if(pan && map.getZoom() < 16) map.setView(ll, 16);
+    else map.panTo(ll);
     markSelectedRow();
   }
 

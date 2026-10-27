@@ -1,0 +1,189 @@
+Incident Identifier: 6E289B4D-E35D-4B42-91DA-AA04661FAAA8
+Distributor ID:      com.apple.TestFlight
+Hardware Model:      iPhone17,2
+Process:             NeutralEats [18490]
+Path:                /private/var/containers/Bundle/Application/39E3E21E-EB9F-4240-A587-F8326931E533/NeutralEats.app/NeutralEats
+Identifier:          ai.croix.neutraleats
+Version:             1.0 (11)
+AppStoreTools:       27B47
+AppVariant:          1:iPhone17,2:27
+Beta:                YES
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd [1]
+Coalition:           ai.croix.neutraleats [18015]
+
+Date/Time:           2026-10-26 21:33:49.6388 -0400
+Launch Time:         2026-10-26 21:33:44.6305 -0400
+OS Version:          iPhone OS 27.0 (24A435)
+Release Type:        User
+Baseband Version:    3.02.02
+Report Version:      104
+
+Exception Type:  EXC_CRASH (SIGABRT)
+Exception Codes: 0x0000000000000000, 0x0000000000000000
+Exception Reason: *** -[__NSDictionaryM setObject:forKey:]: key cannot be nil
+Termination Reason: SIGNAL 6 Abort trap: 6
+Terminating Process: NeutralEats [18490]
+
+Triggered by Thread:  0
+
+Last Exception Backtrace:
+0   CoreFoundation                	0x18455b190 __exceptionPreprocess + 120 (:-1)
+1   libobjc.A.dylib               	0x1842d8380 objc_exception_throw + 88 (:-1)
+2   CoreFoundation                	0x1844f208c -[__NSDictionaryM setObject:forKey:] + 1064 (:-1)
+3   MapKit                        	0x1ab6bdbb0 -[MKAnnotationContainerView _existingClusterViewsForClusterID:] + 140 (:-1)
+4   MapKit                        	0x1ab544230 -[MKAnnotationContainerView addAnnotationView:allowAnimation:] + 120 (:-1)
+5   MapKit                        	0x1ab544140 -[MKMapView addAnnotationRepresentation:allowAnimation:] + 808 (:-1)
+6   MapKit                        	0x1ab542cc4 -[MKAnnotationManager _addRepresentationForAnnotation:] + 508 (:-1)
+7   MapKit                        	0x1ab5fabf4 -[MKAnnotationManager addRepresentationForAnnotation:] + 84 (:-1)
+8   MapKit                        	0x1ab567aac -[MKMapView annotationContainer:requestAddingClusterForAnnotationViews:] + 364 (:-1)
+9   MapKit                        	0x1ab6bdcf4 -[MKAnnotationContainerView _updateClusterableAnnotationViews:withID:] + 284 (:-1)
+10  CoreFoundation                	0x1844d3f44 __NSDICTIONARY_IS_CALLING_OUT_TO_A_BLOCK__ + 24 (:-1)
+11  CoreFoundation                	0x1844d4bb4 mdict_enumerateKeysAndObjectsWithOptionsUsingBlock + 44 (:-1)
+12  CoreFoundation                	0x1844d4bb4 -[__NSDictionaryM enumerateKeysAndObjectsWithOptions:usingBlock:] + 352 (:-1)
+13  MapKit                        	0x1ab4d23e8 -[MKAnnotationContainerView _updateAnnotationViewsForReason:updatePositions:] + 568 (:-1)
+14  MapKit                        	0x1ab5ff044 -[MKAnnotationView setDisplayPriority:] + 124 (:-1)
+15  NeutralEats                   	0x104c43a28 VenueMapView.Coordinator.applyAppearance(_:venueID:selectedID:) + 404 (MapView.swift:163)
+16  NeutralEats                   	0x104c4378c VenueMapView.Coordinator.syncAnnotations(on:venues:selectedID:) + 3204 (MapView.swift:125)
+17  NeutralEats                   	0x104c4b2d4 specialized VenueMapView.Coordinator.mapView(_:regionDidChangeAnimated:) + 220 (MapView.swift:235)
+18  NeutralEats                   	0x104c44324 VenueMapView.Coordinator.mapView(_:regionDidChangeAnimated:) + 12 (/<compiler-generated>:228)
+19  NeutralEats                   	0x104c44324 @objc VenueMapView.Coordinator.mapView(_:regionDidChangeAnimated:) + 56
+20  MapKit                        	0x1ab4d46f8 -[MKMapView _didChangeRegionMidstream:] + 996 (:-1)
+21  MapKit                        	0x1ab4ff1d8 -[MKMapView mapLayerDidChangeRegionAnimated:] + 60 (:-1)
+22  VectorKit                     	0x1b9d918a0 -[VKCameraDelegateMediator willBeginRegionChangeAccess:]::$_17::operator()(md::VKCameraRegionChange&) const::'lambda'(VKCameraDelegateMediator*)::operator()(VKCameraDelegateMediator*) const + 60 (:-1)
+23  VectorKit                     	0x1b9d918a0 std::__1::__invoke_result_impl<void, -[VKCameraDelegateMediator willBeginRegionChangeAccess:]::$_17::operator()(md::VKCameraRegionChange&) const::'lambda'(VKCameraDelegateMediator*)&, VKCameraDeleg... + 60 (:-1)
+24  VectorKit                     	0x1b9d918a0 void std::__1::__invoke_void_return_wrapper<void, true>::__call[abi:fqn220106]<-[VKCameraDelegateMediator willBeginRegionChangeAccess:]::$_17::operator()(md::VKCameraRegionChange&) const::'lambda'(... + 60 (:-1)
+25  VectorKit                     	0x1b9d918a0 void std::__1::__invoke_r[abi:fqn220106]<void, -[VKCameraDelegateMediator willBeginRegionChangeAccess:]::$_17::operator()(md::VKCameraRegionChange&) const::'lambda'(VKCameraDelegateMediator*)&, VKC... + 60 (:-1)
+26  VectorKit                     	0x1b9d918a0 std::__1::__function::__func<-[VKCameraDelegateMediator willBeginRegionChangeAccess:]::$_17::operator()(md::VKCameraRegionChange&) const::'lambda'(VKCameraDelegateMediator*), void (VKCameraDelegate... + 100 (:-1)
+27  VectorKit                     	0x1ba068060 std::__1::__function::__value_func<void (VKCameraDelegateMediator*)>::operator()[abi:fqn220106](VKCameraDelegateMediator* __strong&&) const + 44 (:-1)
+28  VectorKit                     	0x1ba068060 std::__1::function<void (VKCameraDelegateMediator*)>::operator()(VKCameraDelegateMediator*) const + 44 (:-1)
+29  VectorKit                     	0x1ba068060 -[VKCameraDelegateMediator processDeferredDelegates] + 120 (:-1)
+30  VectorKit                     	0x1b9ea3edc md::MapEngine::runUpdatePhase(double, bool) + 9672 (:-1)
+31  VectorKit                     	0x1b9e9fc08 md::MapEngine::renderSceneSync(double) + 344 (:-1)
+32  VectorKit                     	0x1b9ea1690 md::MapEngine::renderScene(double, std::__1::function<void ()>, std::__1::function<void ()>) + 12 (:-1)
+33  VectorKit                     	0x1b9ea1690 md::MapEngine::onRenderTimerFired(double, std::__1::function<void ()>) + 2600 (:-1)
+34  VectorKit                     	0x1b9ea1690 md::MapEngine::onDisplayLinkFired(double) + 2644 (:-1)
+35  VectorKit                     	0x1b9ea1690 md::MapEngineDisplayLinkCaller::operator()(double) + 2648 (:-1)
+36  VectorKit                     	0x1b9ea1690 std::__1::__invoke_result_impl<void, md::MapEngineDisplayLinkCaller&, double>::type std::__1::__invoke[abi:fqn220106]<md::MapEngineDisplayLinkCaller&, double>(md::MapEngineDisplayLinkCaller&, doubl... + 2648 (:-1)
+37  VectorKit                     	0x1b9ea1690 void std::__1::__invoke_void_return_wrapper<void, true>::__call[abi:fqn220106]<md::MapEngineDisplayLinkCaller&, double>(md::MapEngineDisplayLinkCaller&, double&&) + 2648 (:-1)
+38  VectorKit                     	0x1b9ea1690 void std::__1::__invoke_r[abi:fqn220106]<void, md::MapEngineDisplayLinkCaller&, double>(md::MapEngineDisplayLinkCaller&, double&&) + 2648 (:-1)
+39  VectorKit                     	0x1b9ea1690 std::__1::__function::__func<md::MapEngineDisplayLinkCaller, void (double)>::operator()(double&&) + 2708 (:-1)
+40  VectorKit                     	0x1b9e99af4 std::__1::__function::__value_func<void (double)>::operator()[abi:fqn220106](double&&) const + 40 (:-1)
+41  VectorKit                     	0x1b9e99af4 std::__1::function<void (double)>::operator()(double) const + 40 (:-1)
+42  VectorKit                     	0x1b9e99af4 ggl::DisplayLink::onTimerFired(double) + 60 (:-1)
+43  VectorKit                     	0x1b9e9c66c ggl::RunLoop::_RunLoopCallbacker::callback(double) + 32 (:-1)
+44  VectorKit                     	0x1b9e9c66c -[_GGLDisplayLinkTarget displayLinkFired:] + 108 (:-1)
+45  QuartzCore                    	0x1883854d0 CA::Display::DisplayLinkItem::dispatch_(CA::SignPost::Interval<(CA::SignPost::CAEventCode)835322056>&) + 64 (:-1)
+46  QuartzCore                    	0x1883846a4 CA::Display::DisplayLinkItem::dispatch() + 204 (:-1)
+47  QuartzCore                    	0x1883846a4 CA::Display::DisplayLink::dispatch_items(unsigned long long, unsigned long long, unsigned long long) + 1060 (:-1)
+48  QuartzCore                    	0x188385184 CA::Display::DisplayLink::callback(_CADisplayTimer*, unsigned long long, unsigned long long, unsigned long long, bool, void*) + 1020 (:-1)
+49  QuartzCore                    	0x1882cc0c8 CA::Display::DisplayLink::dispatch_deferred_display_links(unsigned int) + 368 (:-1)
+50  UIKitCore                     	0x18878bb88 _UIUpdateSequenceRunNext + 128 (:-1)
+51  UIKitCore                     	0x18878b928 schedulerStepScheduledMainSectionContinue + 48 (:-1)
+52  UpdateCycle                   	0x2b71a4bc0 UC::DriverCore::continueProcessing() + 84 (:-1)
+53  CoreFoundation                	0x18451cc20 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28 (:-1)
+54  CoreFoundation                	0x18451cb94 __CFRunLoopDoSource0 + 192 (:-1)
+55  CoreFoundation                	0x1844fe268 __CFRunLoopDoSources0 + 316 (:-1)
+56  CoreFoundation                	0x1844fd384 __CFRunLoopRun + 416 (:-1)
+57  CoreFoundation                	0x1844fe7f4 _CFRunLoopRunSpecificWithOptions + 344 (:-1)
+58  GraphicsServices              	0x22ebc0f24 GSEventRunModal + 120 (:-1)
+59  UIKitCore                     	0x1887dc1cc UIApplicationMain + 336 (:-1)
+60  SwiftUI                       	0x18e7cb404 closure #1 in KitRendererCommon(_:) + 168 (:-1)
+61  SwiftUI                       	0x18e7c4b50 specialized UnsafeMutablePointer<>.withMemoryRebound<A, B, C>(to:capacity:_:) + 12 (:-1)
+62  SwiftUI                       	0x18e7c4b50 KitRendererCommon(_:) + 16 (:-1)
+63  SwiftUI                       	0x18e7c4b50 runApp<A>(_:) + 136 (:-1)
+64  SwiftUI                       	0x18e7c4a10 static App.main() + 172 (:-1)
+65  NeutralEats                   	0x104c1c15c static NeutralEatsApp.$main() + 24 (NeutralEatsApp.swift:0)
+66  NeutralEats                   	0x104c1c15c main + 36
+67  dyld                          	0x18434f5b8 start + 6616 (:-1)
+
+Thread 0 name:
+Thread 0 Crashed:
+0   libsystem_kernel.dylib        	0x000000023bdca1fc __pthread_kill + 8
+1   libsystem_pthread.dylib       	0x000000018440945c pthread_kill + 268 (:-1)
+2   libsystem_c.dylib             	0x000000018be40944 abort + 148 (:-1)
+3   libc++abi.dylib               	0x00000002c540ed9c __abort_message + 132 (:-1)
+4   libc++abi.dylib               	0x00000002c5413fec demangling_terminate_handler() + 296 (:-1)
+5   libobjc.A.dylib               	0x00000001842fd3c4 _objc_terminate() + 156 (:-1)
+6   libc++abi.dylib               	0x00000002c541ec5c std::__terminate(void (*)()) + 16 (:-1)
+7   libc++abi.dylib               	0x00000002c54208bc __cxxabiv1::failed_throw(__cxxabiv1::__cxa_exception*) + 88 (:-1)
+8   libc++abi.dylib               	0x00000002c540cf74 __cxa_throw + 92 (:-1)
+9   libobjc.A.dylib               	0x00000001842d84e8 objc_exception_throw + 448 (:-1)
+10  QuartzCore                    	0x0000000188384950 CA::Display::DisplayLinkItem::dispatch() + 16 (:-1)
+11  QuartzCore                    	0x0000000188384950 CA::Display::DisplayLink::dispatch_items(unsigned long long, unsigned long long, unsigned long long) + 1744 (:-1)
+12  QuartzCore                    	0x0000000188385184 CA::Display::DisplayLink::callback(_CADisplayTimer*, unsigned long long, unsigned long long, unsigned long long, bool, void*) + 1020 (:-1)
+13  QuartzCore                    	0x00000001882cc0c8 CA::Display::DisplayLink::dispatch_deferred_display_links(unsigned int) + 368 (:-1)
+14  UIKitCore                     	0x000000018878bb88 _UIUpdateSequenceRunNext + 128 (:-1)
+15  UIKitCore                     	0x000000018878b928 schedulerStepScheduledMainSectionContinue + 48 (:-1)
+16  UpdateCycle                   	0x00000002b71a4bc0 UC::DriverCore::continueProcessing() + 84 (:-1)
+17  CoreFoundation                	0x000000018451cc20 __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 28 (:-1)
+18  CoreFoundation                	0x000000018451cb94 __CFRunLoopDoSource0 + 192 (:-1)
+19  CoreFoundation                	0x00000001844fe268 __CFRunLoopDoSources0 + 316 (:-1)
+20  CoreFoundation                	0x00000001844fd384 __CFRunLoopRun + 416 (:-1)
+21  CoreFoundation                	0x00000001844fe7f4 _CFRunLoopRunSpecificWithOptions + 344 (:-1)
+22  GraphicsServices              	0x000000022ebc0f24 GSEventRunModal + 120 (:-1)
+23  UIKitCore                     	0x00000001887dc1cc UIApplicationMain + 336 (:-1)
+24  SwiftUI                       	0x000000018e7cb404 closure #1 in KitRendererCommon(_:) + 168 (:-1)
+25  SwiftUI                       	0x000000018e7c4b50 specialized UnsafeMutablePointer<>.withMemoryRebound<A, B, C>(to:capacity:_:) + 12 (:-1)
+26  SwiftUI                       	0x000000018e7c4b50 KitRendererCommon(_:) + 16 (:-1)
+27  SwiftUI                       	0x000000018e7c4b50 runApp<A>(_:) + 136 (:-1)
+28  SwiftUI                       	0x000000018e7c4a10 static App.main() + 172 (:-1)
+29  NeutralEats                   	0x0000000104c1c15c static NeutralEatsApp.$main() + 24 (NeutralEatsApp.swift:0)
+30  NeutralEats                   	0x0000000104c1c15c main + 36
+31  dyld                          	0x000000018434f5b8 start + 6616 (:-1)
+
+Thread 1:
+
+Thread 2:
+
+Thread 3:
+
+Thread 4:
+
+Thread 5:
+
+Thread 6:
+
+Thread 7:
+
+Thread 8:
+
+Thread 9:
+
+Thread 10:
+
+
+Thread 0 crashed with ARM Thread State (64-bit):
+    x0: 0x0000000000000000   x1: 0x0000000000000000   x2: 0x0000000000000000   x3: 0x0000000000000000
+    x4: 0x00000002c5421333   x5: 0x000000016b1e4fc0   x6: 0x000000000000006e   x7: 0xffffffffb00007ff
+    x8: 0xb08f5961bfc71cdc   x9: 0xb08f5960551eb45c  x10: 0x0000000000000002  x11: 0x00000000fffffffd
+   x12: 0x0000000000000000  x13: 0x0000000000000000  x14: 0x0000000000000000  x15: 0x0000000000000000
+   x16: 0x0000000000000148  x17: 0x00000001ead9a880  x18: 0x0000000000000000  x19: 0x0000000000000006
+   x20: 0x0000000000000103  x21: 0x00000001ead9a960  x22: 0x00000001e7dd4000  x23: 0x0000000000000002
+   x24: 0x00001878f6cbf87a  x25: 0x000000010cfbd980  x26: 0x0000000000000000  x27: 0x0000000000000204
+   x28: 0x0000000123e033f0   fp: 0x000000016b1e4f30   lr: 0x000000018440945c
+    sp: 0x000000016b1e4f10   pc: 0x000000023bdca1fc cpsr: 0x40000000
+   esr: 0x56000080 (Syscall)
+
+
+Binary Images:
+        0x104c18000 -         0x104c6ffff NeutralEats arm64  <ce1d5111fccc36aaad6a3550cde57dbb> /private/var/containers/Bundle/Application/39E3E21E-EB9F-4240-A587-F8326931E533/NeutralEats.app/NeutralEats
+        0x104e5c000 -         0x104e67fff libobjc-trampolines.dylib arm64e  <ff574c5a1c32369c8b7ae4f6eff43026> /private/preboot/Cryptexes/OS/usr/lib/libobjc-trampolines.dylib
+        0x1162dc000 -         0x1162f7fff libMetalMetricsInterpose.dylib arm64e  <04ee054462de3fc9af0dc3e0fe08627e> /private/preboot/Cryptexes/OS/usr/lib/libMetalMetricsInterpose.dylib
+        0x1842cc000 -         0x184319a57 libobjc.A.dylib arm64e  <e8ced84c011d335191804127735b298e> /usr/lib/libobjc.A.dylib
+        0x18434a000 -         0x184401737 dyld arm64e  <d3f59b02ee07371bb0913f150a078ed8> /usr/lib/dyld
+        0x184402000 -         0x18440e247 libsystem_pthread.dylib arm64e  <694c772aa9f83ac094177c304043a771> /usr/lib/system/libsystem_pthread.dylib
+        0x1844c3000 -         0x1849a5777 CoreFoundation arm64e  <9426fc9ab36c3096b836d17d6744a75b> /System/Library/Frameworks/CoreFoundation.framework/CoreFoundation
+        0x1882af000 -         0x18872131f QuartzCore arm64e  <76ce2a6edba4335da5ac77a1c1b286a6> /System/Library/Frameworks/QuartzCore.framework/QuartzCore
+        0x188722000 -         0x18a758937 UIKitCore arm64e  <aac84a0013ab3b06b622a4e676971eb8> /System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore
+        0x18bdc7000 -         0x18be47feb libsystem_c.dylib arm64e  <28af32691c113e0ea0de3c428d05cee6> /usr/lib/system/libsystem_c.dylib
+        0x18e783000 -         0x18fa730f3 SwiftUI arm64e  <1d2a82431e783e43af2a428becd7edd3> /System/Library/Frameworks/SwiftUI.framework/SwiftUI
+        0x1ab4ca000 -         0x1ab7c48c3 MapKit arm64e  <c1a2dcc066d93df8b49754dee60a2872> /System/Library/Frameworks/MapKit.framework/MapKit
+        0x1b9d84000 -         0x1bb1812a7 VectorKit arm64e  <20b9bc81464c3c319e97129b46f7a9f8> /System/Library/PrivateFrameworks/VectorKit.framework/VectorKit
+        0x22ebc0000 -         0x22ebc7ea3 GraphicsServices arm64e  <d0170165a9733dbb86ea8eb7d0ea9acb> /System/Library/PrivateFrameworks/GraphicsServices.framework/GraphicsServices
+        0x23bdbf000 -         0x23bdfc21b libsystem_kernel.dylib arm64e  <5a7dc6be551b3b29a928a4079a90d4d2> /usr/lib/system/libsystem_kernel.dylib
+        0x2b71a4000 -         0x2b71a5e15 UpdateCycle arm64e  <2fc1a9e28ade3559a13f0dd8e4dc6e74> /System/Library/PrivateFrameworks/UpdateCycle.framework/UpdateCycle
+        0x2c540b000 -         0x2c5424c17 libc++abi.dylib arm64e  <3dced23183fd3e80b36a1d0a6b66cc1f> /usr/lib/libc++abi.dylib
+
+EOF

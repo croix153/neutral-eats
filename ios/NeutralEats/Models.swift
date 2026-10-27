@@ -126,11 +126,28 @@ struct Venue: Decodable, Identifiable {
         return "Food & Drink"
     }
 
+    /// The type label, unless the cuisine already says it: when a
+    /// cuisine term IS the type ("restaurant,...") or the first term
+    /// ends with it ("Pizza Restaurant"), repeating the bare type
+    /// under the name is pure echo (Croix, 2026-10-26). Mirrors
+    /// dedupedType() in web/preview.html — keep the two in sync.
+    var dedupedTypeLabel: String? {
+        let t = typeLabel
+        guard let cuisine = cuisine, !cuisine.isEmpty else { return t }
+        let tl = t.lowercased()
+        let terms = cuisine.split(separator: ",").map {
+            $0.trimmingCharacters(in: .whitespaces).lowercased()
+        }
+        if terms.contains(tl) { return nil }
+        if let first = terms.first,
+           first.split(separator: " ").last.map(String.init) == tl { return nil }
+        return t
+    }
+
     var metaLine: String {
         var parts: [String] = []
-        let t = typeLabel
-        if !t.isEmpty { parts.append(t) }
-        if let cuisine = cuisine, cuisine != t {
+        if let t = dedupedTypeLabel { parts.append(t) }
+        if let cuisine = cuisine {
             var c = cuisine
             if c.count > 44 {
                 c = String(c.prefix(44)).trimmingCharacters(in: .whitespaces) + "…"

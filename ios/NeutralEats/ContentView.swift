@@ -2,26 +2,29 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
-/// Main screen — two-state layout (redesigned 2026-10-26, replacing
-/// the three-stop bottom sheet that collided with the top UI and
-/// left a dead band at the bottom):
+/// Main screen — map + ONE bottom card (redesigned again in
+/// build 13, 2026-10-26, at Croix's direction: the Map/List
+/// switcher is GONE):
 ///
-///   - A fixed, solid header stack: wordmark, search, filter chips,
-///     and the Map/List switch. Content never slides under it.
-///   - Below it, ONE content region with two states. Map state: the
-///     map fills the region, with one compact card (result count +
-///     nearest venue + Near-me) anchored to the region's bottom.
-///     List state: the distance-ranked list fills the entire region,
-///     edge to edge, down to the physical screen bottom.
-///   - Venue detail lives IN PLACE (build 10, replacing the modal
-///     sheet Croix found jarring): on the map, the bottom card
-///     morphs into the selected venue's detail card; in the list,
-///     the tapped row expands inline. One selection, both surfaces,
-///     nothing slides up over anything.
+///   - A fixed, solid header stack: wordmark, search, filter
+///     chips. Content never slides under it.
+///   - Below it, the map fills the whole region, and ONE card is
+///     anchored to its bottom. The card has three forms:
+///       summary  — result count + nearest venue + Near-me.
+///                  Tap it (or drag up) and it expands…
+///       list     — …to cover part of the map with the
+///                  distance-ranked list. Tap the handle (or drag
+///                  down) to collapse it back.
+///       detail   — a venue is selected: the card becomes that
+///                  venue's detail, wherever the tap came from.
+///   - Tapping a location — a map dot, a label, or a list row —
+///     selects it: the detail opens in the card AND the map snaps
+///     to the venue at street zoom. One selection, one home for
+///     detail, the camera always ends up looking at the place.
 ///
-/// The map layer stays in the hierarchy underneath the list layer,
-/// so switching states preserves the camera, the loaded venues, and
-/// every other piece of state — no refetch, no geometry negotiation.
+/// The map never leaves the hierarchy, so the card's forms all
+/// share the camera, the loaded venues, and every other piece of
+/// state — no refetch, no geometry negotiation.
 struct ContentView: View {
     @StateObject private var store = VenueStore()
     @StateObject private var location = LocationManager()
@@ -30,7 +33,7 @@ struct ContentView: View {
     @State private var filter: VenueFilter = .all
     @State private var searchText: String = ""
     @State private var selectedID: String? = nil
-    @State private var mode: ContentMode = .map
+    @State private var cardExpanded: Bool = false
     @State private var centerRequest: CenterRequest? = nil
     @State private var centerNonce: Int = 0
     @State private var wantsCenter: Bool = false
@@ -40,10 +43,6 @@ struct ContentView: View {
 
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var systemScheme
-
-    private enum ContentMode {
-        case map, list
-    }
 
     var body: some View {
         // Resolve the theme first: the preference (auto = follow the
@@ -174,8 +173,6 @@ struct ContentView: View {
                     }
                 }
             }
-
-            modePicker
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
@@ -240,53 +237,18 @@ struct ContentView: View {
         }
     }
 
-    /// Map/List switch — custom segmented control in the Tokyo
-    /// palette (the native control can't take the brand colors).
-    private var modePicker: some View {
-        HStack(spacing: 4) {
-            modeButton(.map, title: "Map", icon: "map")
-            modeButton(.list, title: "List", icon: "list.bullet")
-        }
-        .padding(4)
-        .background(NEColor.panel2)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(NEColor.line, lineWidth: 1))
-    }
-
-    private func modeButton(_ target: ContentMode, title: String, icon: String) -> some View {
-        let active = mode == target
-        return Button {
-            mode = target
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 13, weight: .semibold))
-                Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-            }
-            .foregroundColor(active ? NEColor.accentInk : NEColor.inkDim)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 7)
-            .background(active ? NEColor.accent : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 9))
-        }
-    }
-
-    // MARK: - Content region (one region, two states)
+    // MARK: - Content region (map + the bottom card)
 
     private var contentRegion: some View {
-        ZStack {
-            mapLayer
-            if mode == .list {
-                listLayer
-            }
+        GeometryReader { geo in
+            mapLayer(regionHeight: geo.size.height)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: Map state
+    // MARK: Map + card
 
-    private var mapLayer: some View {
+    private func mapLayer(regionHeight: CGFloat) -> some View {
         ZStack(alignment: .bottom) {
             VenueMapView(
                 venues: store.venues,
@@ -298,7 +260,7 @@ struct ContentView: View {
                     store.regionSettled(region, filter: filter, search: searchText)
                 },
                 onSelectVenue: { id in
-                    toggleSelection(id: id)
+                    selectVenue(id: id)
                 }
             )
             // Full-bleed to the physical screen bottom, under the
@@ -317,42 +279,90 @@ struct ContentView: View {
             // the map's layout margins; Croix's verdict (2026-10-26)
             // was that he liked this build-7 arrangement better —
             // card high, label in its natural spot — so it stays.
-            mapCard
+            bottomCard(regionHeight: regionHeight)
                 .padding(.horizontal, 12)
                 .padding(.bottom, 38)
                 .animation(.spring(response: 0.38, dampingFraction: 0.86), value: selectedID)
+                .animation(.spring(response: 0.38, dampingFraction: 0.86), value: cardExpanded)
         }
     }
 
     /// The current selection, resolved against the loaded results.
-    /// Drives the map's detail card, the list's inline expansion,
-    /// the dot highlight, and the label accent — one selection,
-    /// every surface.
+    /// Drives the card's detail form, the dot highlight, and the
+    /// label accent — one selection, every surface.
     private var selectedVenue: Venue? {
         guard let selectedID = selectedID else { return nil }
         return store.venues.first { $0.id == selectedID }
     }
 
-    /// The bottom card has two forms, morphed by selection: the
-    /// summary (result count + nearest venue, tap → List state, and
-    /// Near-me) and the selected venue's DETAIL card, grown in place
-    /// from the same anchor — no sheet, no slide-up (build 10).
+    /// THE bottom card — one object, three forms, morphed by state
+    /// (build 13): summary, the expanded list, and the selected
+    /// venue's detail. The panel chrome lives here, once; the
+    /// forms are plain content stacked under the grab handle.
     @ViewBuilder
-    private var mapCard: some View {
-        if let venue = selectedVenue {
-            detailCard(venue)
-        } else {
-            summaryCard
+    private func bottomCard(regionHeight: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            cardHandle
+            if let venue = selectedVenue {
+                detailContent(venue)
+            } else if cardExpanded {
+                listContent
+            } else {
+                summaryContent
+            }
         }
+        .frame(height: (cardExpanded && selectedVenue == nil) ? regionHeight * 0.68 : nil)
+        .background(NEColor.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(NEColor.line, lineWidth: 1))
+        .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 4)
     }
 
-    private var summaryCard: some View {
+    /// The grab handle: tap toggles the card (expand the summary,
+    /// collapse the list, dismiss the detail); a vertical drag
+    /// does the same by direction. It is the card's one control
+    /// surface, so the forms below it stay clean.
+    private var cardHandle: some View {
+        HStack {
+            Spacer()
+            Capsule()
+                .fill(NEColor.line)
+                .frame(width: 38, height: 5)
+            Spacer()
+        }
+        .padding(.top, 8)
+        .padding(.bottom, 7)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if selectedVenue != nil {
+                dismissDetail()
+            } else {
+                cardExpanded.toggle()
+            }
+        }
+        .gesture(
+            DragGesture(minimumDistance: 14)
+                .onEnded { value in
+                    if value.translation.height < -36 {
+                        if selectedVenue == nil { cardExpanded = true }
+                    } else if value.translation.height > 36 {
+                        if selectedVenue != nil {
+                            dismissDetail()
+                        } else {
+                            cardExpanded = false
+                        }
+                    }
+                }
+        )
+    }
+
+    private var summaryContent: some View {
         HStack(spacing: 10) {
             Button {
                 if store.loadFailed {
                     store.retry(filter: filter, search: searchText)
                 } else {
-                    mode = .list
+                    cardExpanded = true
                 }
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
@@ -380,11 +390,7 @@ struct ContentView: View {
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-        .background(NEColor.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(NEColor.line, lineWidth: 1))
-        .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 4)
+        .padding(.bottom, 12)
     }
 
     @ViewBuilder
@@ -438,9 +444,9 @@ struct ContentView: View {
         }
     }
 
-    // MARK: List state
+    // MARK: List (the card's expanded form)
 
-    private var listLayer: some View {
+    private var listContent: some View {
         Group {
             if store.loadFailed {
                 stateBox(
@@ -473,11 +479,6 @@ struct ContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(NEColor.panel)
-        // The list reaches the physical screen bottom (standard
-        // list insets keep the last row clear of the home
-        // indicator) — no dead band under the content.
-        .ignoresSafeArea(edges: .bottom)
     }
 
     private var listHead: some View {
@@ -533,22 +534,16 @@ struct ContentView: View {
     private var venueList: some View {
         List {
             ForEach(store.venues) { venue in
-                // Rows expand IN PLACE (build 10): the detail grows
-                // out of the row you tapped, in the list you're
-                // already reading — no sheet over the top, no jump
-                // to the map. Tapping the row again collapses it.
-                VStack(alignment: .leading, spacing: 0) {
-                    Button {
-                        toggleSelection(id: venue.id)
-                    } label: {
-                        venueRow(venue)
-                    }
-                    .buttonStyle(.plain)
-                    if venue.id == selectedID {
-                        detailBody(venue)
-                            .padding(.top, 10)
-                    }
+                // Tapping a row selects the venue (build 13): the
+                // card swaps the list for the venue's detail and
+                // the map snaps to it at street zoom. Tapping the
+                // selected row again lets it go.
+                Button {
+                    selectVenue(id: venue.id)
+                } label: {
+                    venueRow(venue)
                 }
+                .buttonStyle(.plain)
                 .listRowBackground(venue.id == selectedID ? NEColor.panel2 : NEColor.panel)
                 .listRowSeparatorTint(NEColor.line)
                 .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
@@ -628,13 +623,13 @@ struct ContentView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Detail (in place: map card morph + list inline expansion)
+    // MARK: - Detail (the card's selected form)
 
-    /// The map's detail form: the bottom card itself becomes the
-    /// venue — name + close in the header row, the shared detail
-    /// body underneath. Same panel chrome as the summary card, so
-    /// the morph reads as one object changing, not a new layer.
-    private func detailCard(_ venue: Venue) -> some View {
+    /// The detail form: the bottom card itself becomes the venue —
+    /// name + close in the header row, the detail body underneath.
+    /// Same card, same anchor, so the morph reads as one object
+    /// changing, not a new layer.
+    private func detailContent(_ venue: Venue) -> some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(alignment: .top, spacing: 8) {
                 Text(venue.name ?? "Unnamed")
@@ -656,16 +651,11 @@ struct ContentView: View {
             detailBody(venue)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(NEColor.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(NEColor.line, lineWidth: 1))
-        .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 4)
+        .padding(.bottom, 12)
     }
 
-    /// Everything below the name, shared by the map's detail card
-    /// and the list's inline expansion: meta, pills, address,
-    /// actions, provenance.
+    /// Everything below the name in the detail form: meta, pills,
+    /// cuisine, address, actions, provenance.
     private func detailBody(_ venue: Venue) -> some View {
         VStack(alignment: .leading, spacing: 7) {
             detailMeta(venue)
@@ -713,10 +703,15 @@ struct ContentView: View {
     private func detailMeta(_ venue: Venue) -> some View {
         var parts: [String] = []
         if !venue.ratingPriceLine.isEmpty { parts.append(venue.ratingPriceLine) }
-        parts.append(venue.typeLabel)
+        // The type appears only when the cuisine doesn't already
+        // say it — no "Restaurant" echo over a cuisine that starts
+        // with the same word (Croix, 2026-10-26).
+        if let t = venue.dedupedTypeLabel { parts.append(t) }
         let joined = parts.joined(separator: " · ")
         return Group {
-            if joined.hasPrefix("★") {
+            if parts.isEmpty {
+                EmptyView()
+            } else if joined.hasPrefix("★") {
                 HStack(spacing: 0) {
                     Text("★").foregroundColor(NEColor.accentText)
                     Text(String(joined.dropFirst(1))).foregroundColor(NEColor.inkDim)
@@ -768,12 +763,24 @@ struct ContentView: View {
 
     // MARK: - Actions
 
-    /// One selection gesture everywhere (build 10): tap a dot, a
-    /// label, or a list row to select; tap the same one again to
-    /// let it go. The detail renders in place on whichever surface
-    /// you're looking at.
-    private func toggleSelection(id: String) {
-        selectedID = (selectedID == id) ? nil : id
+    /// One selection gesture everywhere: tap a dot, a label, or a
+    /// list row to select; tap the same one again to let it go.
+    /// Selecting ALSO snaps the map to the venue at street zoom
+    /// (build 13, Croix): wherever the tap came from, you end up
+    /// looking at the place while its detail opens in the card.
+    /// The span matches the label threshold, so the venue's name
+    /// is rendered on its dot when the camera lands.
+    private func selectVenue(id: String) {
+        if selectedID == id {
+            selectedID = nil
+            return
+        }
+        selectedID = id
+        if let venue = store.venues.first(where: { $0.id == id }),
+           let coordinate = venue.coordinate {
+            requestCenter(coordinate,
+                          span: MKCoordinateSpan(latitudeDelta: 0.008, longitudeDelta: 0.008))
+        }
     }
 
     private func dismissDetail() {
@@ -784,7 +791,7 @@ struct ContentView: View {
         searchText = ""
         filter = .all
         dismissDetail()
-        mode = .map
+        cardExpanded = false
         requestCenter(kHomeRegion.center, span: kHomeRegion.span)
     }
 
