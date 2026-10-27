@@ -272,7 +272,7 @@ def main():
         "table": "kc_matches",
         "venue_sql": ("SELECT id, name, address, zip, phone FROM venues"
                       " WHERE state='WA' AND LEFT(zip,5) IN"
-                      " (SELECT DISTINCT zip FROM kc_licenses)"),
+                      " (SELECT DISTINCT zip COLLATE utf8mb4_unicode_ci FROM kc_licenses)"),
         "license_sql": ("SELECT CONCAT('KC:', business_id), name,"
                         " address, zip, '',"
                         " IF(closed_flag=1, 'closed', 'open'), NULL,"
@@ -286,7 +286,7 @@ def main():
         "table": "bos_matches",
         "venue_sql": ("SELECT id, name, address, zip, phone FROM venues"
                       " WHERE state='MA' AND LEFT(zip,5) IN"
-                      " (SELECT DISTINCT zip FROM bos_licenses)"),
+                      " (SELECT DISTINCT zip COLLATE utf8mb4_unicode_ci FROM bos_licenses)"),
         "license_sql": ("SELECT CONCAT('BOS:', licenseno), name,"
                         " address, zip, '', licstatus, expiry,"
                         " last_inspection, in_active FROM bos_licenses"),
