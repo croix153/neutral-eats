@@ -437,15 +437,26 @@ struct ContentView: View {
         return n >= APIClient.limit ? "\(APIClient.limit)+" : "\(n)"
     }
 
-    /// The card's second line exists only for the failure state
-    /// (Croix, build 15): the "Nearest: …" subtitle is gone — the
-    /// headline count is the whole message now.
+    /// The card's second line. The "Nearest: …" subtitle is gone
+    /// (Croix, build 15); in its place the summary card now carries
+    /// the same honesty tagline as the list head and the web card
+    /// (Croix, build 17: "add the subtitle to the card preview
+    /// too"). Failure keeps its own line.
     @ViewBuilder
     private var cardSubline: some View {
         if store.loadFailed {
             Text("Tap to try again")
                 .font(.system(size: 12.5))
                 .foregroundColor(NEColor.accentText)
+        } else if !(store.isLoading && store.venues.isEmpty) {
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.shield.fill")
+                    .font(.system(size: 12))
+                    .foregroundColor(NEColor.good)
+                Text("Ranked by distance. Nothing is sponsored — ever.")
+                    .font(.system(size: 12.5))
+                    .foregroundColor(NEColor.inkDim)
+            }
         }
     }
 

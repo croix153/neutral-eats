@@ -561,17 +561,25 @@ enum LabelImages {
         let name = venue.name ?? "Unnamed"
         let day = NEColor.mode == .day
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont.systemFont(ofSize: 11, weight: .semibold),
+            .font: UIFont.systemFont(ofSize: 12, weight: .semibold),
             .foregroundColor: selected
                 ? hex(day ? 0xC6360F : 0xFF4D7E)
                 : hex(day ? 0x2B2B2B : 0xEEF1FF),
             .strokeColor: day ? UIColor.white : hex(0x070912),
-            .strokeWidth: -3.5,
+            .strokeWidth: -5,
         ]
         let textSize = (name as NSString).size(withAttributes: attributes)
         let dot = DotImages.image(selected: selected)
         let gap: CGFloat = 3
-        let width = max(ceil(textSize.width) + 6, dot.size.width)
+        // Pixel-snap the layout (build 17): the measured text
+        // width is fractional, so centering used to put the glyph
+        // origin at a fractional x — glyphs straddled pixels and
+        // the labels looked artifact-y no matter the scale (Croix,
+        // on build 16). Ceil the text box and round the origin so
+        // text rasterizes on the pixel grid; the halo also goes a
+        // touch heavier (-5 vs -3.5) so its edge reads even.
+        let textW = ceil(textSize.width)
+        let width = max(textW + 8, dot.size.width)
         let textHeight = ceil(textSize.height)
         let height = textHeight + gap + dot.size.height
         let format = UIGraphicsImageRendererFormat()
@@ -580,7 +588,7 @@ enum LabelImages {
         let image = UIGraphicsImageRenderer(size: CGSize(width: width, height: height),
                                             format: format).image { _ in
             (name as NSString).draw(
-                at: CGPoint(x: (width - textSize.width) / 2, y: 0),
+                at: CGPoint(x: ((width - textW) / 2).rounded(), y: 0),
                 withAttributes: attributes)
             dot.draw(at: CGPoint(x: (width - dot.size.width) / 2, y: textHeight + gap))
         }
