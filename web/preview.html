@@ -1015,7 +1015,9 @@
   $('chips').addEventListener('click', function(e){
     var chip = e.target.closest ? e.target.closest('.chip') : null;
     if(!chip) return;
-    setFilter(chip.getAttribute('data-filter'));
+    // Tapping the SELECTED chip resets to All (Croix, 2026-10-26).
+    var f = chip.getAttribute('data-filter');
+    setFilter(f === state.filter ? 'all' : f);
     load();
   });
 

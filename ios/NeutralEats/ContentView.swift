@@ -224,7 +224,9 @@ struct ContentView: View {
     private func chip(for chipFilter: VenueFilter) -> some View {
         let active = chipFilter == filter
         return Button {
-            filter = chipFilter
+            // Tapping the SELECTED chip resets to All (Croix,
+            // build 16) — the chip row is its own reset control.
+            filter = active ? .all : chipFilter
         } label: {
             Text(chipFilter.label)
                 .font(.system(size: 13, weight: .semibold))
