@@ -121,7 +121,18 @@ capture() { # final-filename settle-seconds [launch args...]
 }
 
 say "captures — day"
-capture 01-summary.png 16
+# Warm-up launch (discarded): the FIRST launch on a fresh device
+# can frame-grab an unloaded map with a settled-but-empty store
+# (cold tile cache + the launch centering race) — run 40555790427's
+# first 01-summary.png caught exactly that, while every later
+# launch rendered fully. One full launch cycle first warms the
+# tile cache and the first-fetch path; the real captures follow.
+note "warm-up launch (no capture kept)"
+xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null 2>&1 || note "warm-up launch failed"
+sleep 20
+xcrun simctl terminate "$UDID" "$BUNDLE" >/dev/null 2>&1 || true
+sleep 1
+capture 01-summary.png 20
 capture 02-list.png 12 -DuoCheckList
 capture 03-detail.png 16 -DuoCheckDetail
 capture 05-search.png 20 -AppStoreSearch "taco bell"
