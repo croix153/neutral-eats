@@ -72,6 +72,29 @@ via the ASC API:
 - **App record**: "neutral eats", app `6827198241`, bundle
   `ai.croix.neutraleats`, SKU `neutraleats-ios` (created in the ASC
   web UI, 2026-10-26 — the API cannot create records; see below).
+- **Build 1.0 (12)** — crash hardening + Creams Tokyo day
+  realignment + gold star (Croix crash report on build 11:
+  drilling into a cluster number and zooming in crashes the
+  app; his crash log had not reached ASC when checked). The
+  cluster/zoom interaction path was hardened against MapKit
+  re-entrancy: region-settle syncs deferred + coalesced out of
+  the clustering pass, the appearance loop never dresses a
+  view whose live annotation isn't the venue's own (cluster
+  views are off-limits), clustering-mode flips rebuild all
+  annotations so views are born with the right identifier,
+  and the cluster-tap zoom is deferred and expressed as a
+  clamped region. Day palette now wears the Creams Tokyo DAY
+  identity (washi #FAF7F2, ai-iro indigo #165E83, shu-iro
+  vermillion #EB471F, text vermillion #C6360F) across
+  Theme.swift and the dot/cluster/label renderers, and the
+  user location is a gold star (custom MKUserLocation view;
+  day #DD8E00, night #FFC53D), matching the web preview.
+  Uploaded by workflow run
+  [40433794907](https://github.com/croix153/neutral-eats/actions/runs/40433794907);
+  ASC id `609796aa-1a54-45e9-aa90-17fb2aa3aea8`, VALID,
+  attached to Internal Testers; `internalBuildState =
+  IN_BETA_TESTING` (API-verified 2026-10-26). Crash fix is
+  UNVERIFIED until Croix retests the cluster drill on device.
 - **Build 1.0 (11)** — dot clustering (Croix, on build 10: "many
   dots don't show unless you zoom in further"). Every fetched
   venue always had an annotation; at wide spans MapKit's
