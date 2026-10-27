@@ -203,7 +203,6 @@ COPY (
     WHERE lat BETWEEN {min_lat} AND {max_lat} AND lng BETWEEN {min_lng} AND {max_lng}
       AND list_contains(taxonomy.hierarchy, 'food_and_drink')
       AND coalesce(taxonomy.primary, basic_category) NOT IN ({excluded})
-      AND (operating_status IS NULL OR operating_status <> 'permanently_closed')
       AND names.primary IS NOT NULL AND names.primary <> ''
   )
   SELECT
@@ -224,7 +223,8 @@ COPY (
     clean(substr(coalesce(websites[1], ''), 1, 500)),
     round(coalesce(confidence, 0.5), 2),
     clean(substr(coalesce(taxonomy.primary, basic_category, ''), 1, 200)),
-    clean(regexp_replace(lower(trim(names.primary)), '[^a-z0-9 ]', '', 'g'))
+    clean(regexp_replace(lower(trim(names.primary)), '[^a-z0-9 ]', '', 'g')),
+    operating_status
   FROM food
 ) TO 'fl_food.tsv' (HEADER false, DELIM '\\t', QUOTE '');
 """
@@ -261,7 +261,7 @@ COPY (
     subprocess.run(["cp", tsv, staged_tsv], check=True)
     subprocess.run(["chown", "mysql:mysql", staged_tsv], check=True)
     cols = ("id,name,lat,lng,type,cuisine,brand,source,source_id,address,city,state,"
-            "zip,phone,website,confidence_score,category_primary,norm_name")
+            "zip,phone,website,confidence_score,category_primary,norm_name,operating_status")
     load_sql = (f"LOAD DATA INFILE '{staged_tsv}' INTO TABLE `{args.table}` "
                 f"CHARACTER SET utf8mb4 FIELDS TERMINATED BY '\\t' "
                 f"LINES TERMINATED BY '\\n' ({cols}); "
@@ -298,6 +298,7 @@ $pdo->exec("CREATE TABLE `$table` (
   zip varchar(20) DEFAULT NULL, phone varchar(50) DEFAULT NULL,
   website varchar(500) DEFAULT NULL, confidence_score decimal(3,2) DEFAULT 0.50,
   category_primary varchar(200) DEFAULT NULL, norm_name varchar(500) DEFAULT NULL,
+  operating_status varchar(50) DEFAULT NULL,
   matched_prod tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (id), KEY idx_lat (lat), KEY idx_lng (lng),
   KEY idx_norm (norm_name), KEY idx_matched (matched_prod)
@@ -515,12 +516,11 @@ SELECT count(*) FROM read_parquet('us_raw.parquet');
     funnel["country_pass"] = int(run_duckdb(
         duckdb, f"{setts} SELECT count(*) FROM read_parquet('us_raw.parquet') "
                 f"WHERE addresses[1].country IN ('US','PR','GU','VI','AS','MP') OR addresses[1].country IS NULL;", wd))
-    funnel["food_open_named"] = int(run_duckdb(
+    funnel["food_named"] = int(run_duckdb(
         duckdb, f"{setts} SELECT count(*) FROM read_parquet('us_raw.parquet') "
                 f"WHERE (addresses[1].country IN ('US','PR','GU','VI','AS','MP') OR addresses[1].country IS NULL) "
                 f"AND list_contains(taxonomy.hierarchy, 'food_and_drink') "
                 f"AND coalesce(taxonomy.primary, basic_category) NOT IN ({excluded}) "
-                f"AND (operating_status IS NULL OR operating_status <> 'permanently_closed') "
                 f"AND names.primary IS NOT NULL AND names.primary <> '';", wd))
     print(f"[us] funnel (pre-assignment): {funnel}")
 
@@ -544,7 +544,6 @@ COPY (
     SELECT * FROM pt
     WHERE list_contains(taxonomy.hierarchy, 'food_and_drink')
       AND coalesce(taxonomy.primary, basic_category) NOT IN ({excluded})
-      AND (operating_status IS NULL OR operating_status <> 'permanently_closed')
       AND names.primary IS NOT NULL AND names.primary <> ''
   ), cand AS (
     SELECT f.*, s.code AS bbox_state,
@@ -579,7 +578,8 @@ COPY (
     round(coalesce(confidence, 0.5), 2),
     clean(substr(coalesce(taxonomy.primary, basic_category, ''), 1, 200)),
     clean(regexp_replace(lower(trim(names.primary)), '[^a-z0-9 ]', '', 'g')),
-    batch_state
+    batch_state,
+    operating_status
   FROM assigned WHERE batch_state IS NOT NULL
   ORDER BY 18, 3, 4
 ) TO 'us_food.tsv' (HEADER false, DELIM '\\t', QUOTE '');
@@ -591,7 +591,7 @@ COPY (
         "columns={'c1':'VARCHAR','c2':'VARCHAR','c3':'DOUBLE','c4':'DOUBLE','c5':'VARCHAR','c6':'VARCHAR',"
         "'c7':'VARCHAR','c8':'VARCHAR','c9':'VARCHAR','c10':'VARCHAR','c11':'VARCHAR','c12':'VARCHAR',"
         "'c13':'VARCHAR','c14':'VARCHAR','c15':'VARCHAR','c16':'DOUBLE','c17':'VARCHAR','c18':'VARCHAR',"
-        "'batch_state':'VARCHAR'}) GROUP BY batch_state ORDER BY batch_state;", wd)
+        "'batch_state':'VARCHAR','c20':'VARCHAR'}) GROUP BY batch_state ORDER BY batch_state;", wd)
     expected = {}
     for line in state_counts.splitlines():
         parts = line.split("|") if "|" in line else line.split("\t")
@@ -599,9 +599,9 @@ COPY (
             expected[parts[0].strip()] = int(parts[1])
     total_food = sum(expected.values())
     print(f"[us] assigned food venues: {total_food} across {len(expected)} states/territories")
-    unassigned = funnel.get("food_open_named", 0) - total_food
+    unassigned = funnel.get("food_named", 0) - total_food
     print(f"[us] funnel: raw={funnel.get('raw')} country_pass={funnel.get('country_pass')} "
-          f"food={funnel.get('food_open_named')} assigned={total_food} unassigned_dropped={unassigned}")
+          f"food={funnel.get('food_named')} assigned={total_food} unassigned_dropped={unassigned}")
 
     if args.skip_mysql:
         print("[done] --skip-mysql: nationwide staging load skipped")
@@ -629,9 +629,9 @@ COPY (
     by_state = collections.defaultdict(list)
     with open(os.path.join(wd, "us_food.tsv"), encoding="utf-8") as fh:
         for line in fh:
-            by_state[line.rstrip("\n").split("\t")[-1]].append(line)
+            by_state[line.rstrip("\n").split("\t")[18]].append(line)  # batch_state = col 19 (idx 18); operating_status trails it
     cols = ("id,name,lat,lng,type,cuisine,brand,source,source_id,address,city,state,"
-            "zip,phone,website,confidence_score,category_primary,norm_name,batch_state")
+            "zip,phone,website,confidence_score,category_primary,norm_name,batch_state,operating_status")
     loaded_total = 0
     for state in sorted(by_state):
         rows = by_state[state]
@@ -674,6 +674,7 @@ $pdo->exec("CREATE TABLE `$table` (
   website varchar(500) DEFAULT NULL, confidence_score decimal(3,2) DEFAULT 0.50,
   category_primary varchar(200) DEFAULT NULL, norm_name varchar(500) DEFAULT NULL,
   batch_state varchar(10) DEFAULT NULL,
+  operating_status varchar(50) DEFAULT NULL,
   matched_prod tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (id), KEY idx_lat (lat), KEY idx_lng (lng),
   KEY idx_norm (norm_name), KEY idx_batch (batch_state)

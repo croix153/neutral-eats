@@ -94,6 +94,7 @@ STAGING_COLS = [
     "id", "name", "lat", "lng", "type", "cuisine", "brand", "source",
     "source_id", "address", "city", "state", "zip", "phone", "website",
     "confidence_score", "category_primary", "norm_name", "batch_state",
+    "operating_status",
 ]
 
 METROS = {
@@ -414,6 +415,15 @@ def stage_build(wd):
                 row["type"] = st["type"]
             if is_empty(row["confidence_score"]):
                 row["confidence_score"] = st["confidence_score"]
+            # Status basis (STATUS-BASIS.md): staging operating_status wins
+            # when Overture asserts one; permanently_closed suppresses the
+            # row. Never force is_active back to 1 here — a licensing-layer
+            # suppression already on the production row must survive merges.
+            st_status = st.get("operating_status")
+            if not is_empty(st_status):
+                row["operating_status"] = st_status
+                if st_status == "permanently_closed":
+                    row["is_active"] = "0"
             row["source"] = f"{prow['source']}+overture"
             meta = {"merged_from": [f"{prow['source']}:{prow['source_id']}", f"overture:{st['source_id']}"],
                     "merge_pass": pss, "merged_at": "2026-10-25"}
@@ -431,6 +441,7 @@ def stage_build(wd):
                 if st["id"] in stg_for_prod:
                     continue
                 cuisine = st["cuisine"] if not is_empty(st["cuisine"]) else humanize_category(st["category_primary"])
+                st_status = st["operating_status"] if not is_empty(st["operating_status"]) else None
                 row = {
                     "id": st["id"], "name": st["name"], "lat": st["lat"], "lng": st["lng"],
                     "type": st["type"], "cuisine": cuisine, "brand": st["brand"],
@@ -438,13 +449,15 @@ def stage_build(wd):
                     "price_level": None, "address": compose_address(st), "city": st["city"],
                     "state": st["state"], "zip": st["zip"], "phone": st["phone"],
                     "website": st["website"], "hours": None, "photos": None,
-                    "first_seen": now_epoch, "is_active": 1, "check_count": 1,
+                    "first_seen": now_epoch,
+                    "is_active": 0 if st_status == "permanently_closed" else 1,
+                    "check_count": 1,
                     "grid_cell": grid_cell(float(st["lat"]), float(st["lng"])),
                     "sub_source": None, "rating_count": 0, "county": None,
                     "hours_confirmed": 0, "license_number": None, "license_status": None,
                     "inspection_score": None, "last_inspection_date": None, "metadata": None,
                     "confidence_score": st["confidence_score"], "last_verified": None,
-                    "operating_status": "open", "data_freshness": "high",
+                    "operating_status": st_status, "data_freshness": "high",
                     "last_updated": now_ts,
                 }
                 n_ov_only += 1
