@@ -147,3 +147,39 @@ a per-source audit table (fl_dbpr_matches) before it is applied.
   dates (2022-03-15 / 2022-09-14 recur) — the stacked signal
   is Inactive status + expired license + absence from the
   active file, not the date alone.
+
+## NY precision sample-check (DONE 2026-10-26 night)
+
+12 closure candidates hand-verified against independent sources
+(current reviews, delivery platforms, business sites):
+
+- **NYS inactive signal: 2 of 9 correct (22% precision) —
+  DISQUALIFIED as a closure source.** False closures: Ole
+  Westside Tavern (Elmira — alive; reopened under a new
+  operation the matcher missed), Koku Japanese (Armonk —
+  thriving), Pennocks Ice Cream (Sackets Harbor — reviewed
+  Jun 2026), Paula's Airport Café (Saranac Lake — café
+  operating, likely new operator), All That Java (Kingston —
+  DoorDash-active), La Bamba (Freeport — open, current hours),
+  Garden City Pub (name-ghost: address alive as "Repeal" under
+  the same corporation). True closures: Pizza Connection
+  (Mamaroneck), Enrico's Pastry Shop (Hartsdale). Root causes:
+  (1) county-delegated inspection jurisdictions (Westchester,
+  Nassau, others) — state "inactive" often means "the county
+  runs it now," not closed; (2) re-permits/rebrands under new
+  operation IDs that name+address matching cannot see.
+  **Recommendation: demote the entire NYS closure class to
+  watchlist permanently; NYS inactive data is stamp-only
+  (license metadata), never a closure signal.**
+- **NYC DOHMH signal: 2 of 3 correct.** Uptown Slices (Harlem)
+  and X Pizza (190 Front St) genuinely closed (DOHMH closure
+  actions 2024). False: Taste & Flavor Bakery Cafe (Brooklyn —
+  operating, DoorDash-active; matched record was not its live
+  operation). Stronger than NYS but a 1-in-3 live-business
+  false positive on a small sample is still not apply-grade
+  alone. **Recommendation: NYC closures require corroboration
+  (DOHMH closure as the latest action for that CAMIS + no live
+  successor at the address + ideally a second signal) and a
+  larger sample before any apply. Audit-only until then.**
+- KC and Boston unchanged: audit-only, awaiting Croix's review
+  alongside this verdict. NO production writes anywhere in NY.
