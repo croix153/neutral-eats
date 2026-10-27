@@ -261,6 +261,9 @@ struct ContentView: View {
                 },
                 onSelectVenue: { id in
                     selectVenue(id: id)
+                },
+                onDeselect: {
+                    dismissDetail()
                 }
             )
             // Full-bleed to the physical screen bottom, under the
@@ -419,7 +422,7 @@ struct ContentView: View {
             (Text(displayCount)
                 .font(.system(size: 15.5, weight: .bold))
                 .foregroundColor(NEColor.accentText)
-                + Text(" \(n == 1 ? "place" : "places") near this spot")
+                + Text(" \(n == 1 ? "place" : "places") in viewport")
                 .font(.system(size: 15.5, weight: .bold))
                 .foregroundColor(NEColor.ink))
         }
@@ -432,26 +435,15 @@ struct ContentView: View {
         return n >= APIClient.limit ? "\(APIClient.limit)+" : "\(n)"
     }
 
+    /// The card's second line exists only for the failure state
+    /// (Croix, build 15): the "Nearest: …" subtitle is gone — the
+    /// headline count is the whole message now.
     @ViewBuilder
     private var cardSubline: some View {
         if store.loadFailed {
             Text("Tap to try again")
                 .font(.system(size: 12.5))
                 .foregroundColor(NEColor.accentText)
-        } else if let nearest = store.venues.first {
-            let distance = Venue.formatDistance(nearest.distanceMiles(from: distanceOrigin))
-            (Text("Nearest: ")
-                .foregroundColor(NEColor.inkFaint)
-                + Text(nearest.name ?? "Unnamed")
-                .foregroundColor(NEColor.inkDim)
-                + Text(distance.isEmpty ? "" : " · \(distance)")
-                .foregroundColor(NEColor.inkDim))
-                .font(.system(size: 12.5))
-                .lineLimit(1)
-        } else if !store.isLoading {
-            Text("No places in this view")
-                .font(.system(size: 12.5))
-                .foregroundColor(NEColor.inkFaint)
         }
     }
 
@@ -530,14 +522,14 @@ struct ContentView: View {
             return (Text(displayCount)
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(NEColor.accentText)
-                + Text(" \(n == 1 ? "match" : "matches") for “\(searchText)” nearby")
+                + Text(" \(n == 1 ? "match" : "matches") for “\(searchText)” in viewport")
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(NEColor.ink))
         }
         return (Text(displayCount)
             .font(.system(size: 17, weight: .bold))
             .foregroundColor(NEColor.accentText)
-            + Text(" \(n == 1 ? "place" : "places") near this spot")
+            + Text(" \(n == 1 ? "place" : "places") in viewport")
             .font(.system(size: 17, weight: .bold))
             .foregroundColor(NEColor.ink))
     }
@@ -790,7 +782,7 @@ struct ContentView: View {
         if let venue = store.venues.first(where: { $0.id == id }),
            let coordinate = venue.coordinate {
             requestCenter(coordinate,
-                          span: MKCoordinateSpan(latitudeDelta: 0.008, longitudeDelta: 0.008))
+                          span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005))
         }
     }
 

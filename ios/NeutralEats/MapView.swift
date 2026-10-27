@@ -29,6 +29,7 @@ struct VenueMapView: UIViewRepresentable {
     var centerRequest: CenterRequest?
     var onRegionSettled: (MKCoordinateRegion) -> Void
     var onSelectVenue: (String) -> Void
+    var onDeselect: () -> Void
 
     func makeCoordinator() -> Coordinator {
         return Coordinator()
@@ -44,6 +45,16 @@ struct VenueMapView: UIViewRepresentable {
         mapView.showsCompass = false
         mapView.showsUserLocation = showsUserLocation
         mapView.setRegion(kHomeRegion, animated: false)
+        // Tapping genuinely empty map deselects (Croix, build 15).
+        // The recognizer never cancels touches, so MapKit's own
+        // tap handling (annotation selection, double-tap zoom) is
+        // untouched; the coordinator decides whether the tap hit
+        // an annotation before treating it as an empty tap.
+        let tap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleMapTap(_:)))
+        tap.cancelsTouchesInView = false
+        mapView.addGestureRecognizer(tap)
         return mapView
     }
 
@@ -95,7 +106,27 @@ struct VenueMapView: UIViewRepresentable {
         /// (build 12 crash hardening; Croix hit a crash drilling
         /// into a cluster and zooming, 2026-10-26).
         private var lastClusteringActive: Bool?
+        /// Previous sync's selection, for the re-dress-by-re-add
+        /// pass in syncAnnotations (build 15 — see dress()).
+        private var lastSelectedID: String?
         private var syncScheduled = false
+
+        /// Empty-map taps deselect (Croix, build 15). A tap that
+        /// lands on any annotation view — dot, label, cluster, the
+        /// user marker — belongs to the selection machinery and is
+        /// ignored here; only a tap on genuinely empty map clears
+        /// the selection.
+        @objc func handleMapTap(_ recognizer: UITapGestureRecognizer) {
+            guard let mapView = recognizer.view as? MKMapView else { return }
+            let point = recognizer.location(in: mapView)
+            for annotation in mapView.annotations {
+                if let view = mapView.view(for: annotation),
+                   view.frame.contains(point) {
+                    return
+                }
+            }
+            parent?.onDeselect()
+        }
 
         /// Street-zoom threshold for name labels, matched to the
         /// web's zoom ≥ 17 (a latitude span of ~0.0085 at this
@@ -149,22 +180,42 @@ struct VenueMapView: UIViewRepresentable {
                     mapView.addAnnotation(annotation)
                 }
             }
-            // Existing views get the current dress: selection swaps
-            // the dot image; the label set swaps in/out the combined
-            // dot+name image. Identity check first: for a venue that
-            // is currently clustered, view(for:) can hand back the
-            // CLUSTER's view — dressing that view as a dot corrupts
-            // the cluster's bookkeeping (build 12 crash hardening).
+            // A selection change re-dresses two venues (the old
+            // and the new selection) — by removing and re-adding
+            // their annotations, never by mutating live views (see
+            // dress() for the crash that rule comes from). The
+            // re-add also pulls a newly selected venue OUT of any
+            // cluster it was sitting in: its fresh view is born
+            // unclustered, so the selection is always visible on
+            // the map (Croix, build 15 — "no indicator that a
+            // restaurant within is selected").
+            if selectedID != lastSelectedID {
+                for id in [lastSelectedID, selectedID] {
+                    guard let id = id,
+                          let annotation = annotationsByID[id],
+                          mapView.view(for: annotation) != nil
+                    else { continue }
+                    mapView.removeAnnotation(annotation)
+                    mapView.addAnnotation(annotation)
+                }
+                lastSelectedID = selectedID
+            }
+            // Live views get IMAGE updates only (theme repaints,
+            // the selected dot's bigger image). Identity check
+            // first: for a venue that is currently clustered,
+            // view(for:) can hand back the CLUSTER's view —
+            // painting that view as a dot corrupts the cluster's
+            // bookkeeping (build 12 crash hardening).
             for (id, annotation) in annotationsByID {
                 if let view = mapView.view(for: annotation),
                    view.annotation === annotation {
-                    applyAppearance(view, venueID: id, selectedID: selectedID)
+                    refreshImage(view, venueID: id, selectedID: selectedID)
                 }
             }
-            // Cluster bubbles and the user arrow are dressed ONLY
+            // Cluster bubbles and the user dot are dressed ONLY
             // in viewFor, and MapKit never re-asks for those views
             // when the theme flips — so a toggle repainted every
-            // venue dot but left the number bubbles (and the arrow)
+            // venue dot but left the number bubbles (and the dot)
             // wearing the old theme until the viewport moved and
             // clustering re-ran (Croix, build 13). Re-dress them
             // here, IMAGE ONLY: assigning an image is cosmetic —
@@ -213,7 +264,18 @@ struct VenueMapView: UIViewRepresentable {
         /// views get .required display priority so the collision
         /// system never hides one (the web lets labels overlap too);
         /// plain dots keep the default.
-        func applyAppearance(_ view: MKAnnotationView, venueID: String, selectedID: String?) {
+        ///
+        /// FULL DRESS — viewFor ONLY (build 15). displayPriority
+        /// and clusteringIdentifier are set here and nowhere else:
+        /// build 13's crash log shows MapKit aborting inside its
+        /// own clustering bookkeeping
+        /// (_existingClusterViewsForClusterID:, nil key) during an
+        /// animated region change, in a pass where a live view's
+        /// clusteringIdentifier no longer matched the group MapKit
+        /// had filed it under. Identifiers are birth state now.
+        /// When a venue's dress must change, syncAnnotations
+        /// re-adds its annotation and MapKit calls viewFor again.
+        func dress(_ view: MKAnnotationView, venueID: String, selectedID: String?) {
             let selected = venueID == selectedID
             if labeledIDs.contains(venueID), let venue = venuesByID[venueID] {
                 let rendered = LabelImages.image(venue: venue, selected: selected)
@@ -232,13 +294,29 @@ struct VenueMapView: UIViewRepresentable {
             }
         }
 
+        /// IMAGE-ONLY refresh for views already on the map: theme
+        /// repaints and the selected dot's bigger image. Never
+        /// touches displayPriority or clusteringIdentifier — see
+        /// dress() for why those are birth-only.
+        func refreshImage(_ view: MKAnnotationView, venueID: String, selectedID: String?) {
+            let selected = venueID == selectedID
+            if labeledIDs.contains(venueID), let venue = venuesByID[venueID] {
+                let rendered = LabelImages.image(venue: venue, selected: selected)
+                view.image = rendered.image
+                view.centerOffset = CGPoint(x: 0, y: rendered.centerOffsetY)
+            } else {
+                view.image = DotImages.image(selected: selected)
+                view.centerOffset = .zero
+            }
+        }
+
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation {
-                // You-are-here is a flat navigation arrow
-                // (build 14), replacing the stock blue dot — a
-                // custom view for the user annotation is the
+                // You-are-here is a plain dot in the location
+                // color (build 15), replacing the stock blue dot —
+                // a custom view for the user annotation is the
                 // supported way to do it.
-                let reuseID = "user-arrow"
+                let reuseID = "user-dot"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
                     ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
                 view.annotation = annotation
@@ -266,7 +344,7 @@ struct VenueMapView: UIViewRepresentable {
             view.annotation = annotation
             view.canShowCallout = false
             view.collisionMode = .circle
-            applyAppearance(view, venueID: venueAnnotation.venueID, selectedID: parent?.selectedID)
+            dress(view, venueID: venueAnnotation.venueID, selectedID: parent?.selectedID)
             return view
         }
 
@@ -444,7 +522,7 @@ enum ClusterImages {
 }
 
 /// Combined dot + name images for street-zoom labels (build 10 —
-/// see the Coordinator's applyAppearance note for why labels are
+/// see the Coordinator's dress() note for why labels are
 /// pixels now, not views). Text wears a halo in the opposite theme
 /// color, mirroring the web's label styling; the selected venue's
 /// name is accent-colored. Cached per venue/selection/theme; the
@@ -515,15 +593,14 @@ enum LabelImages {
     }
 }
 
-/// You-are-here marker (build 14): a flat navigation arrow in
-/// the theme's location color (--good: ai-iro indigo by day,
-/// neon cyan by night) with a white keyline — NO halo, NO glow.
-/// The star tried twice (gold, then theme-colored) and Croix
-/// retired the shape itself plus the pulsing halo around it:
-/// "don't love the star shape nor the glow effect." An arrowhead
-/// reads as "you" at a glance, can't be mistaken for the round
-/// venue dots, and the flat fill keeps it honest next to them.
-/// Cached per theme mode like the dot images.
+/// You-are-here marker (build 15): just a dot — but in the
+/// theme's location color (--good: ai-iro indigo by day, neon
+/// cyan by night), so it can never be confused with a venue dot
+/// (vermillion by day, pink by night). Bigger than a venue dot
+/// with a heavier white ring. The shape experiments are over:
+/// gold star, theme star, arrow — Croix's call was "just a dot
+/// but in a different color to differentiate it." NO halo, NO
+/// glow. Cached per theme mode like the dot images.
 enum UserMarkerImages {
     private static var cachedMode: NEThemeMode?
     private static var cachedImg: UIImage?
@@ -540,26 +617,18 @@ enum UserMarkerImages {
     }
 
     private static func make(tint: UIColor) -> UIImage {
-        let canvas: CGFloat = 27
+        let canvas: CGFloat = 21
         let format = UIGraphicsImageRendererFormat()
         format.scale = 3
         format.opaque = false
         let size = CGSize(width: canvas, height: canvas)
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
-            // Navigation arrowhead: tip at top center, wings swept
-            // to the bottom corners, a concave notch at the base —
-            // the classic "you, facing this way" glyph.
-            let path = UIBezierPath()
-            path.move(to: CGPoint(x: canvas / 2, y: 1.5))
-            path.addLine(to: CGPoint(x: canvas - 3.5, y: canvas - 2.5))
-            path.addLine(to: CGPoint(x: canvas / 2, y: canvas * 0.68))
-            path.addLine(to: CGPoint(x: 3.5, y: canvas - 2.5))
-            path.close()
+            let rect = CGRect(origin: .zero, size: size).insetBy(dx: 1.25, dy: 1.25)
+            let path = UIBezierPath(ovalIn: rect)
             tint.setFill()
             path.fill()
             UIColor.white.setStroke()
-            path.lineWidth = 1.5
-            path.lineJoinStyle = .round
+            path.lineWidth = 2.5
             path.stroke()
         }
     }
