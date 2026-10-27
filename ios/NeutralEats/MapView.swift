@@ -51,7 +51,15 @@ struct VenueMapView: UIViewRepresentable {
         context.coordinator.parent = self
         mapView.overrideUserInterfaceStyle = isDay ? .light : .dark
         mapView.showsUserLocation = showsUserLocation
-        context.coordinator.syncAnnotations(on: mapView, venues: venues, selectedID: selectedID)
+        // Annotation mutations are NEVER made synchronously from
+        // here (build 14 hardening): SwiftUI can call updateUIView
+        // in the middle of MapKit's own selection/layout passes —
+        // a tap that selects a venue and requests a snap fires this
+        // method while MapKit is still working through the tap —
+        // and the build 11/12/13 crashes all live in that
+        // re-entrancy family. The sync is deferred one tick and
+        // coalesced; see Coordinator.scheduleSync.
+        context.coordinator.scheduleSync(on: mapView)
         if let request = centerRequest, request.nonce != context.coordinator.lastCenterNonce {
             context.coordinator.lastCenterNonce = request.nonce
             var region = mapView.region
@@ -153,10 +161,10 @@ struct VenueMapView: UIViewRepresentable {
                     applyAppearance(view, venueID: id, selectedID: selectedID)
                 }
             }
-            // Cluster bubbles and the user star are dressed ONLY
+            // Cluster bubbles and the user arrow are dressed ONLY
             // in viewFor, and MapKit never re-asks for those views
             // when the theme flips — so a toggle repainted every
-            // venue dot but left the number bubbles (and the star)
+            // venue dot but left the number bubbles (and the arrow)
             // wearing the old theme until the viewport moved and
             // clustering re-ran (Croix, build 13). Re-dress them
             // here, IMAGE ONLY: assigning an image is cosmetic —
@@ -174,7 +182,7 @@ struct VenueMapView: UIViewRepresentable {
             if mapView.showsUserLocation,
                let userView = mapView.view(for: mapView.userLocation),
                userView.annotation === mapView.userLocation {
-                userView.image = UserStarImages.image()
+                userView.image = UserMarkerImages.image()
             }
         }
 
@@ -226,17 +234,18 @@ struct VenueMapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation {
-                // You-are-here is a star (Croix, 2026-10-26),
-                // replacing the stock blue dot — a custom view for
-                // the user annotation is the supported way to do it.
-                let reuseID = "user-star"
+                // You-are-here is a flat navigation arrow
+                // (build 14), replacing the stock blue dot — a
+                // custom view for the user annotation is the
+                // supported way to do it.
+                let reuseID = "user-arrow"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
                     ?? MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
                 view.annotation = annotation
                 view.canShowCallout = false
                 view.displayPriority = .required
                 view.clusteringIdentifier = nil
-                view.image = UserStarImages.image()
+                view.image = UserMarkerImages.image()
                 return view
             }
             if let cluster = annotation as? MKClusterAnnotation {
@@ -308,12 +317,22 @@ struct VenueMapView: UIViewRepresentable {
             // doesn't re-render (the venue fetch is debounced and
             // may keep the same results) — re-sync against the
             // parent's current inputs so labels track the span.
-            // Deferred + coalesced (build 12 crash hardening):
-            // adding/removing annotations and re-dressing views
-            // synchronously inside this callback collides with
-            // MapKit's own clustering/layout pass for the region
-            // change; one tick later the map is settled and the
-            // same sync is safe.
+            scheduleSync(on: mapView)
+        }
+
+        /// THE way annotation mutations are requested (build 14):
+        /// deferred one runloop tick and coalesced, reading the
+        /// parent's inputs at fire time. Every entry point —
+        /// updateUIView, regionDidChangeAnimated — goes through
+        /// here, so syncAnnotations only ever runs on a clean tick,
+        /// never inside a MapKit callback or a SwiftUI update that
+        /// MapKit triggered mid-pass. Builds 11, 12 and 13 each
+        /// crashed in a synchronous-sync path (region changes,
+        /// cluster drills, and build 13's tap-to-snap selection,
+        /// which reaches the sync via updateUIView while MapKit is
+        /// still processing the tap); this removes the whole class
+        /// rather than the third instance of it.
+        func scheduleSync(on mapView: MKMapView) {
             guard !syncScheduled else { return }
             syncScheduled = true
             DispatchQueue.main.async { [weak self, weak mapView] in
@@ -496,14 +515,16 @@ enum LabelImages {
     }
 }
 
-/// You-are-here star (Croix, 2026-10-26; build 12, recolored the
-/// same evening): a five-point star on a soft halo, white-stroked
-/// so it holds on any basemap. The fill is the theme's location
-/// color (--good): ai-iro indigo by day, neon cyan by night. Gold
-/// was tried first and retired — it read off-palette. The star
-/// shape plus the halo keep "you" distinct from the round venue
-/// dots. Cached per theme mode like the dot images.
-enum UserStarImages {
+/// You-are-here marker (build 14): a flat navigation arrow in
+/// the theme's location color (--good: ai-iro indigo by day,
+/// neon cyan by night) with a white keyline — NO halo, NO glow.
+/// The star tried twice (gold, then theme-colored) and Croix
+/// retired the shape itself plus the pulsing halo around it:
+/// "don't love the star shape nor the glow effect." An arrowhead
+/// reads as "you" at a glance, can't be mistaken for the round
+/// venue dots, and the flat fill keeps it honest next to them.
+/// Cached per theme mode like the dot images.
+enum UserMarkerImages {
     private static var cachedMode: NEThemeMode?
     private static var cachedImg: UIImage?
 
@@ -519,28 +540,20 @@ enum UserStarImages {
     }
 
     private static func make(tint: UIColor) -> UIImage {
-        let canvas: CGFloat = 30
+        let canvas: CGFloat = 27
         let format = UIGraphicsImageRendererFormat()
         format.scale = 3
         format.opaque = false
         let size = CGSize(width: canvas, height: canvas)
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
-            // Soft halo disc behind the star (mirrors the web's
-            // pulsing halo ring, statically).
-            tint.withAlphaComponent(0.22).setFill()
-            UIBezierPath(ovalIn: CGRect(origin: .zero, size: size)).fill()
-            // Five-point star inscribed in a 23pt box, centered.
-            let center = CGPoint(x: canvas / 2, y: canvas / 2)
-            let outer: CGFloat = 11.5
-            let inner: CGFloat = outer * 0.42
+            // Navigation arrowhead: tip at top center, wings swept
+            // to the bottom corners, a concave notch at the base —
+            // the classic "you, facing this way" glyph.
             let path = UIBezierPath()
-            for i in 0..<10 {
-                let radius = i % 2 == 0 ? outer : inner
-                let angle = -CGFloat.pi / 2 + CGFloat(i) * .pi / 5
-                let point = CGPoint(x: center.x + radius * cos(angle),
-                                    y: center.y + radius * sin(angle))
-                if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
-            }
+            path.move(to: CGPoint(x: canvas / 2, y: 1.5))
+            path.addLine(to: CGPoint(x: canvas - 3.5, y: canvas - 2.5))
+            path.addLine(to: CGPoint(x: canvas / 2, y: canvas * 0.68))
+            path.addLine(to: CGPoint(x: 3.5, y: canvas - 2.5))
             path.close()
             tint.setFill()
             path.fill()

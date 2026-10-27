@@ -27,7 +27,7 @@ enum NEColor {
     // (Croix: "that blue and vermillion"): washi paper #FAF7F2,
     // ai-iro indigo #165E83, shu-iro vermillion #EB471F, warm stone
     // text. accentText is vermillion deepened for small text
-    // (#C6360F, ~5:1 on washi); user is the you-are-here star in
+    // (#C6360F, ~5:1 on washi); user is the you-are-here arrow in
     // the theme's location color (indigo day / cyan night = --good;
     // gold retired 2026-10-26 evening, read off-palette).
     static var bg: Color { return day ? Color(hex: 0xFAF7F2) : Color(hex: 0x070912) }            // --bg
@@ -39,7 +39,7 @@ enum NEColor {
     static var accent: Color { return day ? Color(hex: 0xEB471F) : Color(hex: 0xFF4D7E) }       // --accent
     static var accentText: Color { return day ? Color(hex: 0xC6360F) : Color(hex: 0xFF4D7E) }   // --accent-text
     static var brand: Color { return day ? Color(hex: 0x165E83) : Color(hex: 0xFF4D7E) }        // --brand
-    static var user: Color { return day ? Color(hex: 0x165E83) : Color(hex: 0x38E1FF) }         // --user (star, = --good)
+    static var user: Color { return day ? Color(hex: 0x165E83) : Color(hex: 0x38E1FF) }         // --user (arrow, = --good)
     static var accentInk: Color { return Color.white }                                          // --accent-ink
     static var good: Color { return day ? Color(hex: 0x165E83) : Color(hex: 0x38E1FF) }         // --good
     static var line: Color {                                                                    // --line

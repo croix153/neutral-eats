@@ -287,6 +287,17 @@ struct ContentView: View {
         }
     }
 
+    /// Distances are expressed from YOU when a location fix
+    /// exists (Croix, build 14) — "from map center" is surveyor
+    /// language, not diner language. The map center stays as the
+    /// fallback, and still drives the ranking order, which is
+    /// about the spot being browsed.
+    private var distanceOrigin: CLLocationCoordinate2D {
+        location.point?.coordinate ?? store.center
+    }
+
+    private var distanceFromUser: Bool { location.point != nil }
+
     /// The current selection, resolved against the loaded results.
     /// Drives the card's detail form, the dot highlight, and the
     /// label accent — one selection, every surface.
@@ -428,7 +439,7 @@ struct ContentView: View {
                 .font(.system(size: 12.5))
                 .foregroundColor(NEColor.accentText)
         } else if let nearest = store.venues.first {
-            let distance = Venue.formatDistance(nearest.distanceMiles(from: store.center))
+            let distance = Venue.formatDistance(nearest.distanceMiles(from: distanceOrigin))
             (Text("Nearest: ")
                 .foregroundColor(NEColor.inkFaint)
                 + Text(nearest.name ?? "Unnamed")
@@ -575,7 +586,7 @@ struct ContentView: View {
             }
             Spacer(minLength: 4)
             VStack(alignment: .trailing, spacing: 3) {
-                Text(Venue.formatDistance(venue.distanceMiles(from: store.center)))
+                Text(Venue.formatDistance(venue.distanceMiles(from: distanceOrigin)))
                     .font(.system(size: 13, weight: .bold))
                     .foregroundColor(NEColor.accentText)
                 if !venue.ratingPriceLine.isEmpty {
@@ -679,7 +690,7 @@ struct ContentView: View {
                     .font(.system(size: 14))
                     .foregroundColor(NEColor.inkDim)
             }
-            Text("\(Venue.formatDistance(venue.distanceMiles(from: store.center))) from map center")
+            Text("\(Venue.formatDistance(venue.distanceMiles(from: distanceOrigin))) from \(distanceFromUser ? "you" : "map center")")
                 .font(.system(size: 13))
                 .foregroundColor(NEColor.inkFaint)
 

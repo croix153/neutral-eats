@@ -342,33 +342,19 @@
   }
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* ---------- your location dot ---------- */
+  /* ---------- your location marker ---------- */
   .userloc{background:none;border:none;pointer-events:none}
-  .userloc-halo{
-    position:absolute;left:50%;top:50%;width:24px;height:24px;border-radius:50%;
+  /* You-are-here is a navigation arrow (Croix, 2026-10-26 late):
+     the star and its pulsing halo are both retired — he didn't
+     love the shape or the glow. A flat arrowhead in the theme's
+     location color (--user: ai-iro indigo by day, neon cyan by
+     night) with a white keyline — no glow, no shadow, no
+     animation. The silhouette can't be mistaken for a round
+     venue dot, and it reads as "you" at a glance. */
+  .userloc-arrow{
+    position:absolute;left:50%;top:50%;
     transform:translate(-50%,-50%);
-    background:rgba(var(--user-rgb),.30);
-    animation:userloc-pulse 2.2s ease-out infinite;
-  }
-  /* You-are-here is a star (Croix, 2026-10-26) wearing the theme's
-     own location color --good: ai-iro indigo by day, neon cyan by
-     night (gold read off-palette; Croix's call, evening of the
-     26th). The star shape plus the white keyline and the pulsing
-     halo keep it distinct from the round venue dots (vermillion
-     by day, pink by night). clip-path cuts the star; drop-shadow
-     follows the clipped shape, standing in for the old dot's
-     white ring + shadow. */
-  .userloc-dot{
-    position:absolute;left:50%;top:50%;width:21px;height:21px;
-    transform:translate(-50%,-50%);
-    background:var(--user);
-    clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
-    filter:drop-shadow(0 0 1.2px rgba(255,255,255,.95)) drop-shadow(0 1px 2px rgba(0,0,0,.45));
-  }
-  @keyframes userloc-pulse{
-    0%{box-shadow:0 0 0 0 rgba(var(--good-rgb),.45)}
-    70%{box-shadow:0 0 0 17px rgba(var(--good-rgb),0)}
-    100%{box-shadow:0 0 0 0 rgba(var(--good-rgb),0)}
+    display:block;
   }
 
   /* ---------- desktop: side panel ---------- */
@@ -506,6 +492,19 @@
     if(mi < 0.1) return Math.max(10, Math.round(mi*5280/10)*10) + ' ft';
     return mi.toFixed(1) + ' mi';
   }
+  // Displayed distances are expressed from YOU when a fix
+  // exists (Croix, 2026-10-26) — v._d stays the map-center
+  // distance that drives the ranking; only the expressed number
+  // changes origin. userMarker is declared later in this script;
+  // var hoisting makes it safe to read here at call time.
+  function dispDist(v){
+    if(userMarker){
+      var ll = userMarker.getLatLng();
+      return haversineMi(ll.lat, ll.lng, parseFloat(v.lat), parseFloat(v.lng));
+    }
+    return v._d;
+  }
+  function distOrigin(){ return userMarker ? 'from you' : 'from map center'; }
   function priceOf(v){
     var p = (v.priceLevel != null ? v.priceLevel : v.price_level);
     if(p == null || p === '') return '';
@@ -878,7 +877,7 @@
             (v.address ? '<div class="addr">' + esc(v.address) + '</div>' : '') +
           '</div>' +
           '<div class="side">' +
-            '<div class="dist">' + esc(fmtDist(v._d)) + '</div>' +
+            '<div class="dist">' + esc(fmtDist(dispDist(v))) + '</div>' +
             (rp ? '<div class="rp">' + rp + '</div>' : '') +
             (svc ? '<div><span class="svc">' + esc(svc) + '</span></div>' : '') +
           '</div>' +
@@ -946,7 +945,7 @@
       '<div class="dmeta">' + meta.join(' · ') + '</div>' +
       (v.cuisine ? '<div class="dmeta">' + esc(v.cuisine) + '</div>' : '') +
       (v.address ? '<div class="daddr">' + esc(v.address) + '</div>' : '') +
-      '<div class="ddist">' + esc(fmtDist(v._d)) + ' from map center</div>' +
+      '<div class="ddist">' + esc(fmtDist(dispDist(v))) + ' ' + distOrigin() + '</div>' +
       '<div class="actions">' +
         (tel ? '<a class="primary" href="tel:' + esc(tel) + '">Call</a>'
              : '<a class="disabled">No phone</a>') +
@@ -1084,12 +1083,15 @@
   });
 
   /* ================= your location =================
-     Cyan dot + pulsing halo + accuracy ring. The dot is a divIcon in the
-     marker pane (above the canvas venue dots), glued to its lat/lng by
-     Leaflet, with pointer-events off so it never swallows taps meant for
-     venues. Shown only after a real fix — Near-me, or an on-load fix when
-     permission was ALREADY granted on a previous visit; this page never
-     prompts for location uninvited. Ranking stays "from map center". */
+     A flat navigation arrow (SVG divIcon, theme-colored via
+     --user) + a faint accuracy circle. The marker sits in the
+     marker pane (above the canvas venue dots), glued to its
+     lat/lng by Leaflet, with pointer-events off so it never
+     swallows taps meant for venues. Shown only after a real
+     fix — Near-me, or an on-load fix when permission was ALREADY
+     granted on a previous visit; this page never prompts for
+     location uninvited. While a fix exists, displayed distances
+     are expressed from it; ranking stays "from map center". */
   var userMarker = null, userAccuracy = null, userWatchId = null;
   function showUserLocation(lat, lng, accuracy){
     var ll = [lat, lng];
@@ -1098,7 +1100,7 @@
         interactive: false, keyboard: false, zIndexOffset: 1000,
         icon: L.divIcon({
           className: 'userloc',
-          html: '<span class="userloc-halo"></span><span class="userloc-dot"></span>',
+          html: '<svg class="userloc-arrow" width="24" height="24" viewBox="0 0 24 24"><path d="M12 1.8 L19.2 21 L12 16.6 L4.8 21 Z" fill="var(--user)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>',
           iconSize: [24, 24], iconAnchor: [12, 12]
         })
       }).addTo(map);
