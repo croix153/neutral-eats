@@ -113,6 +113,29 @@ struct ContentView: View {
                 location.requestOneShotLocation()
             }
         }
+#if DEBUG
+        // DuoCheck QA hook — DEBUG BUILDS ONLY (never compiled into
+        // Release/TestFlight): lets the duo-check CI workflow drive
+        // the card into its list / detail forms on a simulator
+        // without touch injection. Launch args:
+        //   -DuoCheckList    expand the card to the list form
+        //   -DuoCheckDetail  select the first loaded venue (detail
+        //                    form + the animated map snap)
+        .task {
+            let args = ProcessInfo.processInfo.arguments
+            let wantDetail = args.contains("-DuoCheckDetail")
+            let wantList = args.contains("-DuoCheckList")
+            guard wantList || wantDetail else { return }
+            for _ in 0..<60 where store.venues.isEmpty {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+            }
+            if wantDetail, let first = store.venues.first {
+                selectVenue(id: first.id)
+            } else if wantList {
+                cardExpanded = true
+            }
+        }
+#endif
     }
 
     // MARK: - Header (fixed, solid — content never goes under it)

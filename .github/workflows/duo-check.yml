@@ -27,6 +27,7 @@ on:
 jobs:
   duo-check:
     runs-on: macos-26
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
