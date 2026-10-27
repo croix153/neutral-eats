@@ -121,16 +121,47 @@ struct ContentView: View {
         //   -DuoCheckList    expand the card to the list form
         //   -DuoCheckDetail  select the first loaded venue (detail
         //                    form + the animated map snap)
+        //
+        // AppStore screenshots hook (2026-10-27, same DEBUG-only
+        // rules; used by the appstore-screenshots CI workflow):
+        //   -AppStoreSearch <query>
+        //                    put the query in the search field — the
+        //                    normal onChange path refetches with it,
+        //                    debounced exactly as if the user typed —
+        //                    wait for the filtered results to settle,
+        //                    then expand the card so the screenshot
+        //                    shows the results list.
         .task {
             let args = ProcessInfo.processInfo.arguments
             let wantDetail = args.contains("-DuoCheckDetail")
             let wantList = args.contains("-DuoCheckList")
-            guard wantList || wantDetail else { return }
+            var searchQuery: String? = nil
+            if let i = args.firstIndex(of: "-AppStoreSearch") {
+                searchQuery = (i + 1 < args.count) ? args[i + 1] : "taco bell"
+            }
+            guard wantList || wantDetail || searchQuery != nil else { return }
             for _ in 0..<60 where store.venues.isEmpty {
                 try? await Task.sleep(nanoseconds: 500_000_000)
             }
             if wantDetail, let first = store.venues.first {
                 selectVenue(id: first.id)
+            } else if let query = searchQuery {
+                searchText = query
+                // The refetch is debounced (350 ms) and the old
+                // list stays up until the new one lands, so wait
+                // for a load cycle to start, then finish, then a
+                // breath — bounded, in the same idiom as the wait
+                // above — before expanding the card.
+                for _ in 0..<20 where !store.isLoading {
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                }
+                for _ in 0..<40 where store.isLoading {
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                }
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                if !store.venues.isEmpty {
+                    cardExpanded = true
+                }
             } else if wantList {
                 cardExpanded = true
             }
