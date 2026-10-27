@@ -29,6 +29,18 @@ renewal, not a closure):
     6 months with no reopening inspection is stacked).
     Fresher closures are watchlist.
 
+Successor gate + live bonus (added after the first run,
+2026-10-26): the NYS inactive file is a 20-year graveyard —
+a venue can match a dead predecessor record at its own
+address (a McDonald's matched a license last inspected in
+2002) while its actual live permit sits unmatched. Two
+guards: (1) live licenses get +0.06 score in the greedy
+assignment, so a live record wins near-ties, not just exact
+ties; (2) a closure candidate is demoted to the watchlist
+when ANY live license operates at the same (zip, house
+number) — something is open at that address, so "closed"
+needs a human's eyes, not an automated flag.
+
 Run on the host:
     python3 ny_match.py             # writes audit table + report
 """
@@ -195,6 +207,8 @@ def main():
                 tier, score = "MEDIUM", 0.4 * sj + 0.6 * ns
             else:
                 continue
+            if is_live(lic):
+                score = min(score + 0.06, 0.999)
             candidates.append((score, 0 if is_live(lic) else 1,
                                  vi, li, tier))
 
@@ -225,7 +239,13 @@ TRUNCATE TABLE ny_matches;
     def d(s):
         return "'" + s + "'" if s else "NULL"
 
+    # Successor gate: addresses (zip + house number) where a
+    # LIVE license operates, matched or not.
+    live_addr = {(lic["zip"], lic["house"]) for lic in licenses
+                 if is_live(lic) and lic["zip"] and lic["house"]}
+
     lines, closures, watch = [], [], []
+    gated = 0
     for vi, li, tier, score in matches:
         v, lic = venues[vi], licenses[li]
         is_closure = 0
@@ -242,6 +262,11 @@ TRUNCATE TABLE ny_matches;
                 is_closure = 1
             else:
                 is_watch = 1
+        if is_closure and (lic["zip"], lic["house"]) in live_addr:
+            # A live license operates at this address — the dead
+            # record is a predecessor, not proof of closure.
+            is_closure, is_watch = 0, 1
+            gated += 1
         if is_closure:
             closures.append((v["name"], lic["name"], lic["source"],
                              lic["status"], lic["expiry"],
@@ -267,7 +292,8 @@ TRUNCATE TABLE ny_matches;
     print(f"CLOSURE candidates: {len(closures)}")
     for c in closures[:15]:
         print("  CLOSED?", c)
-    print(f"watchlist: {len(watch)}")
+    print(f"watchlist: {len(watch)} (incl. {gated} demoted by the "
+          f"live-successor gate)")
     print(f"licenses with no venue match: {len(licenses) - len(used_lic)}")
     print(f"venues with no license match: {len(venues) - len(used_ven)}")
     return 0
