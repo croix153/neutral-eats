@@ -94,15 +94,18 @@ flagged 70 — but ALL 64 status-45 candidates were inspected in
 cohort, not closures. Under a strict rule (status 46 any tier,
 OR expiry <= 2024-12-31, OR last inspection <= 2024-12-31 or
 none) only 9 survive: 6 voluntary relinquishments + 3 stale
-delinquents. Recommendation: reclassify the 61 as watchlist;
-treat the strict-9 as the closure list. Awaiting Croix's call
-before ANY production write (suppression or license_* stamp).
+delinquents. The 61 were reclassified to the watchlist.
 
-MEDIUM-tier caution: samples include a likely successor-tenant
-pairing (Champps Tampa <-> CEVICHE TAPAS BAR license, 0.631).
-Recommendation: stamp license_* from STRONG matches only;
-MEDIUM stays audit-only until a corroboration pass (phone or
-exact house-number) promotes it.
+APPLIED 2026-10-26 on Croix's go — he overrode the STRONG-only
+recommendation ("stamp STRONG + MEDIUM too"): all 39,148
+matches stamped; exactly the strict-9 closed (the applied rule
+adds "no sign of life in 2026" — 13 of a first-pass 23 were
+inspected in 2026, i.e. operating on stale licenses); backup
+venues_backup_20261026_fl; watchlist now 1,435; verified
+through the public API. MEDIUM caution stands as a known
+limitation of the stamp (successor-tenant pairings like
+Champps Tampa <-> CEVICHE TAPAS BAR can carry the successor's
+license number).
 
 ## Licensing overlay (gap layer)
 
@@ -113,3 +116,27 @@ last_inspection_date and may set operating_status =
 (deliberate: regulator data outranks Overture, but a single weak
 signal never closes a venue). Every licensing decision is kept in
 a per-source audit table (fl_dbpr_matches) before it is applied.
+
+## Rollout status (2026-10-26 night)
+
+- **NY (audit-only, re-running):** first crosswalk matched
+  36,130 but produced 8,343 closure candidates — not credible:
+  the NYS inactive file is a 20-year graveyard and venues matched
+  dead predecessor records at their own addresses. Fix shipped:
+  live licenses get +0.06 in the greedy assignment, and the
+  live-successor gate demotes any closure candidate whose
+  (zip, house number) has a live license. Re-run in progress;
+  NO production writes until the gated numbers are reviewed.
+- **King County (audit-only, DONE):** 12,295 licenses staged
+  (only 7 carry the closed flag on their latest inspection —
+  the flag is precise but rare); 5,180 matched (STRONG 4,112),
+  5,176 to live licenses, **0 closure candidates**, 4 watchlist.
+- **Boston (audit-only, DONE):** 4,107 licenses staged (1,582
+  not in the active companion file); 931 matched (STRONG 714),
+  **117 closure candidates** (samples eyeball-verified:
+  Erbaluce, Turtle Swamp Brewing — both genuinely closed),
+  129 watchlist of which **85 were demoted by the successor
+  gate**. Footnote: many Boston rows share batch inspection
+  dates (2022-03-15 / 2022-09-14 recur) — the stacked signal
+  is Inactive status + expired license + absence from the
+  active file, not the date alone.
