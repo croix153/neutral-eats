@@ -16,6 +16,7 @@
 		AA3000000000000000000007 /* VenueStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000000000000000000007 /* VenueStore.swift */; };
 		AA3000000000000000000008 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2000000000000000000008 /* Theme.swift */; };
 		AA3000000000000000000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA2000000000000000000009 /* Assets.xcassets */; };
+		AA300000000000000000000A /* Raleway-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA200000000000000000000B /* Raleway-Variable.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +30,7 @@
 		AA2000000000000000000008 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		AA2000000000000000000009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA200000000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA200000000000000000000B /* Raleway-Variable.ttf */ = {isa = PBXFileReference; path = Fonts/Raleway-Variable.ttf; sourceTree = "<group>"; };
 		AA1000000000000000000005 /* NeutralEats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutralEats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -72,6 +74,7 @@
 				AA2000000000000000000008 /* Theme.swift */,
 				AA2000000000000000000009 /* Assets.xcassets */,
 				AA200000000000000000000A /* Info.plist */,
+				AA200000000000000000000B /* Raleway-Variable.ttf */,
 			);
 			path = NeutralEats;
 			sourceTree = "<group>";
@@ -135,6 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA3000000000000000000009 /* Assets.xcassets in Resources */,
+				AA300000000000000000000A /* Raleway-Variable.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

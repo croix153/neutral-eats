@@ -122,11 +122,20 @@ struct ContentView: View {
             HStack(alignment: .top, spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 0) {
+                        // Brand wordmark wears Raleway, matching
+                        // the web (Croix, build 19) — the bundled
+                        // variable font (Fonts/Raleway-Variable
+                        // .ttf, OFL), weight via the variation
+                        // axis. Everything else in the app stays
+                        // on the system font, like the web's
+                        // system stack.
                         Text("neutral eats")
-                            .font(.system(size: 29, weight: .bold, design: .serif))
+                            .font(.custom("Raleway", size: 29))
+                            .fontWeight(.bold)
                             .foregroundColor(NEColor.ink)
                         Text(".")
-                            .font(.system(size: 29, weight: .bold, design: .serif))
+                            .font(.custom("Raleway", size: 29))
+                            .fontWeight(.bold)
                             .foregroundColor(NEColor.accent)
                     }
                     HStack(spacing: 0) {

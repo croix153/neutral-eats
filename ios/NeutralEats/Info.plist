@@ -4,5 +4,9 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>neutral eats centers the map on you to rank nearby places by distance. Your location is only used on this phone, for that.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Raleway-Variable.ttf</string>
+	</array>
 </dict>
 </plist>
