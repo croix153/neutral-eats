@@ -1,0 +1,686 @@
+Command line invocation:
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/xcodebuild build -project ios/NeutralEats.xcodeproj -scheme NeutralEats -configuration Debug -destination "generic/platform=iOS Simulator" -derivedDataPath /Users/runner/work/_temp/duo-dd CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+    CODE_SIGNING_REQUIRED = NO
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'NeutralEats' in project 'NeutralEats' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 52f3c6cc585fb7d4c7d20a6e5f4ea39b
+Build description path: /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/XCBuildData/52f3c6cc585fb7d4c7d20a6e5f4ea39b.xcbuilddata
+CreateBuildDirectory /Users/runner/work/_temp/duo-dd/Build/Products
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/duo-dd/Build/Products
+
+CreateBuildDirectory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex
+
+ClangStatCache /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -o /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats-969fa6fb1c1eab5da48c339aaf26cb70-VFS-iphonesimulator/all-product-headers.yaml
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats-969fa6fb1c1eab5da48c339aaf26cb70-VFS-iphonesimulator/all-product-headers.yaml
+
+CreateBuildDirectory /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator
+
+CreateBuildDirectory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats.xcodeproj
+    builtin-create-build-directory /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_const_extract_protocols.json (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftConstValuesFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.LinkFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-OutputFileMap.json (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_const_extract_protocols.json (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftConstValuesFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.LinkFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.LinkFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-OutputFileMap.json (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.hmap (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyStaticMetadataFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyMetadataFileList (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-non-framework-target-headers.hmap (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibPath-normal-x86_64.txt (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibPath-normal-x86_64.txt
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibPath-normal-arm64.txt (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibPath-normal-arm64.txt
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibInstallName-normal-x86_64.txt (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibInstallName-normal-x86_64.txt
+
+WriteAuxiliaryFile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibInstallName-normal-arm64.txt (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    write-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibInstallName-normal-arm64.txt
+
+MkDir /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /bin/mkdir -p /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app
+
+Ld /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/__preview.dylib normal x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios16.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -install_name @rpath/NeutralEats.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_dependency_info.dat -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/__preview.dylib
+
+Ld /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/__preview.dylib normal arm64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -install_name @rpath/NeutralEats.debug.dylib -Xlinker -dead_strip -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_dependency_info.dat -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/__preview.dylib
+
+MkDir /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/unthinned (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /bin/mkdir -p /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/unthinned
+
+MkDir /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /bin/mkdir -p /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned
+
+GenerateAssetSymbols /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Assets.xcassets (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Assets.xcassets --compile /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_dependencies --output-partial-info-plist /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --minimum-deployment-target 16.0 --platform iphonesimulator --bundle-identifier ai.croix.neutraleats --generate-swift-asset-symbol-extensions NO --generate-swift-asset-symbols /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.compilation-results */
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+CpResource /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Raleway-Variable.ttf /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Fonts/Raleway-Variable.ttf (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Fonts/Raleway-Variable.ttf /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app
+
+CreateUniversalBinary /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/__preview.dylib normal arm64\ x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/__preview.dylib /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/__preview.dylib -output /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/__preview.dylib
+
+CompileAssetCatalogVariant thinned /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Assets.xcassets (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/usr/bin/actool /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Assets.xcassets --compile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --minimum-deployment-target 16.0 --platform iphonesimulator
+/* com.apple.actool.compilation-results */
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist_thinned
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned/AppIcon60x60@2x.png
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned/AppIcon76x76@2x~ipad.png
+/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned/Assets.car
+
+
+SwiftDriver NeutralEats normal arm64 com.apple.xcode.tools.swift.compiler (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-SwiftDriver -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NeutralEats -Onone @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios16.0-simulator -g -module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/duo-dd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-Swift.h -working-directory /Users/runner/work/neutral-eats/neutral-eats/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver NeutralEats normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-SwiftDriver -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NeutralEats -Onone @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios16.0-simulator -g -module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/duo-dd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-Swift.h -working-directory /Users/runner/work/neutral-eats/neutral-eats/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdbool-EQZ6X7SWMV5FE8KUMRTZCSEA0.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/SwiftShims-CBL6AQG9HUGFR9V8MEFUOOUYY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/SwiftShims-7LTX0K6GC3QUC7E416QNMBZ5P.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_AvailabilityInternal-1PRS0HG320HZ2RS8JYLQX89WO.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_float-2I70ZMMOEWZF5NMW7UUFX7F65.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stddef-W4EC0TBCO6TLS1GPT2ENAU7Z.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_float-9RWELEYUJMHVMZJU7EUUBB8CP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_SwiftConcurrencyShims-1CHL4YY26PDURLE06CAGIKDS.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_SwiftConcurrencyShims-91EBRQ9QBWQCJNTFIGDAJ9213.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stddef-BD48NZ7TST312MSU648MWZFCX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdbool-B3VGZZKF22APSJ3H55RJ5KXXB.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ptrauth-1BX5KC18TUFXXKYBNBUNOTQOC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ptrauth-DSNW9YFBDRKZGKAN7CA37HOES.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdarg-68DZL4A7KSMTFIXYWLI3UFHFW.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_AvailabilityInternal-9HYYSBDGLOAOVNIY57N2U4ZMC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ptrcheck-126DJBOOW164I9MSUS765MZP8.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/DeveloperToolsSupport-15SYQN15SQTYAD6IFWO0LUI9Q.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdarg-6UXCCN7X8QT2A1EFZ77DJLJ10.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_DarwinFoundation1-CSX250TDEZCES7SJ6FEN3CQ4Z.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ptrcheck-71YVHQRDY5GJCC5UEIN4YX96I.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/DeveloperToolsSupport-9303GOL7UOGI07E9GUOUXSYJU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_DarwinFoundation1-13APEEYAVOAQ2HAL7S9B54M7A.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_limits-AL9FQD43IH5LC7AA7ENT8GVRU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_DarwinFoundation2-A1UAO87Q27E6A07TPMVICT9T2.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_DarwinFoundation2-AI97JMSEU5515E58G6A772KV2.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_limits-CZZAQECJ55254Q30LXH2KCFYY.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdint-RDCTOU71JOAS8PNOEMBXNUDM.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_tgmath-684H92Q2O3JC33Z42UQOI6G5C.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_tgmath-E65W4NW38717T79XJP4G7IBHP.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdatomic-3UTHUWZJQSTXY6FQN1MTDUHYU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/sys_types-61DWW8BLJ08NW6MGEI8TNVVI2.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/sys_types-BHVO8OC01G8X2Q0JSQP5TUBRU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_DarwinFoundation3-8K172WGJUFH17REGEFUT1XXDG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdint-6031N8H3UQ2KHL58KJQX6HTLB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_DarwinFoundation3-CA0YHH80DECWJPIMHTQ755L95.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_stdatomic-BG5RRMN2QWOPEP1GZ7QSPAJEH.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_inttypes-DJBAJF0070676UNED5IOWFVYS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_inttypes-8THOMFLVKQZOVNCLLDCSC1AJG.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_intrinsics-AC4C266ZIHKTR394NMHLVXI9N.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Darwin-46X9G4HX935CRNZXLLROM7B4A.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Darwin-1H2GZ4HRHWBZ91G01BMSM68XI.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/MachO-6VQ58POJ7OWGNSPKBDG2KWXTT.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ObjectiveC-C9GSIEY2V76UHIY5UNPHXJ5FM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_Builtin_intrinsics-DPWYC3JZZNWXTVENXIL8XP7K6.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/os_object-CA337CQ0X0K5R1D8948B6JJVV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ObjectiveC-A7A6O5Q2UFLGACLEYPWEU7AWZ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/os_workgroup-9RON8JO4VCQUNWVN1JOSKM93X.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/MachO-33EGE3HIJ8L9FIFGT591Q8NZ2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/os_object-E9PLWG4HMZ47BLSD6JQA2RV7C.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/simd-11R79GKTNKZVKY8SR75N1BGGW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/os_workgroup-99J79MMLC6DPGEJGTHEITHRXL.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Dispatch-2SDXZVPCWI6MM7HPF3QJAT6ML.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Dispatch-6DX10KHL1AKYLHV5X6K9BQFTP.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/XPC-50QAIRK8NJCEPVW26N2LKEVQY.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreFoundation-7LLVOQDXXCKFJALC1T4W06SEJ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/os-75EZ9V6ENM6OZLUP3DLHPKRGU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreGraphics-6MU0IWUNLQT1GFWKSCQRQ91GN.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CFNetwork-D0GWFVPV7TTLZSGO9T7B2UZ7Z.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Security-8S3X4UKPK5M8BKVGR5M232U.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Spatial-4BV4VVRO1AV1XTUYE8RC8ODKW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreText-359ID7F3NQ21NM56AY06XTKWD.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreFoundation-DD9XBU4IFBGUF62F6CDTM24UU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ImageIO-CRVLG8L1E9DQNOHNA8Y6XTJRG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/XPC-CV67057NFX1605FRFGRZHEG2O.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/simd-BZPDLZVK58W89H05PXT4B7MR6.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Security-ZFB5C15BVLWLJ47LUL06S7QU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CFNetwork-S8GQTK3E02TG55X20SG2DA48.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/os-6MJ5BWPK6RAPWCETXYCDZNV5C.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Foundation-5LYIOQ115KDPIK0C78WAQAXAL.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreGraphics-88XMLFMGX7T2WWB5EICYGHY5D.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Spatial-CN725OJX5B1ZZUYYO2CVLSIO2.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/ImageIO-56BBHOVQM9WCJE2K1USVXB5MG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UIUtilities-3PD1KCM42HE39F5AZXJSX4100.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/DataDetection-APU20G472MDA9Z4GAWY8GQ74M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/OpenGLES-50QKSV8WGHUH16Q37TJQBUO4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreTransferable-37K6SLPSPNXQOOW80JSFBI2DN.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UserNotifications-C0FIBIABVZNCK4J8VCTOD5YJ7.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Accessibility-8R6ULJIL9NCCWMXKBEWMNEZXK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/FileProvider-7OAYGO5RGQ64E322YCN1K5JQH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreData-B9UHD7M6W64TUGQS92SJVMEP7.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Symbols-EIWX6FTTP1FL6GHQ2XG9Q7YUK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UniformTypeIdentifiers-804DBINDWWN9ZAGZ3Q35BRO23.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/IOSurface-CZRM5R46D9MFGRS07VFELAEOA.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/OSLog-E1ILU68Q500GISLTA1XRCJKPF.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_LocationEssentials-B0XH4BJFXT8CJRG85SYMITTZ0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Metal-4QTRL3PZ0VGI4ET1QIC689LJE.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Foundation-5TU3BLULV1GG1SWMEH1CW06BR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreLocation-C32EQS6YEW4OLH8VDZL4LL242.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreVideo-BYPXAX8HOUSAHG5BCY265744V.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreText-6V4PUG7T1CJOQMCC8BOMV0CXG.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UIUtilities-31BRCJMLA8QDYXMXLHNTBKSBM.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Symbols-DJUPKUZ7HONPQK4YWE1YYVQM5.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/IOSurface-ANH46O40F3CYWT6NAV5QMSRKC.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UniformTypeIdentifiers-4KKY1MLTNUEF394DFLO17KOY8.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/QuartzCore-6ZPD63SJPMMVZP7BMQX92KRG1.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/DataDetection-8X9KO9SN8C576SH4F7ZN62OQN.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/_LocationEssentials-1E2XXRHP4NJHLK5VPPQFG7DM3.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Accessibility-DKIL74K6AL0XS51JVBMC0GWTZ.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreTransferable-39NLZNL8Q95WLSGNL184WHUY.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/FileProvider-F01IDW3C978UZM7EQFSDMDSJ3.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreLocation-4LDNM6J4FNLL533GOKXJP8XLU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Metal-9XCQ1RNCIX55CXJCKX98M8751.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UserNotifications-BCAA92QF9BYEAMQM3HPVRBQ3B.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/OpenGLES-BQO0R6PV1ZYFQUJZ5Y571T53T.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/SwiftUICore-E9W6G61HOG26VZXTKSG58V004.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreImage-6ZKNHIHDQLXHKEERUQ9IEQZTG.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreVideo-99TMZFMN3QOPJ67IU6G6A1PUO.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/OSLog-A7L0ZOV6N9G7HAC906XPMILEK.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreImage-AL6W5584FYZ8QRHDXS66J4XGU.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/QuartzCore-AR8J4HQK7ETHRM48BQ71Z6XJM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UIKit-8I2R242GW79SDOYJKRVRAMZTL.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/CoreData-5OVXBA7LUBZNLUI5S7VHET83M.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/UIKit-L7O2F196CKKJAALEZVS2XGZY.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/SwiftUICore-CURO3Q6QSRYK356VPWN1KGCFR.pcm
+
+LinkAssetCatalog /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Assets.xcassets (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-linkAssetCatalog --thinned /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/thinned --thinned-dependencies /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist_unthinned --output /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app --plist-output /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist
+note: Emplaced /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/AppIcon60x60@2x.png (in target 'NeutralEats' from project 'NeutralEats')
+note: Emplaced /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Assets.car (in target 'NeutralEats' from project 'NeutralEats')
+note: Emplaced /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/AppIcon76x76@2x~ipad.png (in target 'NeutralEats' from project 'NeutralEats')
+
+ProcessInfoPlistFile /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Info.plist /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Info.plist (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-infoPlistUtility /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/PkgInfo -expandbuildsettings -format binary -platform iphonesimulator -additionalcontentfile /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/assetcatalog_generated_info.plist -o /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Info.plist
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/MapKit-EA1JGZE9LCX78RWE4D5J6W3Q2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/SwiftUI-KAFR8PXWO8KDKE7E8JEJOI04.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/MapKit-9JMLS2SRGWC49CBKOZQYBZI9L.pcm
+
+SwiftExplicitDependencyGeneratePcm x86_64 /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/SwiftUI-19N3AREZWQPRH79AWOPOC2CQN.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ NeutralEats (in target 'NeutralEats' from project 'NeutralEats')
+EmitSwiftModule normal arm64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 Compiling\ APIClient.swift,\ LocationManager.swift,\ MapView.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/APIClient.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/LocationManager.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/MapView.swift (in target 'NeutralEats' from project 'NeutralEats')
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/APIClient.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/LocationManager.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/MapView.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 Compiling\ NeutralEatsApp.swift,\ ContentView.swift,\ Models.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/NeutralEatsApp.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/ContentView.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Models.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/NeutralEatsApp.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/ContentView.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Models.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftEmitModule normal x86_64 Emitting\ module\ for\ NeutralEats (in target 'NeutralEats' from project 'NeutralEats')
+
+EmitSwiftModule normal x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for NeutralEats (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriver\ Compilation\ Requirements NeutralEats normal arm64 com.apple.xcode.tools.swift.compiler (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NeutralEats -Onone @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios16.0-simulator -g -module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/duo-dd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-Swift.h -working-directory /Users/runner/work/neutral-eats/neutral-eats/ios -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal x86_64 Emitting module for NeutralEats (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriver\ Compilation\ Requirements NeutralEats normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NeutralEats -Onone @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios16.0-simulator -g -module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/duo-dd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-Swift.h -working-directory /Users/runner/work/neutral-eats/neutral-eats/ios -experimental-emit-module-separately -disable-cmo
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/arm64-apple-ios-simulator.swiftmodule /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftmodule (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftmodule /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/arm64-apple-ios-simulator.swiftdoc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftdoc (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftdoc /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+SwiftMergeGeneratedHeaders /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/NeutralEats-Swift.h /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-Swift.h /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-Swift.h (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-swiftHeaderTool -arch arm64 /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-Swift.h -arch x86_64 /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-Swift.h -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/NeutralEats-Swift.h
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/x86_64-apple-ios-simulator.swiftmodule /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftmodule (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftmodule /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/x86_64-apple-ios-simulator.swiftmodule
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/x86_64-apple-ios-simulator.swiftdoc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftdoc (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftdoc /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/x86_64-apple-ios-simulator.swiftdoc
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/x86_64-apple-ios-simulator.abi.json /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.abi.json (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.abi.json /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/x86_64-apple-ios-simulator.abi.json
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/arm64-apple-ios-simulator.abi.json /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.abi.json (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.abi.json /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftsourceinfo (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftsourceinfo /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/Project/x86_64-apple-ios-simulator.swiftsourceinfo
+
+Copy /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftsourceinfo (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftsourceinfo /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftCompile normal x86_64 Compiling\ APIClient.swift,\ LocationManager.swift,\ MapView.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/APIClient.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/LocationManager.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/MapView.swift (in target 'NeutralEats' from project 'NeutralEats')
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/APIClient.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/LocationManager.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/MapView.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 Compiling\ VenueStore.swift,\ Theme.swift,\ GeneratedAssetSymbols.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/VenueStore.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Theme.swift /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/VenueStore.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Theme.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling NeutralEatsApp.swift, ContentView.swift, Models.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriverJobDiscovery normal arm64 Compiling APIClient.swift, LocationManager.swift, MapView.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftCompile normal x86_64 Compiling\ NeutralEatsApp.swift,\ ContentView.swift,\ Models.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/NeutralEatsApp.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/ContentView.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Models.swift (in target 'NeutralEats' from project 'NeutralEats')
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/NeutralEatsApp.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/ContentView.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal x86_64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Models.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 Compiling\ VenueStore.swift,\ Theme.swift,\ GeneratedAssetSymbols.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/VenueStore.swift /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Theme.swift /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/VenueStore.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 /Users/runner/work/neutral-eats/neutral-eats/ios/NeutralEats/Theme.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftCompile normal arm64 /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/GeneratedAssetSymbols.swift (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    
+
+SwiftDriverJobDiscovery normal x86_64 Compiling VenueStore.swift, Theme.swift, GeneratedAssetSymbols.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriverJobDiscovery normal x86_64 Compiling APIClient.swift, LocationManager.swift, MapView.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriverJobDiscovery normal arm64 Compiling VenueStore.swift, Theme.swift, GeneratedAssetSymbols.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriver\ Compilation NeutralEats normal arm64 com.apple.xcode.tools.swift.compiler (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-Swift-Compilation -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NeutralEats -Onone @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target arm64-apple-ios16.0-simulator -g -module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/duo-dd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-Swift.h -working-directory /Users/runner/work/neutral-eats/neutral-eats/ios -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats.debug.dylib normal arm64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -filelist /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.LinkFileList -install_name @rpath/NeutralEats.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.swiftmodule @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats-linker-args.resp -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats.debug.dylib
+
+ConstructStubExecutorLinkFileList /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-ExecutorLinkFileList-normal-arm64.txt (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    construct-stub-executor-link-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats.debug.dylib /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'NeutralEats' from project 'NeutralEats')
+
+Ld /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats normal arm64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios16.0-simulator -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-ExecutorLinkFileList-normal-arm64.txt /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats.debug.dylib -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats
+
+SwiftDriverJobDiscovery normal x86_64 Compiling NeutralEatsApp.swift, ContentView.swift, Models.swift (in target 'NeutralEats' from project 'NeutralEats')
+
+SwiftDriver\ Compilation NeutralEats normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-Swift-Compilation -- /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name NeutralEats -Onone @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -target x86_64-apple-ios16.0-simulator -g -module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/runner/work/_temp/duo-dd/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -c -j3 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/runner/work/_temp/duo-dd/SDKStatCaches.noindex/iphonesimulator26.5-23F81a-688ef53f1462e2c8f657fdc38a81448ff45c64a1807a658693f2a61704f17a36.sdkstatcache -output-file-map /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -sdk-module-cache-path /Users/runner/work/_temp/duo-dd/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/_temp/duo-dd/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-generated-files.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-own-target-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-project-headers.hmap -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources-normal/x86_64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources/x86_64 -Xcc -I/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-Swift.h -working-directory /Users/runner/work/neutral-eats/neutral-eats/ios -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats.debug.dylib normal x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios16.0-simulator -dynamiclib -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -filelist /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.LinkFileList -install_name @rpath/NeutralEats.debug.dylib -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -dependency_info -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.swiftmodule @/Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats-linker-args.resp -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats.debug.dylib
+
+CreateUniversalBinary /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/NeutralEats.debug.dylib normal arm64\ x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats.debug.dylib /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats.debug.dylib -output /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/NeutralEats.debug.dylib
+
+ConstructStubExecutorLinkFileList /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-ExecutorLinkFileList-normal-x86_64.txt (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    construct-stub-executor-link-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats.debug.dylib /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-ExecutorLinkFileList-normal-x86_64.txt
+note: Using stub executor library with Swift entry point. (in target 'NeutralEats' from project 'NeutralEats')
+
+Ld /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats normal x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target x86_64-apple-ios16.0-simulator -isysroot /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk -O0 -L/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -F/Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker @executable_path/Frameworks -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibPath-normal-x86_64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-DebugDylibInstallName-normal-x86_64.txt -Xlinker -filelist -Xlinker /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats-ExecutorLinkFileList-normal-x86_64.txt /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats.debug.dylib -o /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats
+
+CreateUniversalBinary /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/NeutralEats normal arm64\ x86_64 (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/Binary/NeutralEats /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/Binary/NeutralEats -output /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/NeutralEats
+
+ExtractAppIntentsMetadata (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.jR3xhP/Metal.xctoolchain --module-name NeutralEats --sdk-root /Applications/Xcode_26.6.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator26.5.sdk --xcode-version 17F113 --platform-family iOS --deployment-target 16.0 --bundle-identifier ai.croix.neutraleats --output /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app --target-triple arm64-apple-ios16.0-simulator --target-triple x86_64-apple-ios16.0-simulator --binary-file /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/NeutralEats --dependency-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats_dependency_info.dat --dependency-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats_dependency_info.dat --stringsdata-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --stringsdata-file /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftFileList --source-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftFileList --metadata-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/arm64/NeutralEats.SwiftConstValuesFileList --swift-const-vals-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/Objects-normal/x86_64/NeutralEats.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-10-27 17:34:05.013 appintentsmetadataprocessor[2408:10637] Starting appintentsmetadataprocessor export
+2026-10-27 17:34:05.027 appintentsmetadataprocessor[2408:10637] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+CopySwiftLibs /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/NeutralEats.debug.dylib --scan-folder /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Frameworks --scan-folder /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/PlugIns --scan-folder /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/SystemExtensions --scan-folder /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v17.6.109.0.jR3xhP/Metal.xctoolchain --toolchain /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os --back-deploy-swift-span
+Ignoring --strip-bitcode because --sign was not passed
+
+AppIntentsSSUTraining (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /Applications/Xcode_26.6.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Info.plist --temp-dir-path /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/ssu --bundle-id ai.croix.neutraleats --product-path /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app --extracted-metadata-path /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Metadata.appintents --metadata-file-list /Users/runner/work/_temp/duo-dd/Build/Intermediates.noindex/NeutralEats.build/Debug-iphonesimulator/NeutralEats.build/NeutralEats.DependencyMetadataFileList --source-file /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app/Info.plist --archive-ssu-assets
+2026-10-27 17:34:05.080 appintentsnltrainingprocessor[2409:10641] Parsing options for appintentsnltrainingprocessor
+2026-10-27 17:34:05.081 appintentsnltrainingprocessor[2409:10641] Starting AppIntents SSU YAML Generation
+2026-10-27 17:34:05.086 appintentsnltrainingprocessor[2409:10641] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-RegisterExecutionPolicyException /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app
+
+Validate /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    builtin-validationUtility /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app -shallow-bundle -infoplist-subpath Info.plist
+
+Touch /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app (in target 'NeutralEats' from project 'NeutralEats')
+    cd /Users/runner/work/neutral-eats/neutral-eats/ios
+    /usr/bin/touch -c /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app
+
+** BUILD SUCCEEDED **
+

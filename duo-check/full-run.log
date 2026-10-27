@@ -1,0 +1,165 @@
+
+##### toolchain
+Xcode 26.6
+Build version 17F113
+iOS 26.2 (26.2 - 23C54) - com.apple.CoreSimulator.SimRuntime.iOS-26-2
+iOS 26.4 (26.4.1 - 23E254a) - com.apple.CoreSimulator.SimRuntime.iOS-26-4
+iOS 26.5 (26.5 - 23F77) - com.apple.CoreSimulator.SimRuntime.iOS-26-5
+[duo-check] Duo re-check on this runner:
+[duo-check] confirmed: no Duo/foldable device type, no iOS 27 runtime — FALLBACK MODE
+
+##### API reachability probe (runner -> production API, Winter Park bbox)
+{
+    "success": true,
+    "venues": [
+        {
+            "id": "ALqyH963eGy49KTlYqmFQw",
+            "name": "Alexander's Chef Services",
+            "lat": 28.642285,
+            "lng": -81.352944,
+            "type": "0",
+            "cuisine": "Caterers, Food Delivery Services, Personal Chefs",
+            "brand": "",
+            "rating": 5,
+            "reviewCount": null,
+            "p
+
+##### build (Debug, iphonesimulator, unsigned)
+    /usr/bin/touch -c /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app
+
+** BUILD SUCCEEDED **
+
+[duo-check] built: /Users/runner/work/_temp/duo-dd/Build/Products/Debug-iphonesimulator/NeutralEats.app
+[duo-check] DuoCheck hook present in Debug binary:
+hook strings NOT found
+[duo-check] using runtime: com.apple.CoreSimulator.SimRuntime.iOS-26-5
+
+##### device class: compact (candidates: iPhone 13 mini iPhone SE (3rd generation) iPhone 16e)
+[duo-check] created iPhone 13 mini -> E2836647-8D30-4937-BC7F-8790DD860F0D
+  pixelWidth: 1080   pixelHeight: 2340 <- duo-check/results/compact-summary.png
+  pixelWidth: 1080   pixelHeight: 2340 <- duo-check/results/compact-list.png
+  pixelWidth: 1080   pixelHeight: 2340 <- duo-check/results/compact-detail.png
+
+##### resize storm on compact
+Get or Set UI options
+Usage: simctl ui <device> <option> [<arguments>]
+
+Supported Options:
+    appearance
+	When invoked without arguments prints the current user interface appearance style:
+	     light
+	     The Light appearance style.
+	     dark
+	     The Dark appearance style.
+	     unsupported
+	     The platform or runtime version do not support appearance styles.
+	     unknown
+	     The current style is unknown or there was an error detecting it.
+
+    appearance [light | dark]
+	Set the user interface apperance style to light or dark.
+
+    increase_contrast
+	When invoked without arguments prints whether the Increase Contrast mode is currently enabled:
+	     enabled
+	     Increase Contrast is enabled.
+	     disabled
+	     Increase Contrast is disabled.
+	     unsupported
+	     The platform or runtime version do not support the Increase Contrast setting.
+	     unknown
+	     The current setting is unknown or there was an error detecting it.
+
+    increase_contrast [enabled | disabled]
+  pixelWidth: 1080   pixelHeight: 2340 <- duo-check/results/compact-storm-before.png
+[duo-check] canvas before storm: 1080x2340
+[duo-check] after simctl-ui probe: mech=none
+[duo-check] osascript rotate attempt failed/blocked
+  pixelWidth: 1080   pixelHeight: 2340 <- duo-check/results/compact-storm-probe.png
+[duo-check] after osascript probe: mech=none (dims=1080x2340)
+[duo-check] io enumerate geometries seen: none parsed
+[duo-check] after screenConfig probe: mech=none
+[duo-check] NO working headless resize mechanism on this runner — transitions NOT tested
+  pixelWidth: 1080   pixelHeight: 2340 <- duo-check/results/compact-after-storm.png
+[duo-check] liveness after storm:
+5382	0	UIKitApplication:ai.croix.neutraleats[d1c3][rb-legacy]
+no NeutralEats crash reports found for compact
+
+##### device class: large (candidates: iPad mini (A17 Pro) iPad mini (6th generation) iPad Air 11-inch (M4))
+[duo-check] created iPad mini (A17 Pro) -> 1E729F6A-9B82-4D0A-9656-500F92E6D659
+  pixelWidth: 1488   pixelHeight: 2266 <- duo-check/results/large-summary.png
+  pixelWidth: 1488   pixelHeight: 2266 <- duo-check/results/large-list.png
+  pixelWidth: 1488   pixelHeight: 2266 <- duo-check/results/large-detail.png
+
+##### resize storm on large
+Get or Set UI options
+Usage: simctl ui <device> <option> [<arguments>]
+
+Supported Options:
+    appearance
+	When invoked without arguments prints the current user interface appearance style:
+	     light
+	     The Light appearance style.
+	     dark
+	     The Dark appearance style.
+	     unsupported
+	     The platform or runtime version do not support appearance styles.
+	     unknown
+	     The current style is unknown or there was an error detecting it.
+
+    appearance [light | dark]
+	Set the user interface apperance style to light or dark.
+
+    increase_contrast
+	When invoked without arguments prints whether the Increase Contrast mode is currently enabled:
+	     enabled
+	     Increase Contrast is enabled.
+	     disabled
+	     Increase Contrast is disabled.
+	     unsupported
+	     The platform or runtime version do not support the Increase Contrast setting.
+	     unknown
+	     The current setting is unknown or there was an error detecting it.
+
+    increase_contrast [enabled | disabled]
+  pixelWidth: 1488   pixelHeight: 2266 <- duo-check/results/large-storm-before.png
+[duo-check] canvas before storm: 1488x2266
+[duo-check] after simctl-ui probe: mech=none
+[duo-check] osascript rotate attempt failed/blocked
+  pixelWidth: 1488   pixelHeight: 2266 <- duo-check/results/large-storm-probe.png
+[duo-check] after osascript probe: mech=none (dims=1488x2266)
+[duo-check] io enumerate geometries seen: none parsed
+[duo-check] after screenConfig probe: mech=none
+[duo-check] NO working headless resize mechanism on this runner — transitions NOT tested
+  pixelWidth: 1488   pixelHeight: 2266 <- duo-check/results/large-after-storm.png
+[duo-check] liveness after storm:
+13177	0	UIKitApplication:ai.croix.neutraleats[cc94][rb-legacy]
+no NeutralEats crash reports found for large
+
+##### results
+total 31952
+drwxr-xr-x  24 runner  staff      768 Oct 27 17:47 .
+drwxr-xr-x   5 runner  staff      160 Oct 27 17:33 ..
+-rw-r--r--   1 runner  staff   105297 Oct 27 17:34 build.log
+-rw-r--r--@  1 runner  staff   908487 Oct 27 17:40 compact-after-storm.png
+-rw-r--r--@  1 runner  staff    60652 Oct 27 17:38 compact-detail.png
+-rw-r--r--   1 runner  staff     4958 Oct 27 17:37 compact-io-enumerate.txt
+-rw-r--r--@  1 runner  staff  1183868 Oct 27 17:38 compact-list.png
+-rw-r--r--   1 runner  staff     1776 Oct 27 17:38 compact-simctl-ui-help.txt
+-rw-r--r--@  1 runner  staff   908487 Oct 27 17:39 compact-storm-before.png
+-rw-r--r--@  1 runner  staff   908487 Oct 27 17:40 compact-storm-probe.png
+-rw-r--r--@  1 runner  staff  1363966 Oct 27 17:37 compact-summary.png
+drwxr-xr-x   2 runner  staff       64 Oct 27 17:40 crashes-compact
+drwxr-xr-x   2 runner  staff       64 Oct 27 17:47 crashes-large
+-rw-r--r--   1 runner  staff    10433 Oct 27 17:33 devicetypes.txt
+-rw-r--r--   1 runner  staff     5769 Oct 27 17:47 full-run.log
+-rw-r--r--   1 runner  staff    36525 Oct 27 17:33 inventory.txt
+-rw-r--r--@  1 runner  staff  1699603 Oct 27 17:47 large-after-storm.png
+-rw-r--r--@  1 runner  staff  1699837 Oct 27 17:46 large-detail.png
+-rw-r--r--   1 runner  staff     4619 Oct 27 17:44 large-io-enumerate.txt
+-rw-r--r--@  1 runner  staff  1933836 Oct 27 17:46 large-list.png
+-rw-r--r--   1 runner  staff     1776 Oct 27 17:47 large-simctl-ui-help.txt
+-rw-r--r--@  1 runner  staff  1699603 Oct 27 17:47 large-storm-before.png
+-rw-r--r--@  1 runner  staff  1699603 Oct 27 17:47 large-storm-probe.png
+-rw-r--r--@  1 runner  staff  2091139 Oct 27 17:44 large-summary.png
+[duo-check] full phase complete
