@@ -456,6 +456,11 @@ struct ContentView: View {
                 Text("Ranked by distance. Nothing is sponsored — ever.")
                     .font(.system(size: 12.5))
                     .foregroundColor(NEColor.inkDim)
+                    // Never wrap (Croix, build 18): the summary
+                    // card shares its row with the Near me button,
+                    // so the line scales down a touch instead.
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
         }
     }
@@ -507,6 +512,8 @@ struct ContentView: View {
                 Text("Ranked by distance. Nothing is sponsored — ever.")
                     .font(.system(size: 12.5))
                     .foregroundColor(NEColor.inkDim)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             if store.serverCount >= APIClient.limit {
                 Text("Showing 500 results — zoom in for more.")

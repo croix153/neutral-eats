@@ -122,7 +122,7 @@ try {
     // Full-text search
     if ($search) {
         $whereClauses[] = 'MATCH(venues.name, venues.cuisine, venues.brand, venues.address) AGAINST (:search IN BOOLEAN MODE)';
-        $params[':search'] = $search . '*';
+        $params[':search'] = '"' . str_replace('"', '', trim($search)) . '*"';
     }
 
     $whereSql = implode(' AND ', $whereClauses);

@@ -84,11 +84,17 @@ try {
         }
     }
 
-    // Full-text search
+    // Full-text search — EXACT PHRASE (Croix, 2026-10-27): the
+    // old form appended '*' to the raw string, which boolean mode
+    // reads as separate optional terms — any-word matching ("taco
+    // bell" matched 38,994 venues). Quoting makes it a phrase:
+    // words adjacent, in order ("taco bell" → 8,902, essentially
+    // the chain itself). The trailing '*' keeps prefix tolerance
+    // on the final word ("taco" still matches "Tacos").
     $searchJoin = '';
     if ($search) {
         $whereClauses[] = 'MATCH(venues.name, venues.cuisine, venues.brand, venues.address) AGAINST (:search IN BOOLEAN MODE)';
-        $params[':search'] = $search . '*';
+        $params[':search'] = '"' . str_replace('"', '', trim($search)) . '*"';
     }
     
     $whereSql = implode(' AND ', $whereClauses);
