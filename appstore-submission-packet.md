@@ -195,3 +195,55 @@ Submission notes:
   the flow is device-verified end to end. Build 24's six-rung
   set drops one already-serving product (d100) and changes
   presentation only.
+
+---
+
+## Submission record — Oct 27, 2026 (builds 25/26)
+
+- **Build 25** (CI run 25, ASC id 430bf2ff-8c76-4f96-99aa-a7e1f1fedf7e):
+  the tip polish build — six-rung ladder (d100 retired like the cent
+  products, availability zeroed, record kept), compact pills, trimmed
+  thank-you, purchase double-handling fix (single dedupe funnel).
+  VALID + IN_BETA_TESTING. (Run 24 failed on a SwiftUI/StoreKit
+  `Transaction` ambiguity in the new signature; fixed by qualifying
+  `StoreKit.Transaction`, shipped as run 25.)
+- **Build 26** (CI run 26, ASC id ebbe10d-83ee-4004-9bbc-4fd7806a2bdd):
+  adds Croix's map-tap-collapses-keyboard fix (@FocusState on the
+  search field, resigned from the map's existing non-consuming tap
+  recognizer via `VenueMapView.onMapTap` — fires on every tap,
+  including annotation taps; selection/deselect/pan/pinch untouched).
+  Device-verified PERFECT by Croix Oct 27 evening. VALID +
+  IN_BETA_TESTING, and **attached to version 1.0 as the submission
+  build**.
+- **Entered and verified via the API:** subtitle, description,
+  keywords, promotional text, support/marketing URLs, categories
+  (Food & Drink primary, Travel secondary), copyright "2026 Roger
+  Newson", MANUAL release, free price schedule, age rating 4+
+  (questionnaire all None/false), review details + packet notes,
+  content rights (third-party content), five screenshots (6.9" slot —
+  API display type APP_IPHONE_67 — all COMPLETE).
+- **EU EXCLUDED from the start** (Croix's decision): availability
+  created with 148 of 175 territories; the unavailable set is exactly
+  the EU-27. DSA trader declaration never touched.
+- **IAP review screenshots REPLACED with the real capture**
+  (`support-sheet-capture.png` in this repo): the Support sheet with
+  the six-rung ladder, rendered by the local StoreKit config in the
+  simulator (support-sheet-capture workflow, run 3). All six products
+  verified carrying it.
+- **SUBMISSION BLOCKED on exactly two items, both user-side:**
+  1. App Privacy answers must be PUBLISHED — the public ASC API has
+     no endpoints for this. ASC web: Apps → neutral eats → App
+     Privacy → declare Precise Location / App Functionality / not
+     linked / not tracking (option (a)) → Publish.
+  2. `privacyPolicyUrl` is REQUIRED by Apple and is null. No privacy
+     page exists on neutraleats.com (/privacy* all 404). A page must
+     be hosted and its URL entered (ASC → App Information, or via
+     the API once the page exists).
+  An empty reviewSubmission exists (id cf2b0845-248a-4244-a7f0-
+  e2eae914a326, READY_FOR_REVIEW, 0 items) ready to reuse. Note: in
+  this API version, reviewSubmissionItems rejected every IAP
+  relationship name tried (inAppPurchaseV2, inAppPurchase,
+  inAppPurchases) — first-time IAPs appear to ride the version
+  submission via the ASC web version page's In-App Purchases
+  section; select the six tip products there when submitting.
+  Version remains PREPARE_FOR_SUBMISSION until both items clear.
