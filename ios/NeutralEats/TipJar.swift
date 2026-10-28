@@ -2,11 +2,12 @@ import StoreKit
 import SwiftUI
 
 /// The tip jar (build 21, Croix 2026-10-27; entry point rebuilt
-/// in build 22; ladder rebuilt in build 23): a ladder of seven
-/// consumable "Supporter Tip" products in App Store Connect
-/// (ai.croix.neutraleats.tip.d1 … .d100, $1–$100 — whole dollars
-/// only; the original $0.99–$49.99 cent ladder was retired in
-/// ASC, availability removed, records kept). Croix's
+/// in build 22; ladder rebuilt in build 23; trimmed in build 24):
+/// a ladder of six consumable "Supporter Tip" products in App
+/// Store Connect (ai.croix.neutraleats.tip.d1 … .d50, $1–$50 —
+/// whole dollars only; the $100 rung was cut in build 24 for a
+/// symmetric six, and the original $0.99–$49.99 cent ladder was
+/// retired in ASC, availability removed, records kept). Croix's
 /// shape for it: a tip buys NOTHING — no features, no content, no
 /// status — so the app's neutrality rule survives contact with
 /// commerce: the results are identical whether or not anyone tips.
@@ -36,7 +37,6 @@ final class TipStore: ObservableObject {
         "ai.croix.neutraleats.tip.d10",
         "ai.croix.neutraleats.tip.d20",
         "ai.croix.neutraleats.tip.d50",
-        "ai.croix.neutraleats.tip.d100",
     ]
 
     enum LoadState {
@@ -63,6 +63,14 @@ final class TipStore: ObservableObject {
 
     private var updatesTask: Task<Void, Never>?
 
+    /// Transactions already processed, by id. StoreKit delivers
+    /// an in-sheet purchase on TWO channels — purchase()'s return
+    /// value AND Transaction.updates — so without this set the
+    /// same tip would be finished and thanked twice (build 24
+    /// audit, from Croix's device report of the purchase flow
+    /// re-firing around his first tip).
+    private var handledTransactions: Set<UInt64> = []
+
     init() {
         // Purchases can complete outside the sheet's lifetime
         // (a pending tip approved later, a purchase finished on
@@ -73,8 +81,7 @@ final class TipStore: ObservableObject {
                 guard let self = self else { return }
                 if case .verified(let transaction) = result,
                    Self.productIDs.contains(transaction.productID) {
-                    await transaction.finish()
-                    self.justTipped = true
+                    await self.process(transaction)
                 }
             }
         }
@@ -116,8 +123,7 @@ final class TipStore: ObservableObject {
             switch try await product.purchase() {
             case .success(let verification):
                 if case .verified(let transaction) = verification {
-                    await transaction.finish()
-                    justTipped = true
+                    await process(transaction)
                 }
             case .userCancelled:
                 break
@@ -129,6 +135,19 @@ final class TipStore: ObservableObject {
         } catch {
             // Silent by design — see above.
         }
+    }
+
+    /// The single funnel for a completed tip, reached from both
+    /// delivery channels (purchase()'s return and
+    /// Transaction.updates). Deduped by transaction id: the first
+    /// delivery finishes the transaction and raises the thank-you
+    /// exactly once; a duplicate delivery of an already-handled
+    /// transaction is a no-op, so the sheet lands on the
+    /// thank-you form once and stays there.
+    private func process(_ transaction: Transaction) async {
+        guard handledTransactions.insert(transaction.id).inserted else { return }
+        await transaction.finish()
+        justTipped = true
     }
 
     /// The sheet is leaving: clear the transient states so the
@@ -246,20 +265,22 @@ struct SupportSheet: View {
         } label: {
             Group {
                 if mine {
-                    ProgressView().tint(NEColor.accentText)
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(NEColor.accentText)
                 } else {
                     // The store's own localized price string —
                     // never a hardcoded amount (see TipStore).
                     Text(product.displayPrice)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(NEColor.accentText)
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 13)
+            .padding(.vertical, 7)
             .background(NEColor.panel2)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(NEColor.line, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(NEColor.line, lineWidth: 1))
         }
         .disabled(busy)
         .opacity(busy && !mine ? 0.55 : 1)
@@ -271,7 +292,7 @@ struct SupportSheet: View {
             Text("Thank you!")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(NEColor.ink)
-            Text("Tips like yours keep the servers on and the results unsponsored — and the app is exactly the same as it was a minute ago. That's the point.")
+            Text("Tips like yours keep the servers on and the results unsponsored")
                 .font(.system(size: 14))
                 .foregroundColor(NEColor.inkDim)
                 .fixedSize(horizontal: false, vertical: true)

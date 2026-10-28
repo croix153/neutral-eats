@@ -128,6 +128,20 @@ $100. The seven products below were created in ASC via
 schedules and US availability. **They are the submission set for
 build 23.**
 
+**Build 24 trims the ladder to six and is the submission
+vehicle (2026-10-27):** Croix cut the $100 rung ("an even number
+for symmetry"), so the submission set is d1/d2/d5/d10/d20/d50.
+The d100 product was retired in ASC exactly like the cent
+ladder (availability removed via the CREATE upsert, record
+kept, verified territories=[]). Build 24 also makes the tip
+pills compact (14pt label, ~2/3 the build-23 height, 3×2 grid),
+trims the thank-you body to "Tips like yours keep the servers
+on and the results unsponsored", and dedupes tip processing by
+transaction id (StoreKit delivers an in-sheet purchase on both
+the purchase() return and Transaction.updates; the first
+delivery now finishes and thanks exactly once, duplicates are
+no-ops).
+
 | Product ID | US price |
 |---|---|
 | ai.croix.neutraleats.tip.d1 | $1.00 |
@@ -136,7 +150,6 @@ build 23.**
 | ai.croix.neutraleats.tip.d10 | $10.00 |
 | ai.croix.neutraleats.tip.d20 | $20.00 |
 | ai.croix.neutraleats.tip.d50 | $50.00 |
-| ai.croix.neutraleats.tip.d100 | $100.00 |
 
 The original cent ladder (created 2026-10-27 via `asc_iap_setup.py`)
 is **retired**: availability was removed from all seven in ASC, so
@@ -145,6 +158,7 @@ re-enable or submit them.
 
 | Retired product ID | Was |
 |---|---|
+| ai.croix.neutraleats.tip.d100 | $100.00 |
 | ai.croix.neutraleats.tip.099 | $0.99 |
 | ai.croix.neutraleats.tip.199 | $1.99 |
 | ai.croix.neutraleats.tip.299 | $2.99 |
@@ -157,23 +171,27 @@ Display name (en-US): "Supporter Tip". Description field (Apple caps
 it at 55 characters): "A voluntary tip that buys nothing. Thank you!"
 
 Submission notes:
-- The whole-dollar products belong to the **build-23 submission**.
-  They are NOT part of the staged build-20 submission above — if
-  build 20 is submitted first, the tip products ride along with
-  build 23's version submission later. (Builds 21 and 22 carried
-  the cent ladder to TestFlight only and were never submitted;
-  build 23 supersedes them and references only the d1–d100 set.)
-- When build 23 is submitted, all 7 whole-dollar products must be
-  attached to that version's submission (first-time IAPs are
-  reviewed with the app version). The retired cent products must
-  NOT be attached.
-- Each product's App Store review screenshot is currently the
-  packet's 01-summary app screenshot as a placeholder. Before the
-  build-23 submission, replace it with a capture of the actual
-  Support sheet so App Review sees the purchase in context.
-- Sandbox behavior is UNVERIFIED until build 23 is exercised on a
-  device — CI cannot run StoreKit purchases. (The cent ladder did
-  eventually serve in build 22's sandbox once the Paid Apps
-  Agreement went Active, but only 2 of its 7 products had appeared
-  when Croix replaced the set; serving of the d1–d100 set and a
-  completed purchase remain device-only confirmations.)
+- The six whole-dollar products belong to the **build-24
+  submission** (build 23 carried the seven-rung set to
+  TestFlight only). (Builds 21 and 22 carried the cent ladder
+  to TestFlight only and were never submitted; build 24
+  references only the d1–d50 set.)
+- When build 24 is submitted, all 6 whole-dollar products must
+  be attached to that version's submission (first-time IAPs are
+  reviewed with the app version). The retired cent products and
+  d100 must NOT be attached.
+- Each product's App Store review screenshot starts as the
+  packet's 01-summary app screenshot placeholder. For the
+  build-24 submission it is replaced with a capture of the
+  actual Support sheet (Donate pill -> ladder), taken by the
+  dispatch-only support-sheet-capture workflow: a UI test taps
+  the pill while the scheme's local StoreKit configuration
+  (ios/Products.storekit) supplies the six products, and the
+  PNG is exported from the result bundle. If that route fails,
+  the placeholder stands and the failure is reported.
+- Sandbox behavior: the dollar ladder SERVED and completed
+  sandbox tips on Croix's device in build 23 (after the Paid
+  Apps Agreement went Active), including the thank-you form —
+  the flow is device-verified end to end. Build 24's six-rung
+  set drops one already-serving product (d100) and changes
+  presentation only.

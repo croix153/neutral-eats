@@ -18,6 +18,7 @@
 		AA3000000000000000000009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA2000000000000000000009 /* Assets.xcassets */; };
 		AA300000000000000000000A /* Raleway-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA200000000000000000000B /* Raleway-Variable.ttf */; };
 		AA300000000000000000000B /* TipJar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA200000000000000000000C /* TipJar.swift */; };
+		AA300000000000000000000C /* SupportSheetUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA200000000000000000000E /* SupportSheetUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,10 +35,38 @@
 		AA200000000000000000000B /* Raleway-Variable.ttf */ = {isa = PBXFileReference; path = Fonts/Raleway-Variable.ttf; sourceTree = "<group>"; };
 		AA200000000000000000000C /* TipJar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TipJar.swift; sourceTree = "<group>"; };
 		AA1000000000000000000005 /* NeutralEats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NeutralEats.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA200000000000000000000D /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Products.storekit; sourceTree = "<group>"; };
+		AA200000000000000000000E /* SupportSheetUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportSheetUITests.swift; sourceTree = "<group>"; };
+		AA1000000000000000000010 /* NeutralEatsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NeutralEatsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		AA1000000000000000000018 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA1000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA1000000000000000000006;
+			remoteInfo = NeutralEats;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		AA1000000000000000000017 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA1000000000000000000006 /* NeutralEats */;
+			targetProxy = AA1000000000000000000018 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AA100000000000000000000E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA1000000000000000000014 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -51,6 +80,8 @@
 			isa = PBXGroup;
 			children = (
 				AA1000000000000000000004 /* NeutralEats */,
+				AA1000000000000000000011 /* NeutralEatsUITests */,
+				AA200000000000000000000D /* Products.storekit */,
 				AA1000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,8 +90,17 @@
 			isa = PBXGroup;
 			children = (
 				AA1000000000000000000005 /* NeutralEats.app */,
+				AA1000000000000000000010 /* NeutralEatsUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AA1000000000000000000011 /* NeutralEatsUITests */ = {
+			isa = PBXGroup;
+			children = (
+				AA200000000000000000000E /* SupportSheetUITests.swift */,
+			);
+			path = NeutralEatsUITests;
 			sourceTree = "<group>";
 		};
 		AA1000000000000000000004 /* NeutralEats */ = {
@@ -102,6 +142,24 @@
 			productReference = AA1000000000000000000005 /* NeutralEats.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AA1000000000000000000012 /* NeutralEatsUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA1000000000000000000016 /* Build configuration list for PBXNativeTarget "NeutralEatsUITests" */;
+			buildPhases = (
+				AA1000000000000000000013 /* Sources */,
+				AA1000000000000000000014 /* Frameworks */,
+				AA1000000000000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA1000000000000000000017 /* PBXTargetDependency */,
+			);
+			name = NeutralEatsUITests;
+			productName = NeutralEatsUITests;
+			productReference = AA1000000000000000000010 /* NeutralEatsUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -114,6 +172,10 @@
 				TargetAttributes = {
 					AA1000000000000000000006 = {
 						CreatedOnToolsVersion = 14.3;
+					};
+					AA1000000000000000000012 = {
+						CreatedOnToolsVersion = 14.3;
+						TestTargetID = AA1000000000000000000006;
 					};
 				};
 			};
@@ -131,6 +193,7 @@
 			projectRoot = "";
 			targets = (
 				AA1000000000000000000006 /* NeutralEats */,
+				AA1000000000000000000012 /* NeutralEatsUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -142,6 +205,13 @@
 			files = (
 				AA3000000000000000000009 /* Assets.xcassets in Resources */,
 				AA300000000000000000000A /* Raleway-Variable.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA1000000000000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -161,6 +231,14 @@
 				AA3000000000000000000007 /* VenueStore.swift in Sources */,
 				AA3000000000000000000008 /* Theme.swift in Sources */,
 				AA300000000000000000000B /* TipJar.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA1000000000000000000013 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA300000000000000000000C /* SupportSheetUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -343,6 +421,46 @@
 			};
 			name = Release;
 		};
+		AA1000000000000000000019 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = A4NAM9AA6M;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.croix.neutraleats.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = NeutralEats;
+			};
+			name = Debug;
+		};
+		AA100000000000000000001A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = A4NAM9AA6M;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ai.croix.neutraleats.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = NeutralEats;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -360,6 +478,15 @@
 			buildConfigurations = (
 				AA100000000000000000000B /* Debug */,
 				AA100000000000000000000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA1000000000000000000016 /* Build configuration list for PBXNativeTarget "NeutralEatsUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA1000000000000000000019 /* Debug */,
+				AA100000000000000000001A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

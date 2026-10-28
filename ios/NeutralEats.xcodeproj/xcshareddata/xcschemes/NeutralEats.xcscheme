@@ -21,6 +21,20 @@
                ReferencedContainer = "container:NeutralEats.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AA1000000000000000000012"
+               BuildableName = "NeutralEatsUITests.xctest"
+               BlueprintName = "NeutralEatsUITests"
+               ReferencedContainer = "container:NeutralEats.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -28,6 +42,31 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "AA1000000000000000000006"
+            BuildableName = "NeutralEats.app"
+            BlueprintName = "NeutralEats"
+            ReferencedContainer = "container:NeutralEats.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "AA1000000000000000000012"
+               BuildableName = "NeutralEatsUITests.xctest"
+               BlueprintName = "NeutralEatsUITests"
+               ReferencedContainer = "container:NeutralEats.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+      <StoreKitConfigurationFileReference
+         identifier = "Products.storekit">
+      </StoreKitConfigurationFileReference>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

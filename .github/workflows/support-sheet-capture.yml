@@ -1,0 +1,91 @@
+name: Support Sheet Capture (IAP review screenshot)
+
+# Manual dispatch only. Runs the single UI test in
+# ios/NeutralEatsUITests, which launches the app (Debug,
+# simulator), taps the always-rendered Donate pill, and — with the
+# scheme's StoreKit configuration file (ios/Products.storekit)
+# supplying the six whole-dollar tip products locally — captures
+# the Support sheet with the ladder rendered. The PNG travels out
+# as an XCTAttachment and is exported from the .xcresult bundle.
+#
+# Purpose: the App Store review screenshot for the six "Supporter
+# Tip" IAPs must show the purchase in context, not the summary
+# card placeholder. CAPTURE ONLY in this workflow: nothing is
+# uploaded to App Store Connect here; the PNG returns as a run
+# artifact and the ASC upload happens in the submission tooling.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  support-sheet-capture:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create and boot the simulator
+        id: sim
+        run: |
+          xcodebuild -version
+          RUNTIME="$(xcrun simctl list runtimes | grep -E "^iOS" | tail -1 | sed -E 's/.* - (com\.apple[^ ]*) *$/\1/')"
+          echo "runtime: $RUNTIME"
+          UDID=""
+          for cand in "iPhone 17 Pro Max" "iPhone 16 Pro Max" "iPhone 17 Pro" "iPhone 16 Pro" "iPhone Air" "iPhone 17"; do
+            UDID="$(xcrun simctl create "SupportSheet" "$cand" "$RUNTIME" 2>/dev/null)" && { echo "device: $cand"; break; }
+            echo "create failed for $cand"
+          done
+          test -n "$UDID" || { echo "no device could be created"; exit 1; }
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1 || echo "bootstatus timed out (continuing)"
+
+      - name: Run the capture UI test
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project ios/NeutralEats.xcodeproj \
+            -scheme NeutralEats \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -only-testing:NeutralEatsUITests/SupportSheetUITests \
+            -resultBundlePath "$RUNNER_TEMP/results.xcresult" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | tee "$RUNNER_TEMP/test.log" | tail -30
+
+      - name: Export the screenshot from the result bundle
+        if: always()
+        run: |
+          mkdir -p support-sheet-capture
+          if [ -d "$RUNNER_TEMP/results.xcresult" ]; then
+            xcrun xcresulttool export attachments \
+              --path "$RUNNER_TEMP/results.xcresult" \
+              --output-path support-sheet-capture/attachments || echo "attachment export failed"
+            find support-sheet-capture -type f | head -40
+            # The capture is the largest PNG in the export.
+            PNG="$(find support-sheet-capture -name '*.png' -type f -exec stat -f '%z %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
+            if [ -n "$PNG" ]; then
+              cp "$PNG" support-sheet-capture/support-sheet.png
+              echo "capture: $PNG -> support-sheet-capture/support-sheet.png"
+              sips -g pixelWidth -g pixelHeight support-sheet-capture/support-sheet.png | grep -E "pixel" || true
+            else
+              echo "NO PNG exported — capture failed"
+            fi
+          else
+            echo "no result bundle — test run failed before producing one"
+          fi
+          cp "$RUNNER_TEMP/test.log" support-sheet-capture/test.log 2>/dev/null || true
+
+      - name: Upload the capture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: support-sheet-capture
+          path: support-sheet-capture/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Shut down the simulator
+        if: always()
+        run: |
+          xcrun simctl shutdown "${{ steps.sim.outputs.udid }}" >/dev/null 2>&1 || true
+          xcrun simctl delete "${{ steps.sim.outputs.udid }}" >/dev/null 2>&1 || true
