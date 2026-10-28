@@ -399,11 +399,20 @@ def stage_build(wd):
                 n_prod_only += 1
                 unmatched_by_source[prow["source"]] = unmatched_by_source.get(prow["source"], 0) + 1
                 unmatched_by_type[prow["type"]] = unmatched_by_type.get(prow["type"], 0) + 1
+                # grid_cell: always recompute from the row's own coordinates.
+                # Carried legacy values include NULLs and the retired
+                # Minerva-era 0.04-degree formats; the API grid prefilter
+                # trusts this column (repair census 2026-10-27).
+                prow = dict(prow)
+                prow["grid_cell"] = grid_cell(float(prow["lat"]), float(prow["lng"]))
                 emit(prow)
                 continue
             stg_id, pss = pairs[prod_id]
             st = matched_stg[stg_id]
             row = dict(prow)
+            # grid_cell: recompute from the row's own coordinates (see the
+            # prod-only branch above — never carry a legacy value forward).
+            row["grid_cell"] = grid_cell(float(row["lat"]), float(row["lng"]))
             if is_empty(row["address"]):
                 row["address"] = compose_address(st)
             for col in ("city", "state", "zip", "phone", "website", "brand"):

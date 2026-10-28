@@ -123,7 +123,8 @@ function parse_venue($e) {
 }
 
 function get_grid($lat,$lng) {
-    return sprintf("%.2f,%.2f", floor($lat*20)/20, floor($lng*20)/20);
+    // Canonical venues.grid_cell (0.02 deg — pipeline/merge_overture.py)
+    return sprintf("%.3f,%.3f", floor($lat / 0.02) * 0.02, floor($lng / 0.02) * 0.02);
 }
 
 function save_venues($db, $venues) {

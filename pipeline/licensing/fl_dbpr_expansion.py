@@ -108,6 +108,14 @@ def dcol(s):
     return esc(s) if s and s not in ("0000-00-00", "NULL") else "NULL"
 
 
+def grid_cell(lat, lng):
+    # Canonical venues.grid_cell — identical to pipeline/merge_overture.py.
+    # The API grid prefilter trusts this column; never insert a venue
+    # without it (the 2026-10-27 expansion left 7,556 NULLs behind).
+    return "%.3f,%.3f" % (math.floor(lat / 0.02) * 0.02,
+                          math.floor(lng / 0.02) * 0.02)
+
+
 def check(label, actual, expected):
     ok = actual == expected
     print(f"  [{'OK' if ok else 'MISMATCH'}] {label}: {actual} "
@@ -1337,7 +1345,8 @@ CREATE TABLE IF NOT EXISTS dbpr_additions_20261027 (
             f"({esc(vid)},{esc(name)},{rec['lat']},{rec['lng']},"
             f"'restaurant','fl_dbpr',{esc(num)},{esc(addr_tc)},"
             f"{esc(city_tc)},'FL',{esc(zip5)},{esc(rec['phone'])},"
-            f"{now},1,'open',{esc(num)},'current',{insp_sql})")
+            f"{now},1,'open',{esc(num)},'current',{insp_sql},"
+            f"{esc(grid_cell(float(rec['lat']), float(rec['lng'])))})")
         alines.append(
             f"({esc(vid)},{esc(num)},{esc(name)},"
             f"{esc(addr_tc + ', ' + city_tc + ', FL ' + zip5)},"
@@ -1346,7 +1355,8 @@ CREATE TABLE IF NOT EXISTS dbpr_additions_20261027 (
         run_sql("INSERT INTO venues (id, name, lat, lng, type, source,"
                 " source_id, address, city, state, zip, phone,"
                 " first_seen, is_active, operating_status,"
-                " license_number, license_status, last_inspection_date)"
+                " license_number, license_status, last_inspection_date,"
+                " grid_cell)"
                 " VALUES " + ",".join(vlines[i:i + 500]) + ";")
         run_sql("INSERT INTO dbpr_additions_20261027 (venue_id,"
                 " license_number, venue_name, address,"

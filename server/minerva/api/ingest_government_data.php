@@ -543,7 +543,7 @@ class FloridaGovernmentIngestor {
     /**
      * Get grid cell
      */
-    private function getGridCell($lat, $lng, $gridSize = 0.04) {
+    private function getGridCell($lat, $lng, $gridSize = 0.02) { // canonical 0.02-deg venues.grid_cell (pipeline/merge_overture.py)
         $gridLat = floor($lat / $gridSize) * $gridSize;
         $gridLng = floor($lng / $gridSize) * $gridSize;
         return sprintf('%.3f,%.3f', $gridLat, $gridLng);

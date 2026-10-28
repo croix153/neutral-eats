@@ -292,6 +292,13 @@ function parseGooglePlaces($places, $defaultCity, $apiKey) {
 /**
  * Ingest restaurants for a single area
  */
+// Canonical venues.grid_cell (matches pipeline/merge_overture.py): the
+// venue's OWN 0.02-degree cell. Never stamp a venue with the fetch
+// area's cell — that was the retired 0.04-degree format's defect.
+function canonicalGridCell($lat, $lng) {
+    return sprintf('%.3f,%.3f', floor($lat / 0.02) * 0.02, floor($lng / 0.02) * 0.02);
+}
+
 function ingestArea($pdo, $name, $lat, $lng, $radius, $type, $apiKey) {
     logMessage("Processing: $name ($lat, $lng)");
     
@@ -389,7 +396,7 @@ function ingestArea($pdo, $name, $lat, $lng, $radius, $type, $apiKey) {
                 ':source_id' => $v['source_id'],
                 ':updated' => $now,
                 ':first' => $now,
-                ':cell' => $cellKey
+                ':cell' => canonicalGridCell($v['lat'], $v['lng'])
             ]);
             $inserted++;
         } catch (PDOException $e) {

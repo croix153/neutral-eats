@@ -205,10 +205,9 @@ def get_db_connection():
     return conn
 
 def generate_grid_cell(lat: float, lng: float) -> str:
-    grid_size = 0.05
-    lat_idx = int(lat / grid_size)
-    lng_idx = int(lng / grid_size)
-    return f"{lat_idx}:{lng_idx}"
+    # Canonical venues.grid_cell (pipeline/merge_overture.py)
+    import math
+    return "%.3f,%.3f" % (math.floor(lat / 0.02) * 0.02, math.floor(lng / 0.02) * 0.02)
 
 def fetch_places_near(lat: float, lng: float, radius: int = 2500, keyword: str = None) -> List[Dict]:
     url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
