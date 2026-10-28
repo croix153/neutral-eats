@@ -101,13 +101,25 @@ from the production API at neutraleats.com."
 3. Enter listing + privacy + screenshots in ASC, select the passing build,
    submit. ASC entry is delivery-side work — this packet is the source.
 
-## Build 21 addition — IAP tip jar (2026-10-27)
+## Build 21 addition — IAP tip jar (2026-10-27); entry point rebuilt in build 22
 
-Build 21 adds the "Support Neutral Eats" tip jar: a ladder of seven
-CONSUMABLE in-app purchases, entered from the summary card's heart
-button and the list's last row, bought through a StoreKit 2 sheet.
+Build 21 added the "Support Neutral Eats" tip jar: a ladder of seven
+CONSUMABLE in-app purchases bought through a StoreKit 2 sheet.
 Tips buy nothing — no features, content, or status — per the
 product's neutrality rule.
+
+**Build 21 never surfaced the jar in TestFlight:** its entry points
+(the summary card's heart button, the list's last row) rendered only
+once the product fetch resolved, and the fetch — made while the
+products were minutes old — came back empty and never retried.
+Croix never saw a tip control. **Build 22 supersedes it as the
+submission vehicle:** the jar is entered from an always-rendered
+"Donate" pill in the header row (immediately left of the theme
+switcher, every card form), the sheet presents in every store
+state (loading spinner; pitch + "Tips aren't available right now —
+please try again later" when the store returns nothing), and the
+fetch re-runs on every sheet open after a failure. Same products,
+same ladder, same sheet.
 
 The seven products were created in ASC on 2026-10-27 via
 `asc_iap_setup.py` and all sit at READY_TO_SUBMIT with US price
@@ -127,17 +139,19 @@ Display name (en-US): "Supporter Tip". Description field (Apple caps
 it at 55 characters): "A voluntary tip that buys nothing. Thank you!"
 
 Submission notes:
-- These products belong to the **build-21 submission only**. They are
+- These products belong to the **build-22 submission**. They are
   NOT part of the staged build-20 submission above — if build 20 is
-  submitted first, the tip products ride along with build 21's
-  version submission later.
-- When build 21 is submitted, all 7 products must be attached to
+  submitted first, the tip products ride along with build 22's
+  version submission later. (Build 21 carried them to TestFlight
+  only and was never submitted; build 22 supersedes it.)
+- When build 22 is submitted, all 7 products must be attached to
   that version's submission (first-time IAPs are reviewed with the
   app version).
 - Each product's App Store review screenshot is currently the
   packet's 01-summary app screenshot as a placeholder. Before the
-  build-21 submission, replace it with a capture of the actual
+  build-22 submission, replace it with a capture of the actual
   Support sheet so App Review sees the purchase in context.
-- Sandbox purchase flow is UNVERIFIED until build 21 is exercised
+- Sandbox purchase flow is UNVERIFIED until build 22 is exercised
   on a device with a sandbox Apple ID — CI cannot run StoreKit
-  purchases.
+  purchases. Build 21's flow was never reached: its entry points
+  didn't render (see above).

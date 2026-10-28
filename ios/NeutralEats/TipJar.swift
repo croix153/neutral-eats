@@ -1,12 +1,22 @@
 import StoreKit
 import SwiftUI
 
-/// The tip jar (build 21, Croix 2026-10-27): a ladder of seven
-/// consumable "Supporter Tip" products in App Store Connect
+/// The tip jar (build 21, Croix 2026-10-27; entry point rebuilt
+/// in build 22): a ladder of seven consumable "Supporter Tip"
+/// products in App Store Connect
 /// (ai.croix.neutraleats.tip.099 … .4999, $0.99–$49.99). Croix's
 /// shape for it: a tip buys NOTHING — no features, no content, no
 /// status — so the app's neutrality rule survives contact with
 /// commerce: the results are identical whether or not anyone tips.
+///
+/// Build 21 hid every entry point behind TipStore.hasProducts and
+/// the jar simply never appeared in TestFlight — the products
+/// were minutes old when first fetched and the fetch never
+/// retried. Build 22's rule: the Donate control is ALWAYS
+/// rendered, the sheet presents in every store state, and the
+/// sheet itself carries the loading / unavailable forms, so a
+/// slow or empty fetch shows words, never a blank or a missing
+/// button.
 ///
 /// Everything runs through StoreKit 2 with no server component:
 /// there is nothing to validate against, no account, and nothing
@@ -43,11 +53,10 @@ final class TipStore: ObservableObject {
     /// approval): noted in the sheet, never treated as an error.
     @Published var purchasePending: Bool = false
 
-    /// The entry points (summary-card heart, list row) render only
-    /// once products are actually in hand — if the store can't be
-    /// reached or the products aren't live yet, the section simply
-    /// doesn't exist. A free app should never nag about a tip jar
-    /// it can't even stock.
+    /// Retained as a plain fact about the store for any future
+    /// surface that wants it. Since build 22 it gates NOTHING:
+    /// the Donate control renders unconditionally and the sheet
+    /// handles the no-products case itself (see SupportSheet).
     var hasProducts: Bool { loadState == .loaded && !products.isEmpty }
 
     private var updatesTask: Task<Void, Never>?
@@ -73,8 +82,14 @@ final class TipStore: ObservableObject {
         updatesTask?.cancel()
     }
 
+    /// Fetch (or re-fetch) the ladder. Callable from .idle and
+    /// from .failed: the build-21 no-show was a first fetch that
+    /// raced products still propagating through the store and
+    /// then never tried again, so the sheet's onAppear re-runs
+    /// this whenever the last attempt failed. A .loaded or
+    /// in-flight fetch is left alone.
     func load() async {
-        guard loadState == .idle else { return }
+        guard loadState == .idle || loadState == .failed else { return }
         loadState = .loading
         do {
             let fetched = try await Product.products(for: Self.productIDs)
@@ -123,10 +138,12 @@ final class TipStore: ObservableObject {
 }
 
 /// The Support sheet: pitch, the tip ladder, and the thank-you
-/// form. Presented from the bottom card's summary heart button and
-/// the list's last row; wears the same panel chrome and system
-/// type as the rest of the card system (Raleway stays on the
-/// wordmark only).
+/// form. Presented from the header's always-rendered Donate pill
+/// (build 22); wears the same panel chrome and system type as
+/// the rest of the card system (Raleway stays on the wordmark
+/// only). The sheet owns every store state — loading spinner
+/// while the fetch runs, the pitch plus an unavailable line when
+/// the store hands back nothing — so it can never open blank.
 struct SupportSheet: View {
     @ObservedObject var tips: TipStore
     @Environment(\.dismiss) private var dismiss
@@ -143,6 +160,10 @@ struct SupportSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(NEColor.panel)
+        // Reaching for the store again on every open costs
+        // nothing when it already succeeded (load() no-ops) and
+        // is the retry that build 21 never got when it failed.
+        .onAppear { Task { await tips.load() } }
         .onDisappear { tips.acknowledge() }
     }
 
@@ -189,9 +210,10 @@ struct SupportSheet: View {
                 }
                 .padding(.vertical, 18)
             } else if tips.products.isEmpty {
-                Text("Tips aren't available right now — the app is free either way.")
+                Text("Tips aren't available right now — please try again later.")
                     .font(.system(size: 13.5))
                     .foregroundColor(NEColor.inkFaint)
+                    .fixedSize(horizontal: false, vertical: true)
             } else {
                 LazyVGrid(
                     columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],

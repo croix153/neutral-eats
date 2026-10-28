@@ -35,7 +35,7 @@ struct ContentView: View {
     @State private var searchText: String = ""
     @State private var selectedID: String? = nil
     @State private var cardExpanded: Bool = false
-    @State private var supportOpen: Bool = false
+    @State private var donateOpen: Bool = false
     @State private var centerRequest: CenterRequest? = nil
     @State private var centerNonce: Int = 0
     @State private var wantsCenter: Bool = false
@@ -79,12 +79,14 @@ struct ContentView: View {
             launchLocate()
         }
         // Tip ladder loads quietly alongside the first venue
-        // fetch; the Support entries only appear once products
-        // are actually in hand (TipStore.hasProducts).
+        // fetch (and re-fetches from the sheet if it failed);
+        // the Donate control is rendered unconditionally —
+        // build 21 gated its entries on this load and the jar
+        // never appeared.
         .task {
             await tips.load()
         }
-        .sheet(isPresented: $supportOpen) {
+        .sheet(isPresented: $donateOpen) {
             SupportSheet(tips: tips)
         }
         .onChange(of: filter) { newFilter in
@@ -212,6 +214,7 @@ struct ContentView: View {
                     .foregroundColor(NEColor.ink)
                 }
                 Spacer()
+                donateButton
                 themeToggleButton
             }
 
@@ -246,6 +249,15 @@ struct ContentView: View {
                         chip(for: chipFilter)
                     }
                 }
+                // The scroll content carries the header's own
+                // 16pt inset (build 22, Croix: the row's margins
+                // read wonky) — before this the chips ran flush to
+                // the scroll view's edges and clipped mid-chip at
+                // whatever point they happened to reach; now the
+                // first chip aligns with the card text and the row
+                // clips at the same padded boundary as everything
+                // else in the header.
+                .padding(.horizontal, 16)
             }
         }
         .padding(.horizontal, 16)
@@ -264,6 +276,32 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    /// Donate control (build 22, Croix's placement): a plain
+    /// text pill in the theme switcher's row, immediately to its
+    /// left — same floating material (panel fill, hairline ring),
+    /// same 38pt height, capsule sized to the word. Always
+    /// rendered, in every card form, because the header never
+    /// leaves the screen and NOTHING gates it: build 21 rendered
+    /// its tip-jar entries only when the store returned products,
+    /// and in TestFlight the jar simply never appeared. Tapping
+    /// presents the Support sheet, which carries its own loading
+    /// and unavailable states — see TipJar.swift.
+    private var donateButton: some View {
+        Button {
+            donateOpen = true
+        } label: {
+            Text("Donate")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(NEColor.accentText)
+                .padding(.horizontal, 14)
+                .frame(height: 38)
+                .background(NEColor.panel2)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
+        }
+        .accessibilityLabel("Donate to support Neutral Eats")
     }
 
     /// Theme switcher, top-right of the header in the spot Croix
@@ -478,24 +516,6 @@ struct ContentView: View {
                 .clipShape(Capsule())
                 .overlay(Capsule().stroke(NEColor.line, lineWidth: 1))
             }
-
-            // Tip jar entry (build 21): a quiet heart beside
-            // Near me, present only when the store actually
-            // returned the tip products.
-            if tips.hasProducts {
-                Button {
-                    supportOpen = true
-                } label: {
-                    Image(systemName: "heart.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(NEColor.accentText)
-                        .frame(width: 38, height: 38)
-                        .background(NEColor.panel2)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(NEColor.line, lineWidth: 1))
-                }
-                .accessibilityLabel("Support Neutral Eats")
-            }
         }
         .padding(.horizontal, 14)
         .padding(.bottom, 12)
@@ -663,20 +683,6 @@ struct ContentView: View {
                 .listRowSeparatorTint(NEColor.line)
                 .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
             }
-            // The list's last row is the tip jar (build 21):
-            // same Support sheet as the summary card's heart,
-            // present only when tip products loaded.
-            if tips.hasProducts {
-                Button {
-                    supportOpen = true
-                } label: {
-                    supportRow
-                }
-                .buttonStyle(.plain)
-                .listRowBackground(NEColor.panel)
-                .listRowSeparatorTint(NEColor.line)
-                .listRowInsets(EdgeInsets(top: 11, leading: 18, bottom: 11, trailing: 18))
-            }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -713,31 +719,6 @@ struct ContentView: View {
                         .foregroundColor(NEColor.inkDim)
                 }
             }
-        }
-    }
-
-    /// The tip jar's list-form row: heart, the ask, and a
-    /// chevron — same visual weight as a venue row so it sits at
-    /// the bottom of the results without shouting over them.
-    private var supportRow: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "heart.fill")
-                .font(.system(size: 14))
-                .foregroundColor(NEColor.accentText)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Support Neutral Eats")
-                    .font(.system(size: 15.5, weight: .semibold))
-                    .foregroundColor(NEColor.ink)
-                    .lineLimit(1)
-                Text("Tips cover the servers and data. They buy nothing.")
-                    .font(.system(size: 12.5))
-                    .foregroundColor(NEColor.inkDim)
-                    .lineLimit(1)
-            }
-            Spacer(minLength: 4)
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(NEColor.inkFaint)
         }
     }
 
