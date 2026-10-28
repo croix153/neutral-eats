@@ -144,7 +144,7 @@ final class TipStore: ObservableObject {
     /// exactly once; a duplicate delivery of an already-handled
     /// transaction is a no-op, so the sheet lands on the
     /// thank-you form once and stays there.
-    private func process(_ transaction: Transaction) async {
+    private func process(_ transaction: StoreKit.Transaction) async {
         guard handledTransactions.insert(transaction.id).inserted else { return }
         await transaction.finish()
         justTipped = true
