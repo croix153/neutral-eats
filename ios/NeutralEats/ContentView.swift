@@ -222,6 +222,13 @@ struct ContentView: View {
                 donateButton
                 themeToggleButton
             }
+            // Build 27: same dismiss-on-tap as the card and chips
+            // — this row holds no focusable field, so a tap here
+            // (wordmark, Donate, theme toggle) can only mean
+            // "done typing". The search-field row below is
+            // deliberately NOT given this gesture: tapping it has
+            // to acquire focus, not resign it.
+            .simultaneousGesture(TapGesture().onEnded { searchFocused = false })
 
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
@@ -272,6 +279,10 @@ struct ContentView: View {
             // panel edge — standard carousel behavior — instead
             // of clipping at the padded boundary.
             .padding(.horizontal, -16)
+            // Build 27: a chip tap filters AND drops the search
+            // keyboard (same simultaneous, non-consuming pattern
+            // as the card): the chip's own action still runs.
+            .simultaneousGesture(TapGesture().onEnded { searchFocused = false })
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
@@ -460,6 +471,13 @@ struct ContentView: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(NEColor.line, lineWidth: 1))
         .shadow(color: Color.black.opacity(0.45), radius: 14, x: 0, y: 4)
+        // Build 27 (Croix): a tap anywhere on the card — a list
+        // row, the handle, summary/detail chrome — also drops
+        // the search keyboard, mirroring the map (build 26).
+        // Simultaneous and non-consuming: row taps still select,
+        // handle taps still toggle, the handle's morph drag is a
+        // drag, not a tap, so it never fires this.
+        .simultaneousGesture(TapGesture().onEnded { searchFocused = false })
     }
 
     /// The grab handle: tap toggles the card (expand the summary,
@@ -701,6 +719,13 @@ struct ContentView: View {
             }
         }
         .listStyle(.plain)
+        // Build 27 (Croix): scrolling the list drops the search
+        // keyboard, like the map tap (build 26). .interactively
+        // (not .immediately) — the native pattern: the keyboard
+        // tracks the drag. No fight with the card's morph drag,
+        // which lives on the handle, a separate surface above
+        // the list; a drag starting here scrolls, never morphs.
+        .scrollDismissesKeyboard(.interactively)
         .scrollContentBackground(.hidden)
         .background(Color.clear)
         .animation(.spring(response: 0.38, dampingFraction: 0.86), value: selectedID)
