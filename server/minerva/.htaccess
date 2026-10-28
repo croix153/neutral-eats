@@ -1,0 +1,6 @@
+# Added 2026-10-27: serve the privacy policy at the clean URL /privacy
+# (App Store Connect requires a privacy policy URL; Apple reads
+# https://neutraleats.com/privacy). Exact-match rule only — no other
+# path is affected.
+RewriteEngine On
+RewriteRule ^privacy/?$ privacy.html [L]

@@ -230,15 +230,23 @@ Submission notes:
   the six-rung ladder, rendered by the local StoreKit config in the
   simulator (support-sheet-capture workflow, run 3). All six products
   verified carrying it.
-- **SUBMISSION BLOCKED on exactly two items, both user-side:**
+- **SUBMISSION BLOCKED on exactly one remaining item (user-side):**
   1. App Privacy answers must be PUBLISHED — the public ASC API has
      no endpoints for this. ASC web: Apps → neutral eats → App
      Privacy → declare Precise Location / App Functionality / not
      linked / not tracking (option (a)) → Publish.
-  2. `privacyPolicyUrl` is REQUIRED by Apple and is null. No privacy
-     page exists on neutraleats.com (/privacy* all 404). A page must
-     be hosted and its URL entered (ASC → App Information, or via
-     the API once the page exists).
+  2. ✅ RESOLVED 2026-10-27 (late evening): `privacyPolicyUrl` — a
+     privacy policy page is now LIVE at
+     https://neutraleats.com/privacy (source: server/minerva/
+     privacy.html + an exact-match .htaccess rewrite of ^privacy/?$;
+     the same files were copied into the Miami staging tree so the
+     cutover keeps it). The URL was set on the en-US app-info
+     localization (e48a5f5d) via the API — asc_privacy.py, PATCH →
+     HTTP 200, read-back verified as
+     'https://neutraleats.com/privacy'. The policy matches verified
+     app behavior: no accounts, no tracking/analytics/ads, bbox +
+     search terms to the API, tips processed entirely by Apple,
+     brief standard server logs, contact croixnewson@hey.com.
   An empty reviewSubmission exists (id cf2b0845-248a-4244-a7f0-
   e2eae914a326, READY_FOR_REVIEW, 0 items) ready to reuse. Note: in
   this API version, reviewSubmissionItems rejected every IAP
@@ -246,4 +254,5 @@ Submission notes:
   inAppPurchases) — first-time IAPs appear to ride the version
   submission via the ASC web version page's In-App Purchases
   section; select the six tip products there when submitting.
-  Version remains PREPARE_FOR_SUBMISSION until both items clear.
+  Version remains PREPARE_FOR_SUBMISSION until the App Privacy
+  item clears.
