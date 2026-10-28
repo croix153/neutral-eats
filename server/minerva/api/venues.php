@@ -7,7 +7,7 @@
  *   south, west, north, east - Bounding box coordinates
  *   type - Filter by venue type (optional)
  *   limit - Max results (default 100, max 500)
- *   search - Full-text search query (optional)
+ *   search - Literal contains query (optional)
  *
  * Enrichment merge (2026-10-26): rows are LEFT JOINed with the
  * `enrichment` side table (Yelp data; see pipeline/enrich_yelp.py).
@@ -84,17 +84,37 @@ try {
         }
     }
 
-    // Full-text search — EXACT PHRASE (Croix, 2026-10-27): the
-    // old form appended '*' to the raw string, which boolean mode
-    // reads as separate optional terms — any-word matching ("taco
-    // bell" matched 38,994 venues). Quoting makes it a phrase:
-    // words adjacent, in order ("taco bell" → 8,902, essentially
-    // the chain itself). The trailing '*' keeps prefix tolerance
-    // on the final word ("taco" still matches "Tacos").
-    $searchJoin = '';
+    // Contains search — the user's FINAL spec (Croix,
+    // 2026-10-27): "a contains search that respects the
+    // atomicity of the user's input string." The whole input
+    // is ONE indivisible literal string; a venue matches when
+    // a single field (name, brand, cuisine, address) contains
+    // it contiguously. No tokenization, no word logic:
+    // "olive garden" → Olive Garden only; "bell taco" matches
+    // nothing (that contiguous string appears nowhere in
+    // "Taco Bell"); "bell" → Taco Bell (and Campbell/Bella —
+    // true contains, intended); "mcdon" and "olive gar" match
+    // as contiguous substrings, which full-text phrase search
+    // mechanically cannot do. Matching is case-insensitive
+    // (utf8mb4_unicode_ci LIKE) and apostrophe-insensitive —
+    // apostrophes are stripped from both sides, so "mcdon"
+    // is found inside "McDonald's". LIKE wildcards in the
+    // input are escaped: the string is literal and has no
+    // pattern powers. The bbox predicates above bound the
+    // candidate set first, keeping the REPLACE+LIKE scan
+    // over a small row set.
     if ($search) {
-        $whereClauses[] = 'MATCH(venues.name, venues.cuisine, venues.brand, venues.address) AGAINST (:search IN BOOLEAN MODE)';
-        $params[':search'] = '"' . str_replace('"', '', trim($search)) . '*"';
+        $needle = strtolower(str_replace(["'", '’'], '', trim($search)));
+        if ($needle !== '') {
+            $needle = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $needle) . '%';
+            $contains = [];
+            foreach (['name', 'brand', 'cuisine', 'address'] as $i => $field) {
+                $ph = ':search' . $i;
+                $contains[] = "REPLACE(REPLACE(venues.$field, '''', ''), '’', '') LIKE $ph ESCAPE '\\\\'";
+                $params[$ph] = $needle;
+            }
+            $whereClauses[] = '(' . implode(' OR ', $contains) . ')';
+        }
     }
     
     $whereSql = implode(' AND ', $whereClauses);
