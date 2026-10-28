@@ -30,6 +30,14 @@ struct VenueMapView: UIViewRepresentable {
     var onRegionSettled: (MKCoordinateRegion) -> Void
     var onSelectVenue: (String) -> Void
     var onDeselect: () -> Void
+    /// Fires on EVERY map tap, before any annotation/empty
+    /// distinction (Croix: tapping the map collapses the search
+    /// keyboard). The tap recognizer is non-consuming
+    /// (cancelsTouchesInView = false), so this changes nothing
+    /// about MapKit's own touch handling — annotation selection,
+    /// double-tap zoom, pan and pinch all proceed exactly as
+    /// before; the callback only resigns the search field's focus.
+    var onMapTap: () -> Void
 
     func makeCoordinator() -> Coordinator {
         return Coordinator()
@@ -117,6 +125,10 @@ struct VenueMapView: UIViewRepresentable {
         /// ignored here; only a tap on genuinely empty map clears
         /// the selection.
         @objc func handleMapTap(_ recognizer: UITapGestureRecognizer) {
+            // Every tap collapses the search keyboard first —
+            // including one that lands on an annotation and goes
+            // on to select it through MapKit's own handling.
+            parent?.onMapTap()
             guard let mapView = recognizer.view as? MKMapView else { return }
             let point = recognizer.location(in: mapView)
             for annotation in mapView.annotations {

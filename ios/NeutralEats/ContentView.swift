@@ -33,6 +33,11 @@ struct ContentView: View {
 
     @State private var filter: VenueFilter = .all
     @State private var searchText: String = ""
+    /// Search-field focus: any tap on the map resigns it, which
+    /// collapses the keyboard (Croix). Wired via VenueMapView's
+    /// onMapTap, which rides the map's existing non-consuming tap
+    /// recognizer — selection/deselect/pan/pinch are unaffected.
+    @FocusState private var searchFocused: Bool
     @State private var selectedID: String? = nil
     @State private var cardExpanded: Bool = false
     @State private var donateOpen: Bool = false
@@ -226,6 +231,7 @@ struct ContentView: View {
                           prompt: Text("Search tacos, sushi, a place name…")
                             .foregroundColor(NEColor.inkFaint))
                     .foregroundColor(NEColor.ink)
+                    .focused($searchFocused)
                     .submitLabel(.search)
                     .textInputAutocapitalization(.never)
                 if !searchText.isEmpty {
@@ -384,6 +390,9 @@ struct ContentView: View {
                 },
                 onDeselect: {
                     dismissDetail()
+                },
+                onMapTap: {
+                    searchFocused = false
                 }
             )
             // Full-bleed to the physical screen bottom, under the
