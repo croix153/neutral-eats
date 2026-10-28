@@ -121,11 +121,29 @@ please try again later" when the store returns nothing), and the
 fetch re-runs on every sheet open after a failure. Same products,
 same ladder, same sheet.
 
-The seven products were created in ASC on 2026-10-27 via
-`asc_iap_setup.py` and all sit at READY_TO_SUBMIT with US price
-schedules and US availability:
+**Build 23 replaces the ladder with whole dollars (2026-10-27):**
+Croix found cents fussy and cut the ladder to $1/$2/$5/$10/$20/$50/
+$100. The seven products below were created in ASC via
+`asc_iap_dollars.py` and all sit at READY_TO_SUBMIT with US price
+schedules and US availability. **They are the submission set for
+build 23.**
 
 | Product ID | US price |
+|---|---|
+| ai.croix.neutraleats.tip.d1 | $1.00 |
+| ai.croix.neutraleats.tip.d2 | $2.00 |
+| ai.croix.neutraleats.tip.d5 | $5.00 |
+| ai.croix.neutraleats.tip.d10 | $10.00 |
+| ai.croix.neutraleats.tip.d20 | $20.00 |
+| ai.croix.neutraleats.tip.d50 | $50.00 |
+| ai.croix.neutraleats.tip.d100 | $100.00 |
+
+The original cent ladder (created 2026-10-27 via `asc_iap_setup.py`)
+is **retired**: availability was removed from all seven in ASC, so
+they can never be sold or submitted; the records are kept. Do not
+re-enable or submit them.
+
+| Retired product ID | Was |
 |---|---|
 | ai.croix.neutraleats.tip.099 | $0.99 |
 | ai.croix.neutraleats.tip.199 | $1.99 |
@@ -139,19 +157,23 @@ Display name (en-US): "Supporter Tip". Description field (Apple caps
 it at 55 characters): "A voluntary tip that buys nothing. Thank you!"
 
 Submission notes:
-- These products belong to the **build-22 submission**. They are
-  NOT part of the staged build-20 submission above — if build 20 is
-  submitted first, the tip products ride along with build 22's
-  version submission later. (Build 21 carried them to TestFlight
-  only and was never submitted; build 22 supersedes it.)
-- When build 22 is submitted, all 7 products must be attached to
-  that version's submission (first-time IAPs are reviewed with the
-  app version).
+- The whole-dollar products belong to the **build-23 submission**.
+  They are NOT part of the staged build-20 submission above — if
+  build 20 is submitted first, the tip products ride along with
+  build 23's version submission later. (Builds 21 and 22 carried
+  the cent ladder to TestFlight only and were never submitted;
+  build 23 supersedes them and references only the d1–d100 set.)
+- When build 23 is submitted, all 7 whole-dollar products must be
+  attached to that version's submission (first-time IAPs are
+  reviewed with the app version). The retired cent products must
+  NOT be attached.
 - Each product's App Store review screenshot is currently the
   packet's 01-summary app screenshot as a placeholder. Before the
-  build-22 submission, replace it with a capture of the actual
+  build-23 submission, replace it with a capture of the actual
   Support sheet so App Review sees the purchase in context.
-- Sandbox purchase flow is UNVERIFIED until build 22 is exercised
-  on a device with a sandbox Apple ID — CI cannot run StoreKit
-  purchases. Build 21's flow was never reached: its entry points
-  didn't render (see above).
+- Sandbox behavior is UNVERIFIED until build 23 is exercised on a
+  device — CI cannot run StoreKit purchases. (The cent ladder did
+  eventually serve in build 22's sandbox once the Paid Apps
+  Agreement went Active, but only 2 of its 7 products had appeared
+  when Croix replaced the set; serving of the d1–d100 set and a
+  completed purchase remain device-only confirmations.)

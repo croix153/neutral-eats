@@ -2,9 +2,11 @@ import StoreKit
 import SwiftUI
 
 /// The tip jar (build 21, Croix 2026-10-27; entry point rebuilt
-/// in build 22): a ladder of seven consumable "Supporter Tip"
-/// products in App Store Connect
-/// (ai.croix.neutraleats.tip.099 … .4999, $0.99–$49.99). Croix's
+/// in build 22; ladder rebuilt in build 23): a ladder of seven
+/// consumable "Supporter Tip" products in App Store Connect
+/// (ai.croix.neutraleats.tip.d1 … .d100, $1–$100 — whole dollars
+/// only; the original $0.99–$49.99 cent ladder was retired in
+/// ASC, availability removed, records kept). Croix's
 /// shape for it: a tip buys NOTHING — no features, no content, no
 /// status — so the app's neutrality rule survives contact with
 /// commerce: the results are identical whether or not anyone tips.
@@ -28,13 +30,13 @@ import SwiftUI
 final class TipStore: ObservableObject {
     /// Cheapest → priciest, matching the ASC product ladder.
     static let productIDs: [String] = [
-        "ai.croix.neutraleats.tip.099",
-        "ai.croix.neutraleats.tip.199",
-        "ai.croix.neutraleats.tip.299",
-        "ai.croix.neutraleats.tip.499",
-        "ai.croix.neutraleats.tip.999",
-        "ai.croix.neutraleats.tip.1999",
-        "ai.croix.neutraleats.tip.4999",
+        "ai.croix.neutraleats.tip.d1",
+        "ai.croix.neutraleats.tip.d2",
+        "ai.croix.neutraleats.tip.d5",
+        "ai.croix.neutraleats.tip.d10",
+        "ai.croix.neutraleats.tip.d20",
+        "ai.croix.neutraleats.tip.d50",
+        "ai.croix.neutraleats.tip.d100",
     ]
 
     enum LoadState {

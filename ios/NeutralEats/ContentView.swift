@@ -249,16 +249,22 @@ struct ContentView: View {
                         chip(for: chipFilter)
                     }
                 }
-                // The scroll content carries the header's own
-                // 16pt inset (build 22, Croix: the row's margins
-                // read wonky) — before this the chips ran flush to
-                // the scroll view's edges and clipped mid-chip at
-                // whatever point they happened to reach; now the
-                // first chip aligns with the card text and the row
-                // clips at the same padded boundary as everything
-                // else in the header.
+                // Content inset inside the scroller (build 22) —
+                // kept, but on its own it double-inset the row:
+                // the header stack already pads 16, so the first
+                // chip sat at 32 while the wordmark/search sit at
+                // 16 (Croix's build-22 screenshot). Build 23 pairs
+                // it with the bleed below: net first-chip inset is
+                // exactly the header's 16, aligned with the search
+                // field's left edge.
                 .padding(.horizontal, 16)
             }
+            // Bleed the scroller out through the header's own
+            // horizontal padding to the panel's edges, so chips
+            // scroll past the 16pt margin line and clip at the
+            // panel edge — standard carousel behavior — instead
+            // of clipping at the padded boundary.
+            .padding(.horizontal, -16)
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
