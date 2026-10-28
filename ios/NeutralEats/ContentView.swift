@@ -232,6 +232,7 @@ struct ContentView: View {
                             .foregroundColor(NEColor.inkFaint))
                     .foregroundColor(NEColor.ink)
                     .focused($searchFocused)
+                    .autocorrectionDisabled(true)
                     .submitLabel(.search)
                     .textInputAutocapitalization(.never)
                 if !searchText.isEmpty {
